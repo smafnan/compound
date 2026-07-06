@@ -34,6 +34,20 @@ export interface AppState {
   completions: Record<string, string[]>
   /** free-form dashboard: widgets and where you dropped them */
   canvas: CanvasItem[]
+  /** last save time (ISO) — used to decide local vs cloud on login */
+  updatedAt?: string
+}
+
+/** Fill in any missing fields (older saves, cloud payloads). */
+export function normalizeState(parsed: Partial<AppState> | null | undefined): AppState {
+  return {
+    deadlines: parsed?.deadlines ?? [],
+    primaryId: parsed?.primaryId ?? null,
+    tasks: parsed?.tasks ?? [],
+    completions: parsed?.completions ?? {},
+    canvas: parsed?.canvas ?? [],
+    updatedAt: parsed?.updatedAt,
+  }
 }
 
 // ---------- Dates ----------
@@ -87,7 +101,7 @@ export function uid(): string {
 const KEY = 'compound.v1'
 
 /** Demo mode (?demo in the URL): shows generated sample data, never persisted. */
-const IS_DEMO =
+export const IS_DEMO =
   typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo')
 
 function demoState(): AppState {
@@ -134,23 +148,27 @@ export function loadState(): AppState {
       ]
       return empty
     }
-    const parsed = JSON.parse(raw) as Partial<AppState>
-    return {
-      deadlines: parsed.deadlines ?? [],
-      primaryId: parsed.primaryId ?? null,
-      tasks: parsed.tasks ?? [],
-      completions: parsed.completions ?? {},
-      canvas: parsed.canvas ?? [],
-    }
+    return normalizeState(JSON.parse(raw) as Partial<AppState>)
   } catch {
     return empty
+  }
+}
+
+/** Freshest local save time, straight from disk. */
+export function localUpdatedAt(): string | null {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (!raw) return null
+    return (JSON.parse(raw) as Partial<AppState>).updatedAt ?? null
+  } catch {
+    return null
   }
 }
 
 export function saveState(s: AppState): void {
   if (IS_DEMO) return // demo data must never overwrite real data
   try {
-    const json = JSON.stringify(s)
+    const json = JSON.stringify({ ...s, updatedAt: new Date().toISOString() })
     localStorage.setItem(KEY, json)
     mirrorToNative(json)
   } catch {

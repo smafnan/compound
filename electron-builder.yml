@@ -1,0 +1,28 @@
+appId: com.smafnan.compound
+productName: Compound
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - electron/**/*
+win:
+  target:
+    - nsis
+  icon: build/icon.png
+nsis:
+  oneClick: true
+  deleteAppDataOnUninstall: false
+  artifactName: Compound-Setup-${version}.${ext}
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.productivity
+  icon: build/icon.png
+  artifactName: Compound-${version}-${arch}.${ext}
+linux:
+  target:
+    - AppImage
+  icon: build/icon.png
+  category: Utility

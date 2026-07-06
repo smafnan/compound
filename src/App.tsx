@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
-import { AppState, loadState, saveState } from './lib'
+import { useEffect, useRef, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
+import { AppState, IS_DEMO, loadState, localUpdatedAt, saveState } from './lib'
+import { SyncStatus, cloudEnabled, onAuth, pullState, pushState } from './cloud'
+import Account from './Account'
 import Countdown from './sections/Countdown'
 import Today from './sections/Today'
 import Checklist from './sections/Checklist'
@@ -40,10 +43,38 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(initialTab)
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [fullscreen, setFullscreen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [sync, setSync] = useState<SyncStatus>(cloudEnabled ? 'signed-out' : 'off')
+  const [showAccount, setShowAccount] = useState(false)
+  const stateRef = useRef(state)
+  stateRef.current = state
 
   useEffect(() => {
     saveState(state)
-  }, [state])
+    if (user && !IS_DEMO) pushState(state, setSync)
+  }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // login → pull the cloud copy; newer side wins, then both match
+  useEffect(() => {
+    if (!cloudEnabled || IS_DEMO) return
+    return onAuth((u) => {
+      setUser(u)
+      if (!u) {
+        setSync('signed-out')
+        return
+      }
+      setSync('syncing')
+      void pullState().then((remote) => {
+        const localAt = localUpdatedAt()
+        if (remote && (!localAt || remote.updatedAt > localAt)) {
+          setState(remote.state) // cloud is newer — adopt it (also re-pushes via save effect)
+        } else {
+          pushState(stateRef.current, setSync) // local is newer or cloud is empty
+        }
+        setSync('synced')
+      })
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -123,8 +154,25 @@ export default function App() {
           >
             {fullscreen ? '🗗' : '⛶'}
           </button>
+          <button
+            className={`ctrl-btn account-btn ${user ? 'signed-in' : ''}`}
+            title={
+              !cloudEnabled
+                ? 'Account (cloud sync not configured)'
+                : user
+                  ? `${user.email} — ${sync}`
+                  : 'Sign in to back up your progress'
+            }
+            onClick={() => setShowAccount(true)}
+          >
+            👤
+          </button>
         </div>
       </header>
+
+      {showAccount && (
+        <Account user={user} status={sync} onClose={() => setShowAccount(false)} />
+      )}
 
       <main className="content">
         {tab === 'countdown' && <Countdown state={state} setState={setState} />}

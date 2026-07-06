@@ -847,6 +847,45 @@ body {
 }
 .ctrls > .ctrl-btn:active { transform: translate(2px, 3px); box-shadow: none; }
 
+/* ---------- Account modal ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  width: min(440px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal p { margin: 0 0 10px; }
+.modal code { font-size: 13px; background: var(--cream); padding: 1px 5px; border-radius: 5px; }
+
+.account-form { display: flex; flex-direction: column; gap: 10px; }
+.account-form input {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  color: var(--ink);
+  padding: 10px 13px;
+  font-family: var(--hand);
+  font-size: 15px;
+}
+.account-form input:focus { outline: none; border-color: var(--blue); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+
+.form-error { color: var(--bad); font-size: 14px; margin-top: 10px; }
+
+.account-btn.signed-in { color: var(--good); }
+
 /* ---------- Canvas: the drag-and-drop board ---------- */
 
 .pal-panel { padding-bottom: 14px; }

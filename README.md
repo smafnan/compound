@@ -152,6 +152,38 @@ Production build:
 npm run build   # static site in dist/ — deploy anywhere (Vercel, Netlify, GitHub Pages…)
 ```
 
+### ☁️ Login & cloud backup (optional)
+
+The app runs fully offline by default. To get **accounts + cross-device sync**:
+
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Open its **SQL editor** and run [`supabase/schema.sql`](supabase/schema.sql)
+   (one table, locked down so each user can only read/write their own row)
+3. Copy `.env.example` to `.env` and fill in your project's URL and anon key
+   (Project Settings → API)
+4. Rebuild (`npm run build`) — the 👤 button in the top bar now offers
+   **sign in / create account**
+
+Once signed in, every change is backed up automatically (debounced, whole-state
+upsert). Sign in anywhere else — web, Android, iOS, desktop — and whichever copy
+is newer wins. Tip: for instant sign-ups while testing, disable
+*Authentication → Email → Confirm email* in Supabase.
+
+### 🖥 Desktop apps (Windows .exe / macOS .app)
+
+The repo includes an Electron shell:
+
+```bash
+npm run dist:win     # → release/Compound-Setup-<version>.exe   (build on Windows)
+npm run dist:mac     # → release/Compound-<version>.dmg + .app  (build on macOS)
+npm run electron     # just run it as a desktop window, no installer
+```
+
+macOS apps can only be compiled on a Mac — but you don't need one:
+the **Desktop builds** GitHub Action builds both installers in the cloud.
+Run it from the *Actions* tab (or push a `v*` tag) and download
+`Compound-Windows` / `Compound-macOS` from the run's artifacts.
+
 ### Build the Android app
 
 Requires [Android Studio](https://developer.android.com/studio) (any OS):
