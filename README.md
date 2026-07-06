@@ -13,6 +13,7 @@
 ![React](https://img.shields.io/badge/React_18-1B1B1B?logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-1B1B1B?logo=typescript&logoColor=3178C6)
 ![Vite](https://img.shields.io/badge/Vite-1B1B1B?logo=vite&logoColor=F7C948)
+![Capacitor](https://img.shields.io/badge/Capacitor_8-Android_%26_iOS-1B1B1B?logo=capacitor&logoColor=119EFF)
 ![PWA](https://img.shields.io/badge/PWA-installable-E4572E)
 ![No backend](https://img.shields.io/badge/backend-none%2C_your_data_stays_local-2C8C4A)
 ![License](https://img.shields.io/badge/license-MIT-0080FF)
@@ -94,12 +95,17 @@ One mode that shows **every calculation together**: the countdown, this month's 
 the live clock, the hour grid, the quarter-hour grid, and all the growth comparisons —
 your entire relationship with time on a single page.
 
-### 📱 Mobile
+### 📱 Native Android & iOS apps
 
 <div align="center"><img src="docs/mobile.png" width="300" alt="Mobile layout with bottom tab bar" /></div>
 
-Fully responsive with a bottom tab bar, and installable as a **PWA** — serve it over
-HTTPS, open it on your phone, tap *Add to Home Screen*, and it runs like a native app.
+The repo ships **real native projects** for both platforms (built with
+[Capacitor 8](https://capacitorjs.com)) in `android/` and `ios/`, with generated app
+icons and splash screens. On phones your data lives in **native storage**
+(SharedPreferences on Android, UserDefaults on iOS), so the OS can't evict it the way
+it can browser storage. The layout is fully responsive with a bottom tab bar — and if
+you'd rather not build anything, the web app also installs as a **PWA** via
+*Add to Home Screen*.
 
 <br/>
 
@@ -126,6 +132,35 @@ Production build:
 ```bash
 npm run build   # static site in dist/ — deploy anywhere (Vercel, Netlify, GitHub Pages…)
 ```
+
+### Build the Android app
+
+Requires [Android Studio](https://developer.android.com/studio) (any OS):
+
+```bash
+npm run build && npx cap sync
+npx cap open android        # opens Android Studio → press Run ▶
+```
+
+Or from the command line, if you have the Android SDK + JDK 17+:
+
+```bash
+cd android && ./gradlew assembleDebug
+# → android/app/build/outputs/apk/debug/app-debug.apk — install it on any Android phone
+```
+
+### Build the iOS app
+
+Requires a **Mac with Xcode 15+** (an Apple platform rule — iOS apps can't be compiled
+elsewhere). Dependencies use Swift Package Manager, so there's no CocoaPods setup:
+
+```bash
+npm install && npm run build && npx cap sync
+npx cap open ios            # opens Xcode → pick your signing team → press Run ▶
+```
+
+A free Apple ID is enough to run it on your own iPhone; App Store distribution needs a
+developer account.
 
 <br/>
 
@@ -157,8 +192,9 @@ a green `#2C8C4A` for wins.
 
 ## 🛠 Tech
 
-Vite · React 18 · TypeScript · hand-rolled CSS (no UI framework, no runtime deps beyond
-React) · PWA manifest · localStorage persistence. ~52 KB gzipped.
+Vite · React 18 · TypeScript · hand-rolled CSS (no UI framework) · Capacitor 8 for the
+native Android/iOS shells · PWA manifest · localStorage on the web, mirrored to native
+Preferences (SharedPreferences / UserDefaults) on phones. Web bundle ~56 KB gzipped.
 
 <br/>
 

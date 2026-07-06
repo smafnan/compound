@@ -1,3 +1,5 @@
+import { mirrorToNative } from './native'
+
 // ---------- Types ----------
 
 export interface Deadline {
@@ -129,7 +131,9 @@ export function loadState(): AppState {
 export function saveState(s: AppState): void {
   if (IS_DEMO) return // demo data must never overwrite real data
   try {
-    localStorage.setItem(KEY, JSON.stringify(s))
+    const json = JSON.stringify(s)
+    localStorage.setItem(KEY, json)
+    mirrorToNative(json)
   } catch {
     // storage full or unavailable — nothing sensible to do
   }

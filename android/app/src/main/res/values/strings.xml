@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Compound</string>
+    <string name="title_activity_main">Compound</string>
+    <string name="package_name">com.smafnan.compound</string>
+    <string name="custom_url_scheme">com.smafnan.compound</string>
+</resources>
