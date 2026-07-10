@@ -1,139 +1,279 @@
 import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { SyncStatus, cloudEnabled, deleteAccount, signIn, signOut, signUp } from './cloud'
+import { AppState } from './lib'
+import {
+  SyncStatus, cloudEnabled, deleteAccount, signIn, signOut, signUp,
+  updateEmail, updatePassword,
+} from './cloud'
 
 interface Props {
   user: User | null
   status: SyncStatus
+  state: AppState
+  setState: React.Dispatch<React.SetStateAction<AppState>>
   onClose: () => void
 }
 
 const STATUS_TEXT: Record<SyncStatus, string> = {
-  'off': 'cloud sync is off',
-  'signed-out': 'not signed in',
-  'syncing': 'syncing…',
-  'synced': 'synced ✓ — your progress is safe in the cloud',
-  'error': 'sync failed — will retry on your next change',
+  'off': 'saved on this device',
+  'signed-out': 'not logged in',
+  'syncing': 'saving…',
+  'synced': 'everything backed up ✓',
+  'error': 'save failed — will retry automatically',
 }
 
-export default function Account({ user, status, onClose }: Props) {
+export default function Account(props: Props) {
+  return (
+    <div className="modal-backdrop" onClick={props.onClose}>
+      <div className="panel modal" onClick={(e) => e.stopPropagation()}>
+        {props.user ? <AccountInfo {...props} /> : <AuthForm {...props} />}
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- log in / create account ---------------- */
+
+function AuthForm({ onClose, setState }: Props) {
+  const [mode, setMode] = useState<'in' | 'up'>('in')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  async function submit(mode: 'in' | 'up') {
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (busy) return
     setBusy(true)
     setError(null)
     setNotice(null)
-    const err = mode === 'in' ? await signIn(email, password) : await signUp(email, password)
+    if (mode === 'in') {
+      const err = await signIn(email, password)
+      if (err) setError(friendly(err))
+      else onClose()
+    } else {
+      const err = await signUp(email, password)
+      if (err) setError(friendly(err))
+      else {
+        if (name.trim()) {
+          setState((s) => ({ ...s, profile: { ...s.profile, name: name.trim() } }))
+        }
+        const auto = await signIn(email, password)
+        if (!auto) onClose()
+        else setNotice('Account created! Check your email to confirm it, then log in.')
+      }
+    }
     setBusy(false)
-    if (err) setError(err)
-    else if (mode === 'up') setNotice('Account created! If your project requires email confirmation, check your inbox — then sign in.')
+  }
+
+  if (!cloudEnabled) {
+    return (
+      <>
+        <ModalHead title="Account" onClose={onClose} />
+        <p>Accounts aren't available in this version of the app.</p>
+        <p className="muted">
+          Everything you do is saved safely on this device — nothing is lost when you close the app.
+        </p>
+      </>
+    )
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="panel modal" onClick={(e) => e.stopPropagation()}>
-        <div className="panel-head">
-          <h2>Account</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
-        </div>
+    <>
+      <ModalHead title={mode === 'in' ? 'Log in' : 'Create account'} onClose={onClose} />
 
-        {!cloudEnabled && (
-          <>
-            <p>
-              Cloud sync isn't configured for this build, so your progress lives in this
-              device's storage only.
-            </p>
-            <p className="muted small">
-              To enable login + backup: create a free <b>Supabase</b> project, run
-              <code> supabase/schema.sql</code>, put your URL and anon key in
-              <code> .env</code> (see <code>.env.example</code>) and rebuild.
-            </p>
-          </>
-        )}
-
-        {cloudEnabled && user && (
-          <>
-            <p>Signed in as <b>{user.email}</b></p>
-            <p className="muted">{STATUS_TEXT[status]}</p>
-            <div className="modal-actions">
-              <button className="btn-ghost" disabled={busy} onClick={() => void signOut()}>
-                Sign out
-              </button>
-              <button
-                className="btn-ghost danger"
-                disabled={busy}
-                onClick={async () => {
-                  if (!window.confirm('Delete your account and ALL cloud data permanently? Your local copy on this device stays.')) return
-                  setBusy(true)
-                  const err = await deleteAccount()
-                  setBusy(false)
-                  if (err) setError(err)
-                }}
-              >
-                Delete account
-              </button>
-            </div>
-            {error && <p className="form-error">{error}</p>}
-            <p className="muted small">
-              Every change is backed up automatically. Sign in on any other device and
-              your whole history walks in with you. Deleting your account removes all
-              cloud data permanently; the copy on this device is kept.
-            </p>
-          </>
-        )}
-
-        {cloudEnabled && !user && (
-          <>
-            <p className="muted">
-              Sign in to back up your progress and continue on any device.
-            </p>
-            <form
-              className="account-form"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void submit('in')
-              }}
-            >
-              <input
-                type="email"
-                required
-                placeholder="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <input
-                type="password"
-                required
-                minLength={6}
-                placeholder="password (6+ characters)"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <div className="modal-actions">
-                <button type="submit" className="btn-accent" disabled={busy}>
-                  {busy ? '…' : 'Sign in'}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={busy}
-                  onClick={() => void submit('up')}
-                >
-                  Create account
-                </button>
-              </div>
-            </form>
-            {error && <p className="form-error">{error}</p>}
-            {notice && <p className="muted small">{notice}</p>}
-          </>
-        )}
+      <div className="auth-tabs">
+        <button className={`auth-tab ${mode === 'in' ? 'on' : ''}`} onClick={() => { setMode('in'); setError(null) }}>
+          Log in
+        </button>
+        <button className={`auth-tab ${mode === 'up' ? 'on' : ''}`} onClick={() => { setMode('up'); setError(null) }}>
+          Create account
+        </button>
       </div>
+
+      <form className="account-form" onSubmit={submit}>
+        {mode === 'up' && (
+          <input
+            type="text"
+            placeholder="Your name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
+        <input
+          type="email"
+          required
+          placeholder="Email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          required
+          minLength={6}
+          placeholder={mode === 'up' ? 'Choose a password (6+ characters)' : 'Password'}
+          autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit" className="btn-accent auth-submit" disabled={busy}>
+          {busy ? '…' : mode === 'in' ? 'Log in' : 'Sign up'}
+        </button>
+      </form>
+
+      {error && <p className="form-error">{error}</p>}
+      {notice && <p className="muted small">{notice}</p>}
+
+      <p className="muted small">
+        One account keeps your streaks, checklists and progress safe — log in anywhere and
+        everything follows you.
+      </p>
+    </>
+  )
+}
+
+/* ---------------- account info (signed in) ---------------- */
+
+function AccountInfo({ user, status, state, setState, onClose }: Props) {
+  const [email, setEmail] = useState(user?.email ?? '')
+  const [pw1, setPw1] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  function patch(field: 'name' | 'phone', value: string) {
+    setState((s) => ({ ...s, profile: { ...s.profile, [field]: value } }))
+  }
+
+  async function saveEmail() {
+    if (!email.trim() || email === user?.email) return
+    setBusy(true)
+    const err = await updateEmail(email.trim())
+    setBusy(false)
+    setMsg(err ? { ok: false, text: friendly(err) } : { ok: true, text: 'Check your new email for a confirmation link.' })
+  }
+
+  async function savePassword() {
+    if (pw1.length < 6) {
+      setMsg({ ok: false, text: 'Password needs at least 6 characters.' })
+      return
+    }
+    setBusy(true)
+    const err = await updatePassword(pw1)
+    setBusy(false)
+    setPw1('')
+    setMsg(err ? { ok: false, text: friendly(err) } : { ok: true, text: 'Password updated ✓' })
+  }
+
+  return (
+    <>
+      <ModalHead title="Your account" onClose={onClose} />
+      <p className="muted small acc-status">{STATUS_TEXT[status]}</p>
+
+      <div className="acc-fields">
+        <label className="acc-row">
+          <span>Name</span>
+          <input
+            type="text"
+            placeholder="Your name"
+            value={state.profile.name}
+            onChange={(e) => patch('name', e.target.value)}
+          />
+        </label>
+
+        <label className="acc-row">
+          <span>Phone</span>
+          <input
+            type="tel"
+            placeholder="Add a phone number"
+            value={state.profile.phone}
+            onChange={(e) => patch('phone', e.target.value)}
+          />
+        </label>
+
+        <label className="acc-row">
+          <span>Email</span>
+          <div className="acc-inline">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {email !== user?.email && (
+              <button className="btn-ghost" disabled={busy} onClick={() => void saveEmail()}>save</button>
+            )}
+          </div>
+        </label>
+
+        <label className="acc-row">
+          <span>Password</span>
+          <div className="acc-inline">
+            <input
+              type="password"
+              placeholder="New password"
+              autoComplete="new-password"
+              value={pw1}
+              onChange={(e) => setPw1(e.target.value)}
+            />
+            {pw1 && (
+              <button className="btn-ghost" disabled={busy} onClick={() => void savePassword()}>save</button>
+            )}
+          </div>
+        </label>
+
+        <label className="acc-row">
+          <span>Member since</span>
+          <input type="text" value={state.profile.joined} readOnly />
+        </label>
+      </div>
+
+      {msg && <p className={msg.ok ? 'muted small' : 'form-error'}>{msg.text}</p>}
+
+      <div className="modal-actions">
+        <button className="btn-ghost" disabled={busy} onClick={() => void signOut()}>
+          Log out
+        </button>
+        <button
+          className="btn-ghost danger"
+          disabled={busy}
+          onClick={async () => {
+            if (!window.confirm('Delete your account and ALL backed-up data permanently? The copy on this device stays.')) return
+            setBusy(true)
+            const err = await deleteAccount()
+            setBusy(false)
+            if (err) setMsg({ ok: false, text: friendly(err) })
+          }}
+        >
+          Delete account
+        </button>
+      </div>
+      <p className="muted small">
+        Name and phone save instantly. Everything you do here is backed up to your account
+        automatically.
+      </p>
+    </>
+  )
+}
+
+function ModalHead({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <div className="panel-head">
+      <h2>{title}</h2>
+      <button className="icon-btn" onClick={onClose} aria-label="Close">✕</button>
     </div>
   )
+}
+
+/** Turn provider errors into plain human language. */
+function friendly(err: string): string {
+  const e = err.toLowerCase()
+  if (e.includes('invalid login')) return 'Wrong email or password.'
+  if (e.includes('not confirmed')) return 'Please confirm your email first — check your inbox.'
+  if (e.includes('already registered')) return 'That email already has an account — try logging in.'
+  if (e.includes('at least 6')) return 'Password needs at least 6 characters.'
+  if (e.includes('rate limit')) return 'Too many tries — wait a minute and try again.'
+  return err
 }

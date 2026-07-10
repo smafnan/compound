@@ -204,7 +204,6 @@ export default function Profile({
               </button>
             ))}
           </div>
-          <p className="muted small">Want another font? Drop a .ttf in and it can be added.</p>
         </div>
         <div className="pref-block">
           <span className="pref-label">Background scene</span>

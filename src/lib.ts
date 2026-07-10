@@ -27,6 +27,8 @@ export interface CanvasItem {
   z: number
   /** user-resized width in px (falls back to the kind's default) */
   w?: number
+  /** user-resized height in px (default: content height) */
+  h?: number
   /** per-widget config: spotify/video URLs, focus-timer task, … */
   cfg?: Record<string, string>
 }
@@ -42,6 +44,7 @@ export interface FocusSession {
 export interface Profile {
   name: string
   goal: string
+  phone: string
   joined: string // yyyy-mm-dd
 }
 
@@ -69,7 +72,12 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
     completions: parsed?.completions ?? {},
     canvas: parsed?.canvas ?? [],
     focus: parsed?.focus ?? [],
-    profile: parsed?.profile ?? { name: '', goal: '', joined: todayStr() },
+    profile: {
+      name: parsed?.profile?.name ?? '',
+      goal: parsed?.profile?.goal ?? '',
+      phone: parsed?.profile?.phone ?? '',
+      joined: parsed?.profile?.joined ?? todayStr(),
+    },
     updatedAt: parsed?.updatedAt,
   }
 }
@@ -159,7 +167,7 @@ function demoState(): AppState {
   ]
   return normalizeState({
     deadlines: [dl], primaryId: dl.id, tasks, completions, canvas, focus,
-    profile: { name: 'Demo Pilgrim', goal: 'Ship the app before winter', joined: day(-34) },
+    profile: { name: 'Demo Pilgrim', goal: 'Ship the app before winter', phone: '', joined: day(-34) },
   })
 }
 

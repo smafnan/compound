@@ -34,6 +34,20 @@ export async function signOut(): Promise<void> {
   await supabase?.auth.signOut()
 }
 
+/** Change the account email (provider sends a confirmation link). */
+export async function updateEmail(email: string): Promise<string | null> {
+  if (!supabase) return 'Accounts are not available in this build.'
+  const { error } = await supabase.auth.updateUser({ email })
+  return error ? error.message : null
+}
+
+/** Change the account password. */
+export async function updatePassword(password: string): Promise<string | null> {
+  if (!supabase) return 'Accounts are not available in this build.'
+  const { error } = await supabase.auth.updateUser({ password })
+  return error ? error.message : null
+}
+
 /** Permanently delete the signed-in account and all its cloud data. */
 export async function deleteAccount(): Promise<string | null> {
   if (!supabase) return 'Cloud sync is not configured.'

@@ -28,17 +28,19 @@ const DEFAULT_W: Record<WidgetKind, number> = {
 }
 const MIN_W = 230
 const MAX_W = 860
+const MIN_H = 120
+const MAX_H = 900
 
 /** Free-form dashboard: drop widgets, drag them anywhere, resize at the corner. */
 export default function Canvas({ state, setState }: Props) {
   const now = useNow()
   const boardRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ id: string; dx: number; dy: number } | null>(null)
-  const sizeRef = useRef<{ id: string; x0: number; w0: number } | null>(null)
+  const sizeRef = useRef<{ id: string; x0: number; y0: number; w0: number; h0: number } | null>(null)
   const [live, setLive] = useState<{ id: string; x: number; y: number } | null>(null)
   const liveRef = useRef<{ id: string; x: number; y: number } | null>(null)
-  const [liveW, setLiveW] = useState<{ id: string; w: number } | null>(null)
-  const liveWRef = useRef<{ id: string; w: number } | null>(null)
+  const [liveW, setLiveW] = useState<{ id: string; w: number; h: number } | null>(null)
+  const liveWRef = useRef<{ id: string; w: number; h: number } | null>(null)
 
   const items = state.canvas
   const maxZ = items.reduce((m, i) => Math.max(m, i.z), 0)
@@ -111,10 +113,17 @@ export default function Canvas({ state, setState }: Props) {
     setLive(null)
   }
 
-  // ---- resize ----
+  // ---- resize (both axes, like a normal window) ----
   function onGripDown(e: React.PointerEvent, item: CanvasItem) {
     e.stopPropagation()
-    sizeRef.current = { id: item.id, x0: e.clientX, w0: item.w ?? DEFAULT_W[item.kind] }
+    const el = (e.currentTarget as HTMLElement).closest('.widget') as HTMLElement | null
+    sizeRef.current = {
+      id: item.id,
+      x0: e.clientX,
+      y0: e.clientY,
+      w0: item.w ?? DEFAULT_W[item.kind],
+      h0: item.h ?? el?.offsetHeight ?? 200,
+    }
     bringToFront(item.id)
     try { (e.currentTarget as Element).setPointerCapture(e.pointerId) } catch { /* ok */ }
   }
@@ -122,7 +131,8 @@ export default function Canvas({ state, setState }: Props) {
     const s = sizeRef.current
     if (!s) return
     const w = Math.min(MAX_W, Math.max(MIN_W, s.w0 + (e.clientX - s.x0)))
-    liveWRef.current = { id: s.id, w }
+    const h = Math.min(MAX_H, Math.max(MIN_H, s.h0 + (e.clientY - s.y0)))
+    liveWRef.current = { id: s.id, w, h }
     setLiveW(liveWRef.current)
   }
   function onGripUp() {
@@ -131,7 +141,10 @@ export default function Canvas({ state, setState }: Props) {
     sizeRef.current = null
     liveWRef.current = null
     if (s && lw && lw.id === s.id) {
-      setState((st) => ({ ...st, canvas: st.canvas.map((i) => (i.id === s.id ? { ...i, w: lw.w } : i)) }))
+      setState((st) => ({
+        ...st,
+        canvas: st.canvas.map((i) => (i.id === s.id ? { ...i, w: lw.w, h: lw.h } : i)),
+      }))
     }
     setLiveW(null)
   }
@@ -174,12 +187,14 @@ export default function Canvas({ state, setState }: Props) {
         )}
         {items.map((item) => {
           const pos = live && live.id === item.id ? live : item
-          const width = liveW && liveW.id === item.id ? liveW.w : item.w ?? DEFAULT_W[item.kind]
+          const sizing = liveW && liveW.id === item.id ? liveW : null
+          const width = sizing ? sizing.w : item.w ?? DEFAULT_W[item.kind]
+          const height = sizing ? sizing.h : item.h
           return (
             <div
               key={item.id}
-              className={`widget widget-${item.kind}`}
-              style={{ left: pos.x, top: pos.y, zIndex: item.z, width }}
+              className={`widget widget-${item.kind} ${height ? 'fixed-h' : ''}`}
+              style={{ left: pos.x, top: pos.y, zIndex: item.z, width, height }}
             >
               <div
                 className="widget-head"

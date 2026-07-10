@@ -48,6 +48,13 @@ export default function Checklist({ state, setState }: Props) {
     setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) }))
   }
 
+  function renameTask(id: string, name: string) {
+    setState((s) => ({
+      ...s,
+      tasks: s.tasks.map((t) => (t.id === id ? { ...t, name } : t)),
+    }))
+  }
+
   // per-day scores for the footer, per-task monthly % for the right column
   const dayScores = useMemo(
     () => Array.from({ length: days }, (_, i) => dayScore(state, dateOf(i + 1))),
@@ -118,6 +125,7 @@ export default function Checklist({ state, setState }: Props) {
                 <TaskRow
                   key={t.id}
                   name={t.name}
+                  onRename={(name) => renameTask(t.id, name)}
                   onRemove={() => removeTask(t.id)}
                   cells={Array.from({ length: days }, (_, i) => {
                     const date = dateOf(i + 1)
@@ -181,12 +189,25 @@ export default function Checklist({ state, setState }: Props) {
 }
 
 function TaskRow({
-  name, cells, pct, onRemove,
-}: { name: string; cells: React.ReactNode[]; pct: number | null; onRemove: () => void }) {
+  name, cells, pct, onRename, onRemove,
+}: {
+  name: string
+  cells: React.ReactNode[]
+  pct: number | null
+  onRename: (name: string) => void
+  onRemove: () => void
+}) {
   return (
     <>
       <div className="sh-task">
-        <span className="sh-task-name" data-tip={name}>{name}</span>
+        <input
+          className="sh-task-name"
+          value={name}
+          data-tip={name.length > 16 ? name : undefined}
+          onChange={(e) => onRename(e.target.value)}
+          onBlur={(e) => { if (!e.target.value.trim()) onRename('Untitled task') }}
+          aria-label={`Task name: ${name}`}
+        />
         <button className="icon-btn tiny" title={`Delete ${name}`} onClick={onRemove}>✕</button>
       </div>
       {cells}

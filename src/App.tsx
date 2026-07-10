@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js'
 import { AppState, IS_DEMO, loadState, localUpdatedAt, saveState } from './lib'
 import { SyncStatus, cloudEnabled, onAuth, pullState, pushState } from './cloud'
 import { FONTS, loadPref, savePref } from './prefs'
-import Backdrop, { BgKind } from './Backdrop'
+import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
 import Account from './Account'
 import Countdown from './sections/Countdown'
 import Today from './sections/Today'
@@ -89,7 +89,17 @@ export default function App() {
 
   useEffect(() => {
     const f = FONTS.find((x) => x.id === font) ?? FONTS[0]
-    document.documentElement.style.setProperty('--display', f.family)
+    const root = document.documentElement.style
+    root.setProperty('--display', f.family)
+    // non-default fonts take over the labels and hand-written notes too,
+    // so the whole page speaks in the chosen voice
+    if (f.id === 'goblock') {
+      root.removeProperty('--script')
+      root.removeProperty('--hand')
+    } else {
+      root.setProperty('--script', f.family)
+      root.setProperty('--hand', f.family)
+    }
     savePref('font', f.id)
   }, [font])
 
@@ -188,10 +198,23 @@ export default function App() {
       </header>
 
       {showAccount && (
-        <Account user={user} status={sync} onClose={() => setShowAccount(false)} />
+        <Account
+          user={user}
+          status={sync}
+          state={state}
+          setState={setState}
+          onClose={() => setShowAccount(false)}
+        />
       )}
 
       <main className="content">
+        {tab === 'countdown' && (
+          <StyleQuick
+            theme={theme} setTheme={(t) => setTheme(t as Theme)}
+            font={font} setFont={setFont}
+            bg={bg} setBg={setBg}
+          />
+        )}
         <div className="view" key={tab}>
           {tab === 'countdown' && <Countdown state={state} setState={setState} />}
           {tab === 'today' && <Today />}
@@ -219,6 +242,65 @@ export default function App() {
       <footer className="foot">every day counts !</footer>
       <Backdrop kind={bg} />
       <TipLayer />
+    </div>
+  )
+}
+
+/** Discreet look-&-feel switcher that lives on the home page. */
+function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
+  theme: string; setTheme: (t: string) => void
+  font: string; setFont: (f: string) => void
+  bg: BgKind; setBg: (b: BgKind) => void
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="style-quick">
+      <button
+        className={`style-btn ${open ? 'open' : ''}`}
+        onClick={() => setOpen((o) => !o)}
+        data-tip={open ? undefined : 'Style: theme, font & background'}
+      >
+        ✎ style
+      </button>
+      {open && (
+        <div className="style-pop">
+          <div className="style-row">
+            <span className="style-k">theme</span>
+            <div className="chips">
+              {(['paper', 'night', 'neo'] as const).map((t) => (
+                <button key={t} className={`chip ${theme === t ? 'on' : ''}`} onClick={() => setTheme(t)}>
+                  {t === 'paper' ? '☀ paper' : t === 'night' ? '☾ night' : '◇ neo'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="style-row">
+            <span className="style-k">font</span>
+            <div className="chips">
+              {FONTS.map((f) => (
+                <button
+                  key={f.id}
+                  className={`chip ${font === f.id ? 'on' : ''}`}
+                  style={{ fontFamily: f.family }}
+                  onClick={() => setFont(f.id)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="style-row">
+            <span className="style-k">scene</span>
+            <div className="chips">
+              {BACKDROPS.map((b) => (
+                <button key={b.id} className={`chip ${bg === b.id ? 'on' : ''}`} onClick={() => setBg(b.id)}>
+                  {b.icon} {b.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
