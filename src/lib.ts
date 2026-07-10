@@ -245,6 +245,7 @@ export function avgScore(state: AppState, from: Date, to: Date): number | null {
 }
 
 export interface PeriodComparison {
+  key: 'day' | 'week' | 'month' | 'year'
   label: string
   sub: string
   current: number | null
@@ -272,24 +273,28 @@ export function comparisons(state: AppState, now: Date): PeriodComparison[] {
 
   return [
     {
+      key: 'day',
       label: 'Today',
       sub: 'vs yesterday',
       current: dayScore(state, fmtDate(today)),
       previous: dayScore(state, fmtDate(yesterday)),
     },
     {
+      key: 'week',
       label: 'This week',
       sub: 'vs last week',
       current: avgScore(state, weekStart, today),
       previous: avgScore(state, prevWeekStart, prevWeekEnd),
     },
     {
+      key: 'month',
       label: 'This month',
       sub: 'vs last month',
       current: avgScore(state, monthStart, today),
       previous: avgScore(state, prevMonthStart, prevMonthEnd),
     },
     {
+      key: 'year',
       label: 'This year',
       sub: 'vs last year',
       current: avgScore(state, yearStart, today),

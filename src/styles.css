@@ -440,17 +440,37 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: none;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  text-align: left;
   padding: 4px 2px;
   min-width: 0;
 }
-.dl-title { font-weight: 700; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dl-left { font-family: var(--script); font-weight: 600; font-size: 18px; color: var(--accent); white-space: nowrap; }
+.dl-title {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-bottom: 2px dashed transparent;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 17px;
+  padding: 0 0 1px;
+  text-overflow: ellipsis;
+}
+.dl-title:hover { border-bottom-color: var(--ink-faint); }
+.dl-title:focus { outline: none; border-bottom-color: var(--accent); }
+.dl-left {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--script);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.dl-left:hover { text-decoration: underline dashed; }
 .dl-left em { font-style: normal; color: var(--ink-dim); }
 .dl-left.over { color: var(--ink-faint); }
 
@@ -978,6 +998,26 @@ body {
   border-radius: var(--wob-sm);
 }
 .ctrls > .ctrl-btn:active { transform: translate(2px, 3px); box-shadow: none; }
+
+/* language + font-library selects, dressed as stickers */
+.lang-sel, .lib-sel {
+  appearance: none;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: var(--wob-sm);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--hand);
+  cursor: pointer;
+}
+.lang-sel { padding: 7px 10px; font-size: 13px; max-width: 108px; }
+.lib-sel {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+}
+.lang-sel:focus, .lib-sel:focus { outline: none; border-color: var(--blue); }
 
 /* ---------- Account modal ---------- */
 

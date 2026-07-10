@@ -7,8 +7,16 @@ import { AppState, normalizeState } from './lib'
  * When they're absent the app runs in local-only mode — nothing breaks.
  */
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+// Defaults are baked in so login works in EVERY build — web deploys,
+// clones, CI desktop builds and the native apps. The publishable key is
+// designed to be public (data is protected by row-level security, not
+// by this key); env vars still override for anyone self-hosting.
+const url =
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+  'https://ghegbwdtfgkksbgnchfb.supabase.co'
+const key =
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
+  'sb_publishable_WTxkaZzmlQ6e3_Q3qTAf4w_jxzsEHhZ'
 
 export const cloudEnabled = Boolean(url && key)
 

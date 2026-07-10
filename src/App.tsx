@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { AppState, IS_DEMO, loadState, localUpdatedAt, saveState } from './lib'
 import { SyncStatus, cloudEnabled, onAuth, pullState, pushState } from './cloud'
-import { FONTS, loadPref, savePref } from './prefs'
+import { FONTS, loadPref, resolveFontFamily, savePref } from './prefs'
+import { FONT_LIBRARY } from './fontlib'
+import { LANGS, LangId, applyLang, langDir, t } from './i18n'
 import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
 import Account from './Account'
 import Countdown from './sections/Countdown'
@@ -16,14 +18,14 @@ import Profile from './sections/Profile'
 type Tab = 'countdown' | 'today' | 'checklist' | 'growth' | 'all' | 'canvas' | 'you'
 type Theme = 'paper' | 'night' | 'neo'
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'countdown', label: 'Countdown', icon: '◳' },
-  { id: 'today', label: 'Today', icon: '◔' },
-  { id: 'checklist', label: 'Checklist', icon: '▦' },
-  { id: 'growth', label: 'Growth', icon: '◮' },
-  { id: 'all', label: 'All', icon: '✦' },
-  { id: 'canvas', label: 'Canvas', icon: '✥' },
-  { id: 'you', label: 'You', icon: '◉' },
+const TABS: { id: Tab; key: string; icon: string }[] = [
+  { id: 'countdown', key: 'countdown', icon: '◳' },
+  { id: 'today', key: 'today', icon: '◔' },
+  { id: 'checklist', key: 'checklist', icon: '▦' },
+  { id: 'growth', key: 'growth', icon: '◮' },
+  { id: 'all', key: 'all', icon: '✦' },
+  { id: 'canvas', key: 'canvas', icon: '✥' },
+  { id: 'you', key: 'you', icon: '◉' },
 ]
 
 const THEMES: { id: Theme; icon: string; title: string }[] = [
@@ -48,7 +50,20 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [font, setFont] = useState(() => loadPref('font', 'goblock'))
   const [bg, setBg] = useState<BgKind>(() => loadPref('bg', 'none') as BgKind)
+  const [lang, setLang] = useState<LangId>(() => {
+    const l = loadPref('lang', 'en') as LangId
+    return LANGS.some((x) => x.id === l) ? l : 'en'
+  })
   const [fullscreen, setFullscreen] = useState(false)
+
+  // make t() speak the right language for everything rendered below
+  applyLang(lang)
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+    document.documentElement.dir = langDir(lang)
+    savePref('lang', lang)
+  }, [lang])
   const [user, setUser] = useState<User | null>(null)
   const [sync, setSync] = useState<SyncStatus>(cloudEnabled ? 'signed-out' : 'off')
   const [showAccount, setShowAccount] = useState(false)
@@ -88,19 +103,19 @@ export default function App() {
   }, [theme])
 
   useEffect(() => {
-    const f = FONTS.find((x) => x.id === font) ?? FONTS[0]
+    const family = resolveFontFamily(font)
     const root = document.documentElement.style
-    root.setProperty('--display', f.family)
+    root.setProperty('--display', family)
     // non-default fonts take over the labels and hand-written notes too,
     // so the whole page speaks in the chosen voice
-    if (f.id === 'goblock') {
+    if (font === 'goblock') {
       root.removeProperty('--script')
       root.removeProperty('--hand')
     } else {
-      root.setProperty('--script', f.family)
-      root.setProperty('--hand', f.family)
+      root.setProperty('--script', family)
+      root.setProperty('--hand', family)
     }
-    savePref('font', f.id)
+    savePref('font', font)
   }, [font])
 
   useEffect(() => {
@@ -149,19 +164,30 @@ export default function App() {
         </div>
 
         <nav className="tabs" aria-label="Sections">
-          {TABS.map((t) => (
+          {TABS.map((tb) => (
             <button
-              key={t.id}
-              className={`tab ${tab === t.id ? 'active' : ''}`}
-              onClick={() => setTab(t.id)}
+              key={tb.id}
+              className={`tab ${tab === tb.id ? 'active' : ''}`}
+              onClick={() => setTab(tb.id)}
             >
-              <span className="tab-icon" aria-hidden>{t.icon}</span>
-              <span className="tab-label">{t.label}</span>
+              <span className="tab-icon" aria-hidden>{tb.icon}</span>
+              <span className="tab-label">{t(tb.key)}</span>
             </button>
           ))}
         </nav>
 
         <div className="ctrls">
+          <select
+            className="ctrl-btn lang-sel"
+            value={lang}
+            title={t('language')}
+            aria-label={t('language')}
+            onChange={(e) => setLang(e.target.value as LangId)}
+          >
+            {LANGS.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
+          </select>
           <div className="theme-picker" role="group" aria-label="Theme">
             {THEMES.map((t) => (
               <button
@@ -239,7 +265,7 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="foot">every day counts !</footer>
+      <footer className="foot">{t('everyDayCounts')}</footer>
       <Backdrop kind={bg} />
       <TipLayer />
     </div>
@@ -258,24 +284,24 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
       <button
         className={`style-btn ${open ? 'open' : ''}`}
         onClick={() => setOpen((o) => !o)}
-        data-tip={open ? undefined : 'Style: theme, font & background'}
+        data-tip={open ? undefined : `${t('theme')} · ${t('font')} · ${t('scene')}`}
       >
-        ✎ style
+        ✎ {t('style')}
       </button>
       {open && (
         <div className="style-pop">
           <div className="style-row">
-            <span className="style-k">theme</span>
+            <span className="style-k">{t('theme')}</span>
             <div className="chips">
-              {(['paper', 'night', 'neo'] as const).map((t) => (
-                <button key={t} className={`chip ${theme === t ? 'on' : ''}`} onClick={() => setTheme(t)}>
-                  {t === 'paper' ? '☀ paper' : t === 'night' ? '☾ night' : '◇ neo'}
+              {(['paper', 'night', 'neo'] as const).map((th) => (
+                <button key={th} className={`chip ${theme === th ? 'on' : ''}`} onClick={() => setTheme(th)}>
+                  {th === 'paper' ? '☀ paper' : th === 'night' ? '☾ night' : '◇ neo'}
                 </button>
               ))}
             </div>
           </div>
           <div className="style-row">
-            <span className="style-k">font</span>
+            <span className="style-k">{t('font')}</span>
             <div className="chips">
               {FONTS.map((f) => (
                 <button
@@ -288,9 +314,19 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
                 </button>
               ))}
             </div>
+            <select
+              className="lib-sel"
+              value={font.startsWith('lib:') ? font : ''}
+              onChange={(e) => { if (e.target.value) setFont(e.target.value) }}
+            >
+              <option value="">{t('fontLibrary')}</option>
+              {FONT_LIBRARY.map((f) => (
+                <option key={f.label} value={`lib:${f.label}`}>{f.label}</option>
+              ))}
+            </select>
           </div>
           <div className="style-row">
-            <span className="style-k">scene</span>
+            <span className="style-k">{t('scene')}</span>
             <div className="chips">
               {BACKDROPS.map((b) => (
                 <button key={b.id} className={`chip ${bg === b.id ? 'on' : ''}`} onClick={() => setBg(b.id)}>

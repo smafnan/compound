@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   AppState, Deadline, MONTHS, daysBetween, parseDate, todayStr, uid,
 } from '../lib'
+import { t } from '../i18n'
 
 interface Props {
   state: AppState
@@ -38,8 +39,8 @@ export default function Countdown({ state, setState }: Props) {
     setStart('')
   }
 
-  function patch(id: string, field: 'date' | 'start', value: string) {
-    if (!value) return
+  function patch(id: string, field: 'date' | 'start' | 'title', value: string) {
+    if (!value && field !== 'title') return
     setState((s) => ({
       ...s,
       deadlines: s.deadlines.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
@@ -60,7 +61,7 @@ export default function Countdown({ state, setState }: Props) {
 
       <div className="panel">
         <div className="panel-head">
-          <h2>Your deadlines</h2>
+          <h2>{t('yourDeadlines')}</h2>
         </div>
         {state.deadlines.length > 0 && (
           <ul className="dl-list">
@@ -69,19 +70,26 @@ export default function Countdown({ state, setState }: Props) {
               const since = daysBetween(parseDate(d.start), now)
               return (
                 <li key={d.id} className={`dl-row ${primary?.id === d.id ? 'primary' : ''}`}>
-                  <button
-                    className="dl-pick"
-                    title="Show this countdown"
-                    onClick={() => setState((s) => ({ ...s, primaryId: d.id }))}
-                  >
-                    <span className="dl-title">{d.title}</span>
-                    <span className={`dl-left ${left < 0 ? 'over' : ''}`}>
-                      {since >= 0 && <em>day {since + 1} · </em>}
-                      {left >= 0 ? `${left} days left` : `${-left} days past`}
-                    </span>
-                  </button>
+                  <div className="dl-pick">
+                    <input
+                      className="dl-title"
+                      value={d.title}
+                      data-tip={d.title.length > 18 ? d.title : undefined}
+                      onChange={(e) => patch(d.id, 'title', e.target.value)}
+                      onBlur={(e) => { if (!e.target.value.trim()) patch(d.id, 'title', 'Deadline') }}
+                      aria-label={`Deadline title: ${d.title}`}
+                    />
+                    <button
+                      className={`dl-left ${left < 0 ? 'over' : ''}`}
+                      title="Show this countdown"
+                      onClick={() => setState((s) => ({ ...s, primaryId: d.id }))}
+                    >
+                      {since >= 0 && <em>{t('day')} {since + 1} · </em>}
+                      {left >= 0 ? `${left} ${t('daysLeft')}` : `${-left} ${t('daysPast')}`}
+                    </button>
+                  </div>
                   <label className="fld">
-                    <span>started</span>
+                    <span>{t('started')}</span>
                     <input
                       type="date"
                       className="dl-date"
@@ -92,7 +100,7 @@ export default function Countdown({ state, setState }: Props) {
                     />
                   </label>
                   <label className="fld">
-                    <span>ends</span>
+                    <span>{t('ends')}</span>
                     <input
                       type="date"
                       className="dl-date"
@@ -118,7 +126,7 @@ export default function Countdown({ state, setState }: Props) {
             onChange={(e) => setTitle(e.target.value)}
           />
           <label className="fld">
-            <span>started</span>
+            <span>{t('started')}</span>
             <input
               type="date"
               value={start}
@@ -127,7 +135,7 @@ export default function Countdown({ state, setState }: Props) {
             />
           </label>
           <label className="fld">
-            <span>deadline</span>
+            <span>{t('deadline')}</span>
             <input
               type="date"
               required
@@ -136,7 +144,7 @@ export default function Countdown({ state, setState }: Props) {
               onChange={(e) => setDate(e.target.value)}
             />
           </label>
-          <button type="submit" className="btn-accent">Add deadline</button>
+          <button type="submit" className="btn-accent">{t('addDeadline')}</button>
         </form>
         <p className="muted small">
           "Started" can be in the past — set it to the day you planned to begin, and every day
@@ -174,7 +182,7 @@ export function Hero({ deadline, now }: { deadline: Deadline; now: Date }) {
       <p className="hero-kicker">{deadline.title}</p>
       <div className="hero-num">
         {over ? '0' : left}
-        <span className="hero-unit">days left</span>
+        <span className="hero-unit">{t('daysLeft')}</span>
       </div>
       <p className="hero-sub">
         {since >= 0
@@ -188,8 +196,8 @@ export function Hero({ deadline, now }: { deadline: Deadline; now: Date }) {
         <div className="bar-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="bar-meta">
-        <span>{pct}% gone</span>
-        <span>{100 - pct}% remains</span>
+        <span>{pct}% {t('gone')}</span>
+        <span>{100 - pct}% {t('remains')}</span>
       </div>
     </div>
   )
@@ -214,11 +222,11 @@ function CalendarWall({ deadline, now }: { deadline: Deadline; now: Date }) {
   return (
     <div className="panel">
       <div className="panel-head">
-        <h2>The wall</h2>
+        <h2>{t('theWall')}</h2>
         <div className="legend">
-          <span><i className="sw spent" /> spent</span>
-          <span><i className="sw today" /> today</span>
-          <span><i className="sw left" /> remaining</span>
+          <span><i className="sw spent" /> {t('spent')}</span>
+          <span><i className="sw today" /> {t('todayCell')}</span>
+          <span><i className="sw left" /> {t('remaining')}</span>
         </div>
       </div>
       <div className="cal-wall">

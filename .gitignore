@@ -5,3 +5,6 @@ release/
 .env
 .DS_Store
 Thumbs.db
+
+# commercially licensed font binaries — local only, never redistributed
+public/fonts/library/

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   AppState, MONTHS, daysInMonth, dayScore, fmtDate, todayStr, uid,
 } from '../lib'
+import { t } from '../i18n'
 
 interface Props {
   state: AppState
@@ -99,7 +100,7 @@ export default function Checklist({ state, setState }: Props) {
             )}
           </div>
           <div className="panel-stat">
-            month productivity{' '}
+            {t('monthProductivity')}{' '}
             <b className="accent">{monthAvg === null ? '—' : `${Math.round(monthAvg * 100)}%`}</b>
           </div>
         </div>
@@ -107,7 +108,7 @@ export default function Checklist({ state, setState }: Props) {
         <div className="sheet-scroll">
           <div className="sheet" style={{ ['--days' as string]: days }}>
             {/* header row */}
-            <div className="sh-corner">Task</div>
+            <div className="sh-corner">{t('task')}</div>
             {Array.from({ length: days }, (_, i) => {
               const date = dateOf(i + 1)
               return (
@@ -149,7 +150,7 @@ export default function Checklist({ state, setState }: Props) {
             })}
 
             {/* footer: per-day productivity */}
-            <div className="sh-corner foot-label">Day score</div>
+            <div className="sh-corner foot-label">{t('dayScore')}</div>
             {dayScores.map((v, i) => {
               const date = dateOf(i + 1)
               const future = date > today
@@ -178,7 +179,7 @@ export default function Checklist({ state, setState }: Props) {
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
           />
-          <button type="submit" className="btn-accent">Add task</button>
+          <button type="submit" className="btn-accent">{t('addTask')}</button>
         </form>
         {state.tasks.length === 0 && (
           <p className="muted">No tasks yet — add the things you want to do every single day.</p>

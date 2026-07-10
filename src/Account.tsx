@@ -5,6 +5,7 @@ import {
   SyncStatus, cloudEnabled, deleteAccount, signIn, signOut, signUp,
   updateEmail, updatePassword,
 } from './cloud'
+import { t } from './i18n'
 
 interface Props {
   user: User | null
@@ -82,14 +83,14 @@ function AuthForm({ onClose, setState }: Props) {
 
   return (
     <>
-      <ModalHead title={mode === 'in' ? 'Log in' : 'Create account'} onClose={onClose} />
+      <ModalHead title={mode === 'in' ? t('logIn') : t('createAccount')} onClose={onClose} />
 
       <div className="auth-tabs">
         <button className={`auth-tab ${mode === 'in' ? 'on' : ''}`} onClick={() => { setMode('in'); setError(null) }}>
-          Log in
+          {t('logIn')}
         </button>
         <button className={`auth-tab ${mode === 'up' ? 'on' : ''}`} onClick={() => { setMode('up'); setError(null) }}>
-          Create account
+          {t('createAccount')}
         </button>
       </div>
 
@@ -121,7 +122,7 @@ function AuthForm({ onClose, setState }: Props) {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit" className="btn-accent auth-submit" disabled={busy}>
-          {busy ? '…' : mode === 'in' ? 'Log in' : 'Sign up'}
+          {busy ? '…' : mode === 'in' ? t('logIn') : t('signUp')}
         </button>
       </form>
 
@@ -170,12 +171,12 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
 
   return (
     <>
-      <ModalHead title="Your account" onClose={onClose} />
+      <ModalHead title={t('yourAccount')} onClose={onClose} />
       <p className="muted small acc-status">{STATUS_TEXT[status]}</p>
 
       <div className="acc-fields">
         <label className="acc-row">
-          <span>Name</span>
+          <span>{t('name')}</span>
           <input
             type="text"
             placeholder="Your name"
@@ -185,7 +186,7 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
         </label>
 
         <label className="acc-row">
-          <span>Phone</span>
+          <span>{t('phone')}</span>
           <input
             type="tel"
             placeholder="Add a phone number"
@@ -195,7 +196,7 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
         </label>
 
         <label className="acc-row">
-          <span>Email</span>
+          <span>{t('email')}</span>
           <div className="acc-inline">
             <input
               type="email"
@@ -203,13 +204,13 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
               onChange={(e) => setEmail(e.target.value)}
             />
             {email !== user?.email && (
-              <button className="btn-ghost" disabled={busy} onClick={() => void saveEmail()}>save</button>
+              <button className="btn-ghost" disabled={busy} onClick={() => void saveEmail()}>{t('save')}</button>
             )}
           </div>
         </label>
 
         <label className="acc-row">
-          <span>Password</span>
+          <span>{t('password')}</span>
           <div className="acc-inline">
             <input
               type="password"
@@ -219,13 +220,13 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
               onChange={(e) => setPw1(e.target.value)}
             />
             {pw1 && (
-              <button className="btn-ghost" disabled={busy} onClick={() => void savePassword()}>save</button>
+              <button className="btn-ghost" disabled={busy} onClick={() => void savePassword()}>{t('save')}</button>
             )}
           </div>
         </label>
 
         <label className="acc-row">
-          <span>Member since</span>
+          <span>{t('memberSince')}</span>
           <input type="text" value={state.profile.joined} readOnly />
         </label>
       </div>
@@ -234,7 +235,7 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
 
       <div className="modal-actions">
         <button className="btn-ghost" disabled={busy} onClick={() => void signOut()}>
-          Log out
+          {t('logOut')}
         </button>
         <button
           className="btn-ghost danger"
@@ -247,7 +248,7 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
             if (err) setMsg({ ok: false, text: friendly(err) })
           }}
         >
-          Delete account
+          {t('deleteAccount')}
         </button>
       </div>
       <p className="muted small">

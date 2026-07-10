@@ -2,6 +2,14 @@ import { useMemo } from 'react'
 import {
   AppState, comparisons, compoundSeries, relDelta, trailingAvg,
 } from '../lib'
+import { t } from '../i18n'
+
+const CMP_LABEL: Record<string, [string, string]> = {
+  day: ['today', 'vsYesterday'],
+  week: ['thisWeek', 'vsLastWeek'],
+  month: ['thisMonth', 'vsLastMonth'],
+  year: ['thisYear', 'vsLastYear'],
+}
 
 export default function Growth({ state }: { state: AppState }) {
   const now = new Date()
@@ -14,7 +22,7 @@ export default function Growth({ state }: { state: AppState }) {
   return (
     <section className="section">
       <div className="hero">
-        <p className="hero-kicker">compound index · last 90 days</p>
+        <p className="hero-kicker">{t('compoundIndex')}</p>
         <div className="hero-num">
           ×{index.toFixed(3)}
         </div>
@@ -38,7 +46,13 @@ export function GrowthCards({ state }: { state: AppState }) {
   return (
     <div className="cards">
       {cards.map((c) => (
-        <StatCard key={c.label} label={c.label} sub={c.sub} current={c.current} previous={c.previous} />
+        <StatCard
+          key={c.key}
+          label={t(CMP_LABEL[c.key][0])}
+          sub={t(CMP_LABEL[c.key][1])}
+          current={c.current}
+          previous={c.previous}
+        />
       ))}
     </div>
   )
@@ -50,7 +64,7 @@ export function ChartPanel({ state }: { state: AppState }) {
   return (
     <div className="panel">
       <div className="panel-head">
-        <h2>Your curve</h2>
+        <h2>{t('yourCurve')}</h2>
         <div className="panel-stat">1.00 = where you started 90 days ago</div>
       </div>
       <Chart series={series} />
@@ -77,9 +91,9 @@ function StatCard({
   } else if (Math.abs(delta) < 0.5) {
     badge = <span className="delta flat">■ steady</span>
   } else if (delta > 0) {
-    badge = <span className="delta up">▲ {delta.toFixed(0)}% better</span>
+    badge = <span className="delta up">▲ {delta.toFixed(0)}% {t('better')}</span>
   } else {
-    badge = <span className="delta down">▼ {Math.abs(delta).toFixed(0)}% worse</span>
+    badge = <span className="delta down">▼ {Math.abs(delta).toFixed(0)}% {t('worse')}</span>
   }
 
   return (

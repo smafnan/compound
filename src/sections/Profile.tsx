@@ -5,8 +5,10 @@ import {
 } from '../lib'
 import { SyncStatus, cloudEnabled } from '../cloud'
 import { FONTS } from '../prefs'
+import { FONT_LIBRARY } from '../fontlib'
 import { BACKDROPS, BgKind } from '../Backdrop'
 import { downloadReport, ReportRange } from '../report'
+import { t } from '../i18n'
 
 interface Props {
   state: AppState
@@ -21,11 +23,11 @@ interface Props {
   setTheme: (t: string) => void
 }
 
-const RANGES: { id: ReportRange; label: string }[] = [
-  { id: 7, label: 'Last 7 days' },
-  { id: 30, label: 'Last 30 days' },
-  { id: 90, label: 'Last 90 days' },
-  { id: 365, label: 'Last year' },
+const RANGES: { id: ReportRange; key: string }[] = [
+  { id: 7, key: 'last7' },
+  { id: 30, key: 'last30d' },
+  { id: 90, key: 'last90' },
+  { id: 365, key: 'lastYear' },
 ]
 
 export default function Profile({
@@ -109,21 +111,21 @@ export default function Profile({
 
       {/* headline stats */}
       <div className="cards" data-cols="5">
-        <StatTile label="Streak" value={`${streak}`} sub="days" hot={streak > 0} />
-        <StatTile label="30-day avg" value={avg30 === null ? '—' : `${Math.round(avg30 * 100)}%`} sub="productivity" />
-        <StatTile label="Total ticks" value={`${ticks}`} sub="all time" />
-        <StatTile label="Focus" value={`${Math.round(focus30 / 60 * 10) / 10}h`} sub="last 30 days" />
+        <StatTile label={t('streak')} value={`${streak}`} sub={t('days')} hot={streak > 0} />
+        <StatTile label={t('avg30')} value={avg30 === null ? '—' : `${Math.round(avg30 * 100)}%`} sub={t('productivity')} />
+        <StatTile label={t('totalTicks')} value={`${ticks}`} sub={t('allTime')} />
+        <StatTile label={t('focus')} value={`${Math.round(focus30 / 60 * 10) / 10}h`} sub={t('last30')} />
         <StatTile
-          label="Weekends"
+          label={t('weekends')}
           value={split.weekend === null ? '—' : `${Math.round(split.weekend * 100)}%`}
-          sub={split.weekday === null ? 'vs weekdays —' : `vs weekdays ${Math.round(split.weekday * 100)}%`}
+          sub={split.weekday === null ? '—' : `${Math.round(split.weekday * 100)}%`}
         />
       </div>
 
       {/* insights */}
       <div className="row-2 insights">
         <div className="panel">
-          <div className="panel-head"><h2>Going well</h2></div>
+          <div className="panel-head"><h2>{t('goingWell')}</h2></div>
           {strong.length === 0 && <p className="muted">Nothing above 60% yet — pick one habit and protect it.</p>}
           {strong.map((s) => (
             <div key={s.id} className="insight-row good" data-tip={`${s.streak} day streak`}>
@@ -133,7 +135,7 @@ export default function Profile({
           ))}
         </div>
         <div className="panel">
-          <div className="panel-head"><h2>Pain points</h2></div>
+          <div className="panel-head"><h2>{t('painPoints')}</h2></div>
           {weak.length === 0 && <p className="muted">No habit under 50% — clean sheet.</p>}
           {weak.map((s) => (
             <div key={s.id} className="insight-row bad" data-tip={`${s.streak} day streak`}>
@@ -145,7 +147,7 @@ export default function Profile({
       </div>
 
       <div className="panel">
-        <div className="panel-head"><h2>What to improve</h2></div>
+        <div className="panel-head"><h2>{t('whatToImprove')}</h2></div>
         <ul className="suggestions">
           {suggestions.map((s, i) => <li key={i}>{s}</li>)}
         </ul>
@@ -154,8 +156,8 @@ export default function Profile({
       {/* focus history */}
       <div className="panel">
         <div className="panel-head">
-          <h2>Focus sessions</h2>
-          <div className="panel-stat"><b className="accent">{state.focus.length}</b> logged</div>
+          <h2>{t('focusSessions')}</h2>
+          <div className="panel-stat"><b className="accent">{state.focus.length}</b> {t('logged')}</div>
         </div>
         {focusRecent.length === 0 && (
           <p className="muted">None yet — add a Focus timer on the Canvas, name the task, and finish a block.</p>
@@ -172,26 +174,26 @@ export default function Profile({
       {/* PDF export */}
       <div className="panel">
         <div className="panel-head">
-          <h2>Progress report</h2>
-          <div className="panel-stat">designed PDF, generated on-device</div>
+          <h2>{t('progressReport')}</h2>
+          <div className="panel-stat">PDF</div>
         </div>
         <div className="chips" style={{ marginBottom: 12 }}>
           {RANGES.map((r) => (
             <button key={r.id} className={`chip ${range === r.id ? 'on' : ''}`} onClick={() => setRange(r.id)}>
-              {r.label}
+              {t(r.key)}
             </button>
           ))}
         </div>
         <button className="btn-accent" disabled={busyPdf} onClick={() => void exportPdf()}>
-          {busyPdf ? 'Drawing…' : '⭳ Download PDF report'}
+          {busyPdf ? t('drawing') : `⭳ ${t('downloadPdf')}`}
         </button>
       </div>
 
       {/* look & feel */}
       <div className="panel">
-        <div className="panel-head"><h2>Look &amp; feel</h2></div>
+        <div className="panel-head"><h2>{t('lookFeel')}</h2></div>
         <div className="pref-block">
-          <span className="pref-label">Display font</span>
+          <span className="pref-label">{t('displayFont')}</span>
           <div className="chips">
             {FONTS.map((f) => (
               <button
@@ -204,9 +206,19 @@ export default function Profile({
               </button>
             ))}
           </div>
+          <select
+            className="lib-sel"
+            value={font.startsWith('lib:') ? font : ''}
+            onChange={(e) => { if (e.target.value) setFont(e.target.value) }}
+          >
+            <option value="">{t('fontLibrary')}</option>
+            {FONT_LIBRARY.map((f) => (
+              <option key={f.label} value={`lib:${f.label}`}>{f.label}</option>
+            ))}
+          </select>
         </div>
         <div className="pref-block">
-          <span className="pref-label">Background scene</span>
+          <span className="pref-label">{t('backgroundScene')}</span>
           <div className="bg-grid">
             {BACKDROPS.map((b) => (
               <button
@@ -222,7 +234,7 @@ export default function Profile({
           </div>
         </div>
         <div className="pref-block">
-          <span className="pref-label">Theme</span>
+          <span className="pref-label">{t('theme')}</span>
           <div className="chips">
             {['paper', 'night', 'neo'].map((t) => (
               <button key={t} className={`chip ${theme === t ? 'on' : ''}`} onClick={() => setTheme(t)}>

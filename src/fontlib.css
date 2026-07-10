@@ -1,0 +1,427 @@
+/* Generated font library — one face per family.
+   Binaries live in public/fonts/library/ (NOT committed to git:
+   these are commercially licensed fonts). Browsers fetch a font
+   only when it is actually selected, so this file is free. */
+
+@font-face { font-family: 'lib Aachen Std'; src: url('/fonts/library/Aachen-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Adobe Caslon Pro'; src: url('/fonts/library/Adobe-Caslon-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Adobe Garamond Pro'; src: url('/fonts/library/Adobe-Garamond-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Adobe Jenson Pro'; src: url('/fonts/library/Adobe-Jenson-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Adobe Wood Type Ornaments Std'; src: url('/fonts/library/Adobe-Wood-Type-Ornaments-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Albertus MT Std'; src: url('/fonts/library/Albertus-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Aldus LT Std'; src: url('/fonts/library/Aldus-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Alexa Std'; src: url('/fonts/library/Alexa-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Americana Std'; src: url('/fonts/library/Americana-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Andreas Std'; src: url('/fonts/library/Andreas-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Antique Olive Std'; src: url('/fonts/library/Antique-Olive-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Apollo MT Std'; src: url('/fonts/library/Apollo-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Arcadia LT Std'; src: url('/fonts/library/Arcadia-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Arcana GMM Std'; src: url('/fonts/library/Arcana-GMM-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ariadne LT Std'; src: url('/fonts/library/Ariadne-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Arial Rounded'; src: url('/fonts/library/Arial-Rounded.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'lib Arnold Boecklin Std'; src: url('/fonts/library/Arnold-Boecklin-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ashley Script MT Std'; src: url('/fonts/library/Ashley-Script-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Auriol LT Std'; src: url('/fonts/library/Auriol-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Avenir LT Std'; src: url('/fonts/library/Avenir-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Balzano Std'; src: url('/fonts/library/Balzano-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Banco Std'; src: url('/fonts/library/Banco-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Banshee Std'; src: url('/fonts/library/Banshee-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Baskerville Cyrillic LT Std'; src: url('/fonts/library/Baskerville-Cyrillic-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bauer Bodoni Std'; src: url('/fonts/library/Bauer-Bodoni-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bauhaus Std'; src: url('/fonts/library/Bauhaus-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bell Centennial Std'; src: url('/fonts/library/Bell-Centennial-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bell Gothic Std'; src: url('/fonts/library/Bell-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bell MT Std'; src: url('/fonts/library/Bell-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Belwe Std'; src: url('/fonts/library/Belwe-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bembo Std'; src: url('/fonts/library/Bembo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Berling LT Std'; src: url('/fonts/library/Berling-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bermuda LP Std'; src: url('/fonts/library/Bermuda-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bernhard Modern Std'; src: url('/fonts/library/Bernhard-Modern-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bernhard Std'; src: url('/fonts/library/Bernhard-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bickham Script Std'; src: url('/fonts/library/Bickham-Script-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Biffo MT Std'; src: url('/fonts/library/Biffo-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Birch Std'; src: url('/fonts/library/Birch-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Blackoak Std'; src: url('/fonts/library/Blackoak-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Blue Island Std'; src: url('/fonts/library/Blue-Island-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bodoni Std'; src: url('/fonts/library/Bodoni-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Border Pi Std'; src: url('/fonts/library/Border-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bossa Nova MVB Std'; src: url('/fonts/library/Bossa-Nova-MVB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Briem Akademi Std'; src: url('/fonts/library/Briem-Akademi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Briem Script Std'; src: url('/fonts/library/Briem-Script-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Brioso Pro'; src: url('/fonts/library/Brioso-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bruno JB Std'; src: url('/fonts/library/Bruno-JB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Brush Script Std'; src: url('/fonts/library/Brush-Script-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bulmer MT Std'; src: url('/fonts/library/Bulmer-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Bundesbahn Pi Std'; src: url('/fonts/library/Bundesbahn-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caflisch Script Pro'; src: url('/fonts/library/Caflisch-Script-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Calcite Pro'; src: url('/fonts/library/Calcite-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caliban Std'; src: url('/fonts/library/Caliban-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Calvert MT Std'; src: url('/fonts/library/Calvert-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Candida Std'; src: url('/fonts/library/Candida-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cantoria MT Std'; src: url('/fonts/library/Cantoria-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caravan LT Std'; src: url('/fonts/library/Caravan-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Carolina LT Std'; src: url('/fonts/library/Carolina-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Carta Std'; src: url('/fonts/library/Carta-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cascade Script LT Std'; src: url('/fonts/library/Cascade-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caslon 3 LT Std'; src: url('/fonts/library/Caslon-3-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caslon 540 LT Std'; src: url('/fonts/library/Caslon-540-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caslon Open Face LT Std'; src: url('/fonts/library/Caslon-Open-Face-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Castellar MT Std'; src: url('/fonts/library/Castellar-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Caxton Std'; src: url('/fonts/library/Caxton-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Celestia Antiqua Std'; src: url('/fonts/library/Celestia-Antiqua-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Centaur MT Std'; src: url('/fonts/library/Centaur-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Century Expanded LT Std'; src: url('/fonts/library/Century-Expanded-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Century Old Style Std'; src: url('/fonts/library/Century-Old-Style-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Chaparral Pro'; src: url('/fonts/library/Chaparral-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Charlemagne Std'; src: url('/fonts/library/Charlemagne-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Charme Std'; src: url('/fonts/library/Charme-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cheq Std'; src: url('/fonts/library/Cheq-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Clairvaux LT Std'; src: url('/fonts/library/Clairvaux-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Clarendon LT Std'; src: url('/fonts/library/Clarendon-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Clearface Gothic LT Std'; src: url('/fonts/library/Clearface-Gothic-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cloister Std'; src: url('/fonts/library/Cloister-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Club Type Mercurius Std'; src: url('/fonts/library/Club-Type-Mercurius-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cochin LT Std'; src: url('/fonts/library/Cochin-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Conga Brava Std'; src: url('/fonts/library/Conga-Brava-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Conga Brava Stencil Std'; src: url('/fonts/library/Conga-Brava-Stencil-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cooper Black Std'; src: url('/fonts/library/Cooper-Black-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Copal Std'; src: url('/fonts/library/Copal-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Copperplate Gothic Std'; src: url('/fonts/library/Copperplate-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Coriander Std'; src: url('/fonts/library/Coriander-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Corona LT Std'; src: url('/fonts/library/Corona-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Coronet LT Std'; src: url('/fonts/library/Coronet-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cottonwood Std'; src: url('/fonts/library/Cottonwood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Courier Std'; src: url('/fonts/library/Courier-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Critter Std'; src: url('/fonts/library/Critter-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cronos Pro'; src: url('/fonts/library/Cronos-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Cutout Std'; src: url('/fonts/library/Cutout-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Dante MT Std'; src: url('/fonts/library/Dante-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Delphin LT Std'; src: url('/fonts/library/Delphin-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib DIN Std'; src: url('/fonts/library/DIN-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Diotima LT Std'; src: url('/fonts/library/Diotima-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Diskus LT Std'; src: url('/fonts/library/Diskus-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Dom Casual Std'; src: url('/fonts/library/Dom-Casual-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Dorchester Script MT Std'; src: url('/fonts/library/Dorchester-Script-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Doric LT Std'; src: url('/fonts/library/Doric-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Duc De Berry LT Std'; src: url('/fonts/library/Duc-De-Berry-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Eccentric Std'; src: url('/fonts/library/Eccentric-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Egyptienne F LT Std'; src: url('/fonts/library/Egyptienne-F-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ehrhardt MT Std'; src: url('/fonts/library/Ehrhardt-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Electra LT Std'; src: url('/fonts/library/Electra-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ellington MT Std'; src: url('/fonts/library/Ellington-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Else NPL Std'; src: url('/fonts/library/Else-NPL-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Emmascript MVB Std'; src: url('/fonts/library/Emmascript-MVB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Engravers LT Std'; src: url('/fonts/library/Engravers-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Euro Mono Std'; src: url('/fonts/library/Euro-Mono-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Euro Sans Std'; src: url('/fonts/library/Euro-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Euro Serif Std'; src: url('/fonts/library/Euro-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib European Pi Std'; src: url('/fonts/library/European-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Eurostile LT Std'; src: url('/fonts/library/Eurostile-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ex Ponto Pro'; src: url('/fonts/library/Ex-Ponto-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Excelsior LT Std'; src: url('/fonts/library/Excelsior-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Fairfield LT Std'; src: url('/fonts/library/Fairfield-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Falstaff MT Std'; src: url('/fonts/library/Falstaff-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Fette Fraktur LT Std'; src: url('/fonts/library/Fette-Fraktur-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Flood Std'; src: url('/fonts/library/Flood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Florens LP Std'; src: url('/fonts/library/Florens-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Flyer LT Std'; src: url('/fonts/library/Flyer-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Folio Std'; src: url('/fonts/library/Folio-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Forte MT Std'; src: url('/fonts/library/Forte-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Fournier MT Std'; src: url('/fonts/library/Fournier-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Franklin Gothic Std'; src: url('/fonts/library/Franklin-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Freestyle Script Std'; src: url('/fonts/library/Freestyle-Script-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Friz Quadrata Std'; src: url('/fonts/library/Friz-Quadrata-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Frutiger LT Std'; src: url('/fonts/library/Frutiger-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Fusaka Std'; src: url('/fonts/library/Fusaka-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Futura Std'; src: url('/fonts/library/Futura-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Galahad Std'; src: url('/fonts/library/Galahad-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Garamond 3 LT Std'; src: url('/fonts/library/Garamond-3-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Gazette LT Std'; src: url('/fonts/library/Gazette-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Giddyup Std'; src: url('/fonts/library/Giddyup-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Gill Floriated Caps MT Std'; src: url('/fonts/library/Gill-Floriated-Caps-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Gill Sans Std'; src: url('/fonts/library/Gill-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Glypha LT Std'; src: url('/fonts/library/Glypha-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Gothic Thirteen Std'; src: url('/fonts/library/Gothic-Thirteen-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Goudy Heavyface Std'; src: url('/fonts/library/Goudy-Heavyface-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Goudy Modern MT Std'; src: url('/fonts/library/Goudy-Modern-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Goudy Std'; src: url('/fonts/library/Goudy-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Goudy Text MT Std'; src: url('/fonts/library/Goudy-Text-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Granjon LT Std'; src: url('/fonts/library/Granjon-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Graphite Std'; src: url('/fonts/library/Graphite-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Greymantle MVB Std'; src: url('/fonts/library/Greymantle-MVB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Grotesque MT Std'; src: url('/fonts/library/Grotesque-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Guardi LT Std'; src: url('/fonts/library/Guardi-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Hardwood LP Std'; src: url('/fonts/library/Hardwood-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Helvetica Inserat LT Std'; src: url('/fonts/library/Helvetica-Inserat-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Helvetica LT Std'; src: url('/fonts/library/Helvetica-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Helvetica Neue LT Std'; src: url('/fonts/library/Helvetica-Neue-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Helvetica Rounded LT Std'; src: url('/fonts/library/Helvetica-Rounded-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Herculanum LT Std'; src: url('/fonts/library/Herculanum-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Hiroshige Std'; src: url('/fonts/library/Hiroshige-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Hobo Std'; src: url('/fonts/library/Hobo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Horley Old Style MT Std'; src: url('/fonts/library/Horley-Old-Style-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Immi Five O Five Std'; src: url('/fonts/library/Immi-Five-O-Five-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Impact LT Std'; src: url('/fonts/library/Impact-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Impressum Std'; src: url('/fonts/library/Impressum-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Industria LT Std'; src: url('/fonts/library/Industria-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Inflex MT Std'; src: url('/fonts/library/Inflex-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Insignia LT Std'; src: url('/fonts/library/Insignia-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ironwood Std'; src: url('/fonts/library/Ironwood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Isabella Std'; src: url('/fonts/library/Isabella-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Italia Std'; src: url('/fonts/library/Italia-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Italian Old Style MT Std'; src: url('/fonts/library/Italian-Old-Style-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC American Typewriter Std'; src: url('/fonts/library/ITC-American-Typewriter-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Anna Std'; src: url('/fonts/library/ITC-Anna-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Avant Garde Gothic Std'; src: url('/fonts/library/ITC-Avant-Garde-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Beesknees Std'; src: url('/fonts/library/ITC-Beesknees-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Benguiat Gothic Std'; src: url('/fonts/library/ITC-Benguiat-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Benguiat Std'; src: url('/fonts/library/ITC-Benguiat-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Berkeley Std'; src: url('/fonts/library/ITC-Berkeley-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Bookman Std'; src: url('/fonts/library/ITC-Bookman-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Caslon 224 Std'; src: url('/fonts/library/ITC-Caslon-224-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Century Handtooled Std'; src: url('/fonts/library/ITC-Century-Handtooled-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Century Std'; src: url('/fonts/library/ITC-Century-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Cerigo Std'; src: url('/fonts/library/ITC-Cerigo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Cheltenham Handtooled Std'; src: url('/fonts/library/ITC-Cheltenham-Handtooled-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Cheltenham Std'; src: url('/fonts/library/ITC-Cheltenham-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Clearface Std'; src: url('/fonts/library/ITC-Clearface-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Cushing Std'; src: url('/fonts/library/ITC-Cushing-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Eras Std'; src: url('/fonts/library/ITC-Eras-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Esprit Std'; src: url('/fonts/library/ITC-Esprit-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Fenice Std'; src: url('/fonts/library/ITC-Fenice-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Flora Std'; src: url('/fonts/library/ITC-Flora-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Franklin Gothic Std'; src: url('/fonts/library/ITC-Franklin-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Galliard Std'; src: url('/fonts/library/ITC-Galliard-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Garamond Handtooled Std'; src: url('/fonts/library/ITC-Garamond-Handtooled-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Garamond Std'; src: url('/fonts/library/ITC-Garamond-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Giovanni Std'; src: url('/fonts/library/ITC-Giovanni-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Goudy Sans Std'; src: url('/fonts/library/ITC-Goudy-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Highlander Std'; src: url('/fonts/library/ITC-Highlander-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Isadora Std'; src: url('/fonts/library/ITC-Isadora-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Kabel Std'; src: url('/fonts/library/ITC-Kabel-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Korinna Std'; src: url('/fonts/library/ITC-Korinna-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Leawood Std'; src: url('/fonts/library/ITC-Leawood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Legacy Sans Std'; src: url('/fonts/library/ITC-Legacy-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Legacy Serif Std'; src: url('/fonts/library/ITC-Legacy-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Lubalin Graph Std'; src: url('/fonts/library/ITC-Lubalin-Graph-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Machine Std'; src: url('/fonts/library/ITC-Machine-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Mendoza Roman Std'; src: url('/fonts/library/ITC-Mendoza-Roman-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Mona Lisa Std'; src: url('/fonts/library/ITC-Mona-Lisa-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC New Baskerville Std'; src: url('/fonts/library/ITC-New-Baskerville-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Novarese Std'; src: url('/fonts/library/ITC-Novarese-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Officina Sans Std'; src: url('/fonts/library/ITC-Officina-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Officina Serif Std'; src: url('/fonts/library/ITC-Officina-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Ozwald Std'; src: url('/fonts/library/ITC-Ozwald-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Quorum Std'; src: url('/fonts/library/ITC-Quorum-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Serif Gothic Std'; src: url('/fonts/library/ITC-Serif-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Slimbach Std'; src: url('/fonts/library/ITC-Slimbach-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Souvenir Std'; src: url('/fonts/library/ITC-Souvenir-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Stone Informal Std'; src: url('/fonts/library/ITC-Stone-Informal-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Stone Sans Std'; src: url('/fonts/library/ITC-Stone-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Stone Serif Std'; src: url('/fonts/library/ITC-Stone-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Symbol Std'; src: url('/fonts/library/ITC-Symbol-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Tiepolo Std'; src: url('/fonts/library/ITC-Tiepolo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Tiffany Std'; src: url('/fonts/library/ITC-Tiffany-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Usherwood Std'; src: url('/fonts/library/ITC-Usherwood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Veljovic Std'; src: url('/fonts/library/ITC-Veljovic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Zapf Chancery Std'; src: url('/fonts/library/ITC-Zapf-Chancery-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib ITC Zapf Dingbats Std'; src: url('/fonts/library/ITC-Zapf-Dingbats-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Janson Text LT Std'; src: url('/fonts/library/Janson-Text-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Jimbo Std'; src: url('/fonts/library/Jimbo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Joanna MT Std'; src: url('/fonts/library/Joanna-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Juniper Std'; src: url('/fonts/library/Juniper-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kabel LT Std'; src: url('/fonts/library/Kabel-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kaufmann Std'; src: url('/fonts/library/Kaufmann-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kepler Std Condensed Opticals'; src: url('/fonts/library/Kepler-Std-Condensed-Opticals.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kepler Std Extended Opticals'; src: url('/fonts/library/Kepler-Std-Extended-Opticals.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kepler Std Opticals'; src: url('/fonts/library/Kepler-Std-Opticals.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kepler Std SemiCond Opticals'; src: url('/fonts/library/Kepler-Std-SemiCond-Opticals.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Khaki Std'; src: url('/fonts/library/Khaki-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kigali Std'; src: url('/fonts/library/Kigali-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kinesis Std'; src: url('/fonts/library/Kinesis-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kino MT Std'; src: url('/fonts/library/Kino-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Klang MT Std'; src: url('/fonts/library/Klang-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Koch Antiqua LT Std'; src: url('/fonts/library/Koch-Antiqua-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kolo LP Std'; src: url('/fonts/library/Kolo-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kompakt LT Std'; src: url('/fonts/library/Kompakt-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Kuenstler Script LT Std'; src: url('/fonts/library/Kuenstler-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Latin MT Std'; src: url('/fonts/library/Latin-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Legault Std'; src: url('/fonts/library/Legault-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Letter Gothic Std'; src: url('/fonts/library/Letter-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Life LT Std'; src: url('/fonts/library/Life-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib LinoLetter Std'; src: url('/fonts/library/LinoLetter-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linoscript Std'; src: url('/fonts/library/Linoscript-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotext Std'; src: url('/fonts/library/Linotext-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Astrology Pi Std'; src: url('/fonts/library/Linotype-Astrology-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Audio Pi Std'; src: url('/fonts/library/Linotype-Audio-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Centennial Std'; src: url('/fonts/library/Linotype-Centennial-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Decoration Pi Std'; src: url('/fonts/library/Linotype-Decoration-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Didot LT Std'; src: url('/fonts/library/Linotype-Didot-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Game Pi Std'; src: url('/fonts/library/Linotype-Game-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Holiday Pi Std'; src: url('/fonts/library/Linotype-Holiday-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Linotype Warning Pi Std'; src: url('/fonts/library/Linotype-Warning-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lithos Pro'; src: url('/fonts/library/Lithos-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lucida Math Std'; src: url('/fonts/library/Lucida-Math-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lucida Sans Std'; src: url('/fonts/library/Lucida-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lucida Sans Typewriter Std'; src: url('/fonts/library/Lucida-Sans-Typewriter-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lucida Std'; src: url('/fonts/library/Lucida-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Lucida Typewriter Std'; src: url('/fonts/library/Lucida-Typewriter-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Madrone Std'; src: url('/fonts/library/Madrone-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Magnesium MVB Std'; src: url('/fonts/library/Magnesium-MVB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Magnolia MVB Std'; src: url('/fonts/library/Magnolia-MVB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Manito LP Std'; src: url('/fonts/library/Manito-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mathematical Pi LT Std'; src: url('/fonts/library/Mathematical-Pi-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Matura MT Std'; src: url('/fonts/library/Matura-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Maximus LT Std'; src: url('/fonts/library/Maximus-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Medici Script LT Std'; src: url('/fonts/library/Medici-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Melior LT Std'; src: url('/fonts/library/Melior-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Memphis LT Std'; src: url('/fonts/library/Memphis-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mercurius MT Std'; src: url('/fonts/library/Mercurius-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Meridien LT Std'; src: url('/fonts/library/Meridien-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mesquite Std'; src: url('/fonts/library/Mesquite-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mezz Std'; src: url('/fonts/library/Mezz-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib MICR Std'; src: url('/fonts/library/MICR-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Minion Pro'; src: url('/fonts/library/Minion-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Minion Std'; src: url('/fonts/library/Minion-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Minister Std'; src: url('/fonts/library/Minister-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mistral Std'; src: url('/fonts/library/Mistral-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mojo Std'; src: url('/fonts/library/Mojo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Monoline Script MT Std'; src: url('/fonts/library/Monoline-Script-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Monotype Modern Std'; src: url('/fonts/library/Monotype-Modern-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Monotype Old Style MT Std'; src: url('/fonts/library/Monotype-Old-Style-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Montara Std'; src: url('/fonts/library/Montara-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Moonglow Std'; src: url('/fonts/library/Moonglow-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Motter Corpus Std'; src: url('/fonts/library/Motter-Corpus-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Myriad Pro'; src: url('/fonts/library/Myriad-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Myriad Std'; src: url('/fonts/library/Myriad-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Mythos Std'; src: url('/fonts/library/Mythos-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib National Code Pi Std'; src: url('/fonts/library/National-Code-Pi-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Neue Hammer Unziale LT Std'; src: url('/fonts/library/Neue-Hammer-Unziale-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Neuland LT Std'; src: url('/fonts/library/Neuland-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Neuzeit S LT Std'; src: url('/fonts/library/Neuzeit-S-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib New Aster LT Std'; src: url('/fonts/library/New-Aster-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib New Berolina MT Std'; src: url('/fonts/library/New-Berolina-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib New Caledonia LT Std'; src: url('/fonts/library/New-Caledonia-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib New Century Schoolbook LT Std'; src: url('/fonts/library/New-Century-Schoolbook-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib News Gothic Std'; src: url('/fonts/library/News-Gothic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Notre Dame LT Std'; src: url('/fonts/library/Notre-Dame-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Nueva Std'; src: url('/fonts/library/Nueva-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Nuptial Script LT Std'; src: url('/fonts/library/Nuptial-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Nyx Std'; src: url('/fonts/library/Nyx-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ocean Sans Std'; src: url('/fonts/library/Ocean-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib OCRA Std'; src: url('/fonts/library/OCRA-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib OCRB Std'; src: url('/fonts/library/OCRB-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Octavian MT Std'; src: url('/fonts/library/Octavian-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Old Claude LP Std'; src: url('/fonts/library/Old-Claude-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Old Style 7 Std'; src: url('/fonts/library/Old-Style-7-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Olympian LT Std'; src: url('/fonts/library/Olympian-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Omnia LT Std'; src: url('/fonts/library/Omnia-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ondine LT Std'; src: url('/fonts/library/Ondine-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Onyx MT Std'; src: url('/fonts/library/Onyx-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Optima LT Std'; src: url('/fonts/library/Optima-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Orator Std'; src: url('/fonts/library/Orator-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Organica GMM Std'; src: url('/fonts/library/Organica-GMM-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Origami Std'; src: url('/fonts/library/Origami-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ouch Std'; src: url('/fonts/library/Ouch-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Palace Script MT Std'; src: url('/fonts/library/Palace-Script-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Palatino LT Std'; src: url('/fonts/library/Palatino-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Parisian Std'; src: url('/fonts/library/Parisian-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Park Avenue Std'; src: url('/fonts/library/Park-Avenue-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Peignot LT Std'; src: url('/fonts/library/Peignot-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Penumbra Flare Std'; src: url('/fonts/library/Penumbra-Flare-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Penumbra Half Serif Std'; src: url('/fonts/library/Penumbra-Half-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Penumbra Sans Std'; src: url('/fonts/library/Penumbra-Sans-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Penumbra Serif Std'; src: url('/fonts/library/Penumbra-Serif-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Pepita MT Std'; src: url('/fonts/library/Pepita-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Pepperwood Std'; src: url('/fonts/library/Pepperwood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Perpetua Std'; src: url('/fonts/library/Perpetua-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Photina MT Std'; src: url('/fonts/library/Photina-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Plantin Std'; src: url('/fonts/library/Plantin-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib PMN Caecilia LT Std'; src: url('/fonts/library/PMN-Caecilia-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Poetica Std'; src: url('/fonts/library/Poetica-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Pompeia Std'; src: url('/fonts/library/Pompeia-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Pompeijana LT Std'; src: url('/fonts/library/Pompeijana-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ponderosa Std'; src: url('/fonts/library/Ponderosa-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Poplar Std'; src: url('/fonts/library/Poplar-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Postino Std'; src: url('/fonts/library/Postino-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Present LT Std'; src: url('/fonts/library/Present-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Prestige Elite Std'; src: url('/fonts/library/Prestige-Elite-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Quake Std'; src: url('/fonts/library/Quake-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Rad Std'; src: url('/fonts/library/Rad-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Raleigh LT Std'; src: url('/fonts/library/Raleigh-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Raphael Std'; src: url('/fonts/library/Raphael-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Reliq Std'; src: url('/fonts/library/Reliq-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Reporter LT Std'; src: url('/fonts/library/Reporter-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Revue Std'; src: url('/fonts/library/Revue-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Rockwell Std'; src: url('/fonts/library/Rockwell-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Romic Std'; src: url('/fonts/library/Romic-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Rosewood Std'; src: url('/fonts/library/Rosewood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Rotation LT Std'; src: url('/fonts/library/Rotation-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ruling Script LT Std'; src: url('/fonts/library/Ruling-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Runic MT Std'; src: url('/fonts/library/Runic-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Russell Oblique Std'; src: url('/fonts/library/Russell-Oblique-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Rusticana LT Std'; src: url('/fonts/library/Rusticana-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Ruzicka Freehand LT Std'; src: url('/fonts/library/Ruzicka-Freehand-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Sabon LT Std'; src: url('/fonts/library/Sabon-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Salernomi J'; src: url('/fonts/library/Salernomi-J.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'lib San Marco LT Std'; src: url('/fonts/library/San-Marco-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Sanvito Pro'; src: url('/fonts/library/Sanvito-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Sassafras Std'; src: url('/fonts/library/Sassafras-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Scotch Roman MT Std'; src: url('/fonts/library/Scotch-Roman-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Script MT Std'; src: url('/fonts/library/Script-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Serifa Std'; src: url('/fonts/library/Serifa-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Serlio LT Std'; src: url('/fonts/library/Serlio-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Shelley Script LT Std'; src: url('/fonts/library/Shelley-Script-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Sho LT Std'; src: url('/fonts/library/Sho-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Shuriken Boy Std'; src: url('/fonts/library/Shuriken-Boy-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Silentium Pro'; src: url('/fonts/library/Silentium-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Simoncini Garamond Std'; src: url('/fonts/library/Simoncini-Garamond-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Smaragd LT Std'; src: url('/fonts/library/Smaragd-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Snell Roundhand LT Std'; src: url('/fonts/library/Snell-Roundhand-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Sonata Std'; src: url('/fonts/library/Sonata-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Spartan LT Std'; src: url('/fonts/library/Spartan-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Spectrum MT Std'; src: url('/fonts/library/Spectrum-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Spring LP Std'; src: url('/fonts/library/Spring-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Spumoni LP Std'; src: url('/fonts/library/Spumoni-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Stempel Garamond LT Std'; src: url('/fonts/library/Stempel-Garamond-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Stempel Schneidler Std'; src: url('/fonts/library/Stempel-Schneidler-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Stencil Std'; src: url('/fonts/library/Stencil-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Strayhorn MT Std'; src: url('/fonts/library/Strayhorn-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Strumpf Std'; src: url('/fonts/library/Strumpf-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Studz Std'; src: url('/fonts/library/Studz-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Symbol Std'; src: url('/fonts/library/Symbol-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Syntax LT Std'; src: url('/fonts/library/Syntax-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Tekton Pro'; src: url('/fonts/library/Tekton-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Tempo Std'; src: url('/fonts/library/Tempo-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Times Europa LT Std'; src: url('/fonts/library/Times-Europa-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Times LT Std'; src: url('/fonts/library/Times-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Times New Roman MT Std'; src: url('/fonts/library/Times-New-Roman-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Times Ten LT Std'; src: url('/fonts/library/Times-Ten-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Toolbox Std'; src: url('/fonts/library/Toolbox-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Trade Gothic LT Std'; src: url('/fonts/library/Trade-Gothic-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Trajan Pro'; src: url('/fonts/library/Trajan-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Trump Mediaeval LT Std'; src: url('/fonts/library/Trump-Mediaeval-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Umbra Std'; src: url('/fonts/library/Umbra-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Univers LT Std'; src: url('/fonts/library/Univers-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Universal Std'; src: url('/fonts/library/Universal-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib University Roman Std'; src: url('/fonts/library/University-Roman-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Utopia Std'; src: url('/fonts/library/Utopia-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib VAG Rounded Std'; src: url('/fonts/library/VAG-Rounded-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Vectora LT Std'; src: url('/fonts/library/Vectora-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Versailles LT Std'; src: url('/fonts/library/Versailles-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Verve Std'; src: url('/fonts/library/Verve-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Viva Std'; src: url('/fonts/library/Viva-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Voluta Script Pro'; src: url('/fonts/library/Voluta-Script-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Warnock Pro'; src: url('/fonts/library/Warnock-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Waters Titling Pro'; src: url('/fonts/library/Waters-Titling-Pro.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib WebType Pro'; src: url('/fonts/library/WebType-Pro.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'lib Weidemann Std'; src: url('/fonts/library/Weidemann-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Weiss Std'; src: url('/fonts/library/Weiss-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Wendy LP Std'; src: url('/fonts/library/Wendy-LP-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Wiesbaden Swing LT Std'; src: url('/fonts/library/Wiesbaden-Swing-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Wilhelm Klingspor Gothic LT Std'; src: url('/fonts/library/Wilhelm-Klingspor-Gothic-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Wilke LT Std'; src: url('/fonts/library/Wilke-LT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Willow Std'; src: url('/fonts/library/Willow-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Wittenberger Fraktur MT Std'; src: url('/fonts/library/Wittenberger-Fraktur-MT-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Zebrawood Std'; src: url('/fonts/library/Zebrawood-Std.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'lib Zipty Do Std'; src: url('/fonts/library/Zipty-Do-Std.otf') format('opentype'); font-display: swap; }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../i18n'
 
 export function useNow(intervalMs = 1000): Date {
   const [now, setNow] = useState(() => new Date())
@@ -42,8 +43,8 @@ export function ClockHero({ now }: { now: Date }) {
         <div className="bar-fill" style={{ width: `${dayPct}%` }} />
       </div>
       <div className="bar-meta">
-        <span>{dayPct.toFixed(1)}% of today is gone</span>
-        <span>{(100 - dayPct).toFixed(1)}% still yours</span>
+        <span>{dayPct.toFixed(1)}% {t('ofTodayGone')}</span>
+        <span>{(100 - dayPct).toFixed(1)}% {t('stillYours')}</span>
       </div>
     </div>
   )
@@ -57,9 +58,9 @@ export function HoursPanel({ now }: { now: Date }) {
   return (
     <div className="panel">
       <div className="panel-head">
-        <h2>Hours</h2>
+        <h2>{t('hours')}</h2>
         <div className="panel-stat">
-          <b>{h}</b> spent · <b className="accent">{hoursLeft}</b> whole hours left
+          <b>{h}</b> {t('spent')} · <b className="accent">{hoursLeft}</b> {t('wholeHoursLeft')}
         </div>
       </div>
       <div className="hgrid">
@@ -96,9 +97,9 @@ export function QuartersPanel({ now }: { now: Date }) {
   return (
     <div className="panel">
       <div className="panel-head">
-        <h2>Quarter hours</h2>
+        <h2>{t('quarterHours')}</h2>
         <div className="panel-stat">
-          <b>{quarterIdx}</b> spent · <b className="accent">{quartersLeft}</b> × 15 min left
+          <b>{quarterIdx}</b> {t('spent')} · <b className="accent">{quartersLeft}</b> {t('minLeft')}
         </div>
       </div>
       <div className="qgrid">
