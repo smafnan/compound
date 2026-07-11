@@ -294,7 +294,9 @@ export function pushState(state: AppState, onStatus?: (s: SyncStatus) => void): 
     const { error } = await supabase!.from('app_state').upsert({
       user_id: data.user.id,
       data: state,
-      updated_at: new Date().toISOString(),
+      // the CONTENT stamp, not "now" — so a device that merely pushed
+      // an unchanged copy never looks like the latest editor
+      updated_at: state.updatedAt ?? new Date().toISOString(),
     })
     onStatus?.(error ? 'error' : 'synced')
   }, 1200)

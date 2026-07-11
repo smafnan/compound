@@ -59,8 +59,12 @@ export interface AppState {
   /** completed focus-timer sessions */
   focus: FocusSession[]
   profile: Profile
-  /** last save time (ISO) — used to decide local vs cloud on login */
+  /** last CONTENT change (ISO). Only bumped when something is actually edited. */
   updatedAt?: string
+  /** per-section last-edit stamps — the basis for cross-device merging */
+  sec?: Record<string, string>
+  /** per-date last-edit stamps for checklist completions */
+  compAt?: Record<string, string>
 }
 
 /** Fill in any missing fields (older saves, cloud payloads). */
@@ -79,6 +83,8 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
       joined: parsed?.profile?.joined ?? todayStr(),
     },
     updatedAt: parsed?.updatedAt,
+    sec: parsed?.sec ?? {},
+    compAt: parsed?.compAt ?? {},
   }
 }
 
@@ -204,14 +210,156 @@ export function localUpdatedAt(): string | null {
   }
 }
 
-export function saveState(s: AppState): void {
-  if (IS_DEMO) return // demo data must never overwrite real data
+/** The persisted copy, WITHOUT first-run seeding (null on a fresh device). */
+export function loadPersisted(): AppState | null {
   try {
-    const json = JSON.stringify({ ...s, updatedAt: new Date().toISOString() })
+    const raw = localStorage.getItem(KEY)
+    return raw ? normalizeState(JSON.parse(raw) as Partial<AppState>) : null
+  } catch {
+    return null
+  }
+}
+
+/** Sections that merge wholesale by their own edit-stamp. */
+const SECTIONS = ['deadlines', 'primaryId', 'tasks', 'canvas', 'profile'] as const
+type SectionKey = (typeof SECTIONS)[number]
+
+const eq = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
+
+/**
+ * Persist state. Compares against the previous persisted copy and stamps
+ * ONLY the sections that actually changed — merely opening the app no
+ * longer makes this device look "newer" than the cloud (that was the
+ * cause of cross-device resets). Returns the stamped state so the caller
+ * can push exactly what was written.
+ *
+ * @param preStamped true when `s` came out of mergeStates()/the cloud and
+ *                   already carries correct stamps — written verbatim.
+ */
+export function saveState(s: AppState, preStamped = false): AppState {
+  if (IS_DEMO) return s
+  try {
+    const prev = loadPersisted()
+    let out: AppState
+    if (preStamped || !prev) {
+      // first-ever save (seed data — deliberately unstamped so any real
+      // account data beats it) or an adopted merge with its own stamps
+      out = s
+    } else {
+      const now = new Date().toISOString()
+      const sec: Record<string, string> = { ...prev.sec, ...s.sec }
+      const compAt: Record<string, string> = { ...prev.compAt, ...s.compAt }
+      let changed = false
+      for (const k of SECTIONS) {
+        if (!eq(s[k], prev[k])) {
+          sec[k] = now
+          changed = true
+        }
+      }
+      const dates = new Set([...Object.keys(s.completions), ...Object.keys(prev.completions)])
+      for (const d of dates) {
+        if (!eq(s.completions[d], prev.completions[d])) {
+          compAt[d] = now
+          changed = true
+        }
+      }
+      if (!eq(s.focus, prev.focus)) changed = true
+      out = { ...s, sec, compAt, updatedAt: changed ? now : prev.updatedAt }
+    }
+    const json = JSON.stringify(out)
     localStorage.setItem(KEY, json)
     mirrorToNative(json)
+    return out
   } catch {
-    // storage full or unavailable — nothing sensible to do
+    return s // storage unavailable — keep going in memory
+  }
+}
+
+// ---------- Cross-device merge ----------
+
+const maxIso = (a?: string, b?: string): string | undefined =>
+  !a ? b : !b ? a : Date.parse(a) >= Date.parse(b) ? a : b
+
+/** How much user content a section holds — the tie-breaker when neither
+ *  side carries stamps (legacy data / fresh installs). */
+function sectionScore(s: AppState, k: SectionKey): number {
+  switch (k) {
+    case 'deadlines': return s.deadlines.length
+    case 'tasks': return s.tasks.length
+    case 'canvas': return s.canvas.length
+    case 'primaryId': return s.primaryId ? 1 : 0
+    case 'profile': return (s.profile.name ? 1 : 0) + (s.profile.goal ? 1 : 0) + (s.profile.phone ? 1 : 0)
+  }
+}
+
+/**
+ * Combine two copies of the state so that NOTHING is lost:
+ * - each section goes to whichever side edited it more recently
+ *   (falling back to the whole-copy stamp, then to whichever side
+ *   actually has content — so an empty fresh device can never beat
+ *   a cloud copy full of progress);
+ * - checklist ticks merge day-by-day, and days without stamps are
+ *   unioned so a tick made anywhere always survives;
+ * - focus sessions are unioned by id.
+ */
+export function mergeStates(local: AppState, remote: AppState): AppState {
+  const effective = (side: AppState, k: SectionKey) => side.sec?.[k] ?? side.updatedAt
+
+  const winner = (k: SectionKey): AppState => {
+    const lt = effective(local, k)
+    const rt = effective(remote, k)
+    if (lt && rt) return Date.parse(rt) > Date.parse(lt) ? remote : local
+    if (lt) return local
+    if (rt) return remote
+    return sectionScore(remote, k) > sectionScore(local, k) ? remote : local
+  }
+
+  // per-day completions
+  const completions: Record<string, string[]> = {}
+  const compAt: Record<string, string> = {}
+  const dates = new Set([
+    ...Object.keys(local.completions), ...Object.keys(remote.completions),
+    ...Object.keys(local.compAt ?? {}), ...Object.keys(remote.compAt ?? {}),
+  ])
+  for (const d of dates) {
+    const la = local.compAt?.[d]
+    const ra = remote.compAt?.[d]
+    let val: string[] | undefined
+    if (la && ra) val = Date.parse(ra) > Date.parse(la) ? remote.completions[d] : local.completions[d]
+    else if (la) val = local.completions[d]
+    else if (ra) val = remote.completions[d]
+    else {
+      // no stamps on either side — union so no tick is ever lost
+      val = [...new Set([...(local.completions[d] ?? []), ...(remote.completions[d] ?? [])])]
+      if (val.length === 0) val = undefined
+    }
+    if (val && val.length) completions[d] = val
+    const at = maxIso(la, ra)
+    if (at) compAt[d] = at
+  }
+
+  // focus sessions: append-only union
+  const focusMap = new Map<string, FocusSession>()
+  for (const f of [...remote.focus, ...local.focus]) focusMap.set(f.id, f)
+  const focus = [...focusMap.values()].sort((a, b) => b.endedAt.localeCompare(a.endedAt))
+
+  const sec: Record<string, string> = {}
+  for (const k of SECTIONS) {
+    const at = maxIso(local.sec?.[k], remote.sec?.[k])
+    if (at) sec[k] = at
+  }
+
+  return {
+    deadlines: winner('deadlines').deadlines,
+    primaryId: winner('primaryId').primaryId,
+    tasks: winner('tasks').tasks,
+    canvas: winner('canvas').canvas,
+    profile: winner('profile').profile,
+    completions,
+    focus,
+    sec,
+    compAt,
+    updatedAt: maxIso(local.updatedAt, remote.updatedAt),
   }
 }
 

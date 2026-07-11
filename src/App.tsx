@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { AppState, IS_DEMO, loadState, localUpdatedAt, saveState } from './lib'
+import { AppState, IS_DEMO, loadPersisted, loadState, mergeStates, saveState } from './lib'
 import { SyncStatus, cloudEnabled, onAuth, pullState, pushState, subscribeToState, touchDevice } from './cloud'
 import { loadPref, resolveFontFamily, savePref } from './prefs'
 import FontPicker from './FontPicker'
@@ -69,29 +69,35 @@ export default function App() {
   const [showAccount, setShowAccount] = useState(false)
   const stateRef = useRef(state)
   stateRef.current = state
-  // set while adopting a remote copy, so the save effect doesn't echo it back
+  // set while adopting a merged copy, so the save effect writes it
+  // verbatim (stamps intact) instead of re-stamping and re-pushing
   const adoptingRef = useRef(false)
 
-  const newer = (a: string, b: string | null) => !b || Date.parse(a) > Date.parse(b)
-
-  function adoptRemote(remoteState: AppState, at: string) {
-    if (newer(at, localUpdatedAt())) {
+  /** Combine the cloud copy with what this device has — never overwrite.
+   *  Ticks, tasks, titles and progress from BOTH sides survive. */
+  function reconcile(remoteState: AppState, remoteAt?: string) {
+    const local = loadPersisted() ?? stateRef.current
+    const remote = { ...remoteState, updatedAt: remoteState.updatedAt ?? remoteAt }
+    const merged = mergeStates(local, remote)
+    const mergedJson = JSON.stringify(merged)
+    if (mergedJson !== JSON.stringify(local)) {
       adoptingRef.current = true
-      setState(remoteState)
-      setSync('synced')
+      setState(merged)
     }
+    if (mergedJson !== JSON.stringify(remote)) {
+      pushState(merged, setSync) // cloud was missing something we have
+    }
+    setSync('synced')
   }
 
   useEffect(() => {
-    saveState(state)
-    if (adoptingRef.current) {
-      adoptingRef.current = false
-      return
-    }
-    if (user && !IS_DEMO) pushState(state, setSync)
+    const adopted = adoptingRef.current
+    adoptingRef.current = false
+    const stamped = saveState(state, adopted)
+    if (!adopted && user && !IS_DEMO) pushState(stamped, setSync)
   }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // login → pull the cloud copy; newer side wins, then both match
+  // login → merge the cloud copy with this device's copy
   useEffect(() => {
     if (!cloudEnabled || IS_DEMO) return
     return onAuth((u) => {
@@ -102,12 +108,12 @@ export default function App() {
       }
       setSync('syncing')
       void pullState().then((remote) => {
-        if (remote && newer(remote.updatedAt, localUpdatedAt())) {
-          adoptRemote(remote.state, remote.updatedAt)
+        if (remote) {
+          reconcile(remote.state, remote.updatedAt)
         } else {
-          pushState(stateRef.current, setSync) // local is newer or cloud is empty
+          pushState(saveState(stateRef.current), setSync) // brand-new account
+          setSync('synced')
         }
-        setSync('synced')
       })
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,7 +124,7 @@ export default function App() {
     if (!user || IS_DEMO) return
     const pull = () => {
       void pullState().then((r) => {
-        if (r) adoptRemote(r.state, r.updatedAt)
+        if (r) reconcile(r.state, r.updatedAt)
       })
     }
     const onVis = () => {
@@ -129,7 +135,7 @@ export default function App() {
     const dev = setInterval(() => void touchDevice(), 5 * 60_000) // keep "last active" fresh
     document.addEventListener('visibilitychange', onVis)
     window.addEventListener('focus', onVis)
-    const unsub = subscribeToState(user.id, adoptRemote)
+    const unsub = subscribeToState(user.id, reconcile)
     return () => {
       clearInterval(iv)
       clearInterval(dev)
