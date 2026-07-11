@@ -223,9 +223,9 @@ body {
 #root { min-height: 100dvh; }
 
 .app {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 20px calc(96px + env(safe-area-inset-bottom));
+  /* fluid: fill the screen at every size instead of a centered column */
+  width: 100%;
+  padding: 0 clamp(14px, 3.5vw, 72px) calc(96px + env(safe-area-inset-bottom));
 }
 
 ::selection { background: var(--sand); color: var(--ink); }
@@ -1018,6 +1018,76 @@ body {
   font-size: 14px;
 }
 .lang-sel:focus, .lib-sel:focus { outline: none; border-color: var(--blue); }
+
+/* ---------- Font picker dropdown ---------- */
+
+.fontpick { position: relative; width: 100%; max-width: 460px; }
+.fontpick-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  appearance: none;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: var(--wob-sm);
+  box-shadow: var(--shadow-sm);
+  padding: 10px 14px;
+  font-size: 17px;
+  cursor: pointer;
+  text-align: start;
+}
+.fontpick-btn:active { transform: translate(1px, 2px); box-shadow: none; }
+.fontpick-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fontpick-chev { color: var(--ink-faint); font-size: 13px; }
+
+.fontpick-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 80;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: viewIn 0.18s ease;
+}
+.fontpick-search {
+  width: 100%;
+  border: 0;
+  border-bottom: 2px dashed var(--line);
+  background: var(--cream);
+  color: var(--ink);
+  padding: 10px 14px;
+  font-family: var(--hand);
+  font-size: 14.5px;
+}
+.fontpick-search:focus { outline: none; }
+.fontpick-list { max-height: 320px; overflow-y: auto; }
+.fontpick-item {
+  display: block;
+  width: 100%;
+  appearance: none;
+  border: 0;
+  border-bottom: 1px dashed var(--cream);
+  background: none;
+  color: var(--ink);
+  padding: 9px 14px;
+  font-size: 17px;
+  text-align: start;
+  cursor: pointer;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
+}
+.fontpick-item:hover { background: var(--cream); }
+.fontpick-item.on { background: var(--sand); color: var(--on-sand); }
+.fontpick-none { padding: 14px; color: var(--ink-faint); text-align: center; }
+
+.auth-alt { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 
 /* ---------- Account modal ---------- */
 

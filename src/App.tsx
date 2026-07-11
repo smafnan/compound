@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { AppState, IS_DEMO, loadState, localUpdatedAt, saveState } from './lib'
-import { SyncStatus, cloudEnabled, onAuth, pullState, pushState } from './cloud'
-import { FONTS, loadPref, resolveFontFamily, savePref } from './prefs'
-import { FONT_LIBRARY } from './fontlib'
+import { SyncStatus, cloudEnabled, onAuth, pullState, pushState, subscribeToState } from './cloud'
+import { loadPref, resolveFontFamily, savePref } from './prefs'
+import FontPicker from './FontPicker'
 import { LANGS, LangId, applyLang, langDir, t } from './i18n'
 import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
 import Account from './Account'
@@ -69,9 +69,25 @@ export default function App() {
   const [showAccount, setShowAccount] = useState(false)
   const stateRef = useRef(state)
   stateRef.current = state
+  // set while adopting a remote copy, so the save effect doesn't echo it back
+  const adoptingRef = useRef(false)
+
+  const newer = (a: string, b: string | null) => !b || Date.parse(a) > Date.parse(b)
+
+  function adoptRemote(remoteState: AppState, at: string) {
+    if (newer(at, localUpdatedAt())) {
+      adoptingRef.current = true
+      setState(remoteState)
+      setSync('synced')
+    }
+  }
 
   useEffect(() => {
     saveState(state)
+    if (adoptingRef.current) {
+      adoptingRef.current = false
+      return
+    }
     if (user && !IS_DEMO) pushState(state, setSync)
   }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -86,9 +102,8 @@ export default function App() {
       }
       setSync('syncing')
       void pullState().then((remote) => {
-        const localAt = localUpdatedAt()
-        if (remote && (!localAt || remote.updatedAt > localAt)) {
-          setState(remote.state) // cloud is newer — adopt it (also re-pushes via save effect)
+        if (remote && newer(remote.updatedAt, localUpdatedAt())) {
+          adoptRemote(remote.state, remote.updatedAt)
         } else {
           pushState(stateRef.current, setSync) // local is newer or cloud is empty
         }
@@ -96,6 +111,30 @@ export default function App() {
       })
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // live sync: realtime row changes + re-pull on focus and every 30s,
+  // so progress made on any device appears everywhere it's logged in
+  useEffect(() => {
+    if (!user || IS_DEMO) return
+    const pull = () => {
+      void pullState().then((r) => {
+        if (r) adoptRemote(r.state, r.updatedAt)
+      })
+    }
+    const onVis = () => {
+      if (!document.hidden) pull()
+    }
+    const iv = setInterval(pull, 30_000)
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('focus', onVis)
+    const unsub = subscribeToState(user.id, adoptRemote)
+    return () => {
+      clearInterval(iv)
+      document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('focus', onVis)
+      unsub()
+    }
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -302,28 +341,7 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
           </div>
           <div className="style-row">
             <span className="style-k">{t('font')}</span>
-            <div className="chips">
-              {FONTS.map((f) => (
-                <button
-                  key={f.id}
-                  className={`chip ${font === f.id ? 'on' : ''}`}
-                  style={{ fontFamily: f.family }}
-                  onClick={() => setFont(f.id)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-            <select
-              className="lib-sel"
-              value={font.startsWith('lib:') ? font : ''}
-              onChange={(e) => { if (e.target.value) setFont(e.target.value) }}
-            >
-              <option value="">{t('fontLibrary')}</option>
-              {FONT_LIBRARY.map((f) => (
-                <option key={f.label} value={`lib:${f.label}`}>{f.label}</option>
-              ))}
-            </select>
+            <FontPicker value={font} onChange={setFont} />
           </div>
           <div className="style-row">
             <span className="style-k">{t('scene')}</span>

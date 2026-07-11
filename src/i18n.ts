@@ -16,6 +16,7 @@ export const LANGS: { id: LangId; label: string; dir: 'ltr' | 'rtl' }[] = [
 type Dict = Record<string, string>
 
 const EN: Dict = {
+  magicLink: 'Email me a login link', forgotPassword: 'Forgot password?', logOutAll: 'Log out everywhere',
   countdown: 'Countdown', today: 'Today', checklist: 'Checklist', growth: 'Growth',
   all: 'All', canvas: 'Canvas', you: 'You',
   daysLeft: 'days left', daysPast: 'days past', gone: 'gone', remains: 'remains',
@@ -45,6 +46,7 @@ const EN: Dict = {
 }
 
 const AR: Dict = {
+  magicLink: 'أرسل رابط دخول إلى بريدي', forgotPassword: 'نسيت كلمة المرور؟', logOutAll: 'تسجيل الخروج من كل الأجهزة',
   countdown: 'العدّ التنازلي', today: 'اليوم', checklist: 'القائمة', growth: 'النموّ',
   all: 'الكل', canvas: 'اللوحة', you: 'أنت',
   daysLeft: 'يومًا متبقّيًا', daysPast: 'يومًا مضى', gone: 'مضى', remains: 'متبقٍّ',
@@ -74,6 +76,7 @@ const AR: Dict = {
 }
 
 const FR: Dict = {
+  magicLink: 'Recevoir un lien de connexion', forgotPassword: 'Mot de passe oublié ?', logOutAll: 'Se déconnecter partout',
   countdown: 'Compte à rebours', today: "Aujourd'hui", checklist: 'Liste', growth: 'Progrès',
   all: 'Tout', canvas: 'Toile', you: 'Vous',
   daysLeft: 'jours restants', daysPast: 'jours passés', gone: 'écoulé', remains: 'restant',
@@ -103,6 +106,7 @@ const FR: Dict = {
 }
 
 const DE: Dict = {
+  magicLink: 'Login-Link per E-Mail', forgotPassword: 'Passwort vergessen?', logOutAll: 'Überall abmelden',
   countdown: 'Countdown', today: 'Heute', checklist: 'Checkliste', growth: 'Wachstum',
   all: 'Alles', canvas: 'Leinwand', you: 'Du',
   daysLeft: 'Tage übrig', daysPast: 'Tage vorbei', gone: 'vorbei', remains: 'übrig',
@@ -132,6 +136,7 @@ const DE: Dict = {
 }
 
 const ES: Dict = {
+  magicLink: 'Enviarme un enlace de acceso', forgotPassword: '¿Olvidaste tu contraseña?', logOutAll: 'Cerrar sesión en todas partes',
   countdown: 'Cuenta atrás', today: 'Hoy', checklist: 'Lista', growth: 'Crecimiento',
   all: 'Todo', canvas: 'Lienzo', you: 'Tú',
   daysLeft: 'días restantes', daysPast: 'días pasados', gone: 'pasado', remains: 'queda',
@@ -161,6 +166,7 @@ const ES: Dict = {
 }
 
 const HI: Dict = {
+  magicLink: 'लॉगिन लिंक ईमेल करें', forgotPassword: 'पासवर्ड भूल गए?', logOutAll: 'सभी डिवाइस से लॉग आउट',
   countdown: 'उलटी गिनती', today: 'आज', checklist: 'चेकलिस्ट', growth: 'वृद्धि',
   all: 'सब', canvas: 'कैनवास', you: 'आप',
   daysLeft: 'दिन बाक़ी', daysPast: 'दिन बीते', gone: 'बीत गया', remains: 'बाक़ी',

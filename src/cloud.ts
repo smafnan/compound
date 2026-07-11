@@ -42,6 +42,31 @@ export async function signOut(): Promise<void> {
   await supabase?.auth.signOut()
 }
 
+/** Sign out on every device where this account is logged in. */
+export async function signOutEverywhere(): Promise<void> {
+  await supabase?.auth.signOut({ scope: 'global' })
+}
+
+/** Email a one-tap login link (passwordless). */
+export async function sendMagicLink(email: string): Promise<string | null> {
+  if (!supabase) return 'Accounts are not available in this build.'
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: location.origin },
+  })
+  return error ? error.message : null
+}
+
+/** Email a password-reset link; opening it logs the user in so they
+ *  can set a new password from the account page. */
+export async function sendPasswordReset(email: string): Promise<string | null> {
+  if (!supabase) return 'Accounts are not available in this build.'
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: location.origin,
+  })
+  return error ? error.message : null
+}
+
 /** Change the account email (provider sends a confirmation link). */
 export async function updateEmail(email: string): Promise<string | null> {
   if (!supabase) return 'Accounts are not available in this build.'
@@ -87,6 +112,35 @@ export async function pullState(): Promise<{ state: AppState; updatedAt: string 
   return {
     state: normalizeState(data.data as Partial<AppState>),
     updatedAt: data.updated_at as string,
+  }
+}
+
+/**
+ * Live cross-device sync: listen for changes to this user's row so an
+ * edit made on any other device shows up here within a second.
+ * (Requires the table to be in the realtime publication; the app also
+ * re-pulls on focus and on a timer as a fallback.)
+ */
+export function subscribeToState(
+  userId: string,
+  onRemote: (state: AppState, updatedAt: string) => void,
+): () => void {
+  if (!supabase) return () => {}
+  const ch = supabase
+    .channel(`app_state_${userId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'app_state', filter: `user_id=eq.${userId}` },
+      (payload) => {
+        const row = payload.new as { data?: Partial<AppState>; updated_at?: string } | null
+        if (row?.data && row.updated_at) {
+          onRemote(normalizeState(row.data), row.updated_at)
+        }
+      },
+    )
+    .subscribe()
+  return () => {
+    void supabase.removeChannel(ch)
   }
 }
 

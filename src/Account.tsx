@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { AppState } from './lib'
 import {
-  SyncStatus, cloudEnabled, deleteAccount, signIn, signOut, signUp,
-  updateEmail, updatePassword,
+  SyncStatus, cloudEnabled, deleteAccount, sendMagicLink, sendPasswordReset,
+  signIn, signOut, signOutEverywhere, signUp, updateEmail, updatePassword,
 } from './cloud'
 import { t } from './i18n'
 
@@ -126,12 +126,45 @@ function AuthForm({ onClose, setState }: Props) {
         </button>
       </form>
 
+      {mode === 'in' && (
+        <div className="auth-alt">
+          <button
+            className="chip-btn"
+            disabled={busy}
+            onClick={async () => {
+              if (!email.trim()) { setError('Type your email first.'); return }
+              setBusy(true); setError(null)
+              const err = await sendMagicLink(email.trim())
+              setBusy(false)
+              if (err) setError(friendly(err))
+              else setNotice('Login link sent — check your inbox and tap it on this device.')
+            }}
+          >
+            ✉ {t('magicLink')}
+          </button>
+          <button
+            className="chip-btn"
+            disabled={busy}
+            onClick={async () => {
+              if (!email.trim()) { setError('Type your email first.'); return }
+              setBusy(true); setError(null)
+              const err = await sendPasswordReset(email.trim())
+              setBusy(false)
+              if (err) setError(friendly(err))
+              else setNotice('Reset link sent — opening it logs you in so you can set a new password.')
+            }}
+          >
+            {t('forgotPassword')}
+          </button>
+        </div>
+      )}
+
       {error && <p className="form-error">{error}</p>}
       {notice && <p className="muted small">{notice}</p>}
 
       <p className="muted small">
         One account keeps your streaks, checklists and progress safe — log in anywhere and
-        everything follows you.
+        everything follows you, live.
       </p>
     </>
   )
@@ -236,6 +269,14 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
       <div className="modal-actions">
         <button className="btn-ghost" disabled={busy} onClick={() => void signOut()}>
           {t('logOut')}
+        </button>
+        <button
+          className="btn-ghost"
+          disabled={busy}
+          title="Sign out on every device where this account is logged in"
+          onClick={() => void signOutEverywhere()}
+        >
+          {t('logOutAll')}
         </button>
         <button
           className="btn-ghost danger"

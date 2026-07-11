@@ -4,8 +4,7 @@ import {
   AppState, currentStreak, focusMinutes, taskStats, totalTicks, trailingAvg, weekSplit,
 } from '../lib'
 import { SyncStatus, cloudEnabled } from '../cloud'
-import { FONTS } from '../prefs'
-import { FONT_LIBRARY } from '../fontlib'
+import FontPicker from '../FontPicker'
 import { BACKDROPS, BgKind } from '../Backdrop'
 import { downloadReport, ReportRange } from '../report'
 import { t } from '../i18n'
@@ -194,28 +193,7 @@ export default function Profile({
         <div className="panel-head"><h2>{t('lookFeel')}</h2></div>
         <div className="pref-block">
           <span className="pref-label">{t('displayFont')}</span>
-          <div className="chips">
-            {FONTS.map((f) => (
-              <button
-                key={f.id}
-                className={`chip font-chip ${font === f.id ? 'on' : ''}`}
-                style={{ fontFamily: f.family }}
-                onClick={() => setFont(f.id)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <select
-            className="lib-sel"
-            value={font.startsWith('lib:') ? font : ''}
-            onChange={(e) => { if (e.target.value) setFont(e.target.value) }}
-          >
-            <option value="">{t('fontLibrary')}</option>
-            {FONT_LIBRARY.map((f) => (
-              <option key={f.label} value={`lib:${f.label}`}>{f.label}</option>
-            ))}
-          </select>
+          <FontPicker value={font} onChange={setFont} />
         </div>
         <div className="pref-block">
           <span className="pref-label">{t('backgroundScene')}</span>
