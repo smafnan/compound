@@ -2,8 +2,11 @@
   "name": "Compound — every day counts",
   "short_name": "Compound",
   "description": "Motivational countdown timer, daily checklist matrix and compounding productivity analytics.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#FBF7EE",
   "theme_color": "#FBF7EE",
   "icons": [
@@ -14,22 +17,22 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.webp",
-      "type": "image/webp",
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-256.webp",
-      "type": "image/webp",
-      "sizes": "256x256",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.webp",
-      "type": "image/webp",
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ]
 }
