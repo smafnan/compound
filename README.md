@@ -36,9 +36,9 @@ and your progress follows you to every device, live.*
 | **Web** | [productive-time-track.netlify.app](https://productive-time-track.netlify.app/) — nothing to install |
 | **Windows** | [Download the installer](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (unsigned — SmartScreen will ask "More info → Run anyway") |
 | **macOS** | [Download the .dmg](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (Apple-silicon build; unsigned — right-click → Open the first time) |
-| **Android** | `npx cap open android` → Run ▶ in Android Studio (project included) |
-| **iOS** | `npx cap open ios` on a Mac → Run ▶ in Xcode (project included) |
-| **PWA** | Open the web app on your phone → *Add to Home Screen* |
+| **Android** | [Download the APK](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (`Compound-android.apk`; debug-signed — allow "Install unknown apps" when asked) |
+| **iOS** | `npx cap open ios` on a Mac → Run ▶ in Xcode (project included) — or install the PWA below |
+| **PWA** | Open the web app on your phone → **Add to Home Screen** (Android Chrome: ⋮ menu · iPhone/iPad Safari: Share → Add to Home Screen). Installs like a native app, has its own icon + splash screen, and works offline |
 
 One account, every platform: **log in anywhere and your streaks, checklists, deadlines and
 canvas follow you — live.**
@@ -57,7 +57,11 @@ can watch it compound, and keeps the whole record safe in your account.
 
 Add any number of goals, each with an editable title, an editable **start date** (set it in
 the past — *"how many days ago did I plan to start?"*) and a deadline; date fields open a
-calendar on click. You get a giant days-left number, a sand progress tube, and **The Wall**:
+calendar on click. The countdown is **live and smart** — it shows the two units that matter
+(`8 days 5 hours` → `23 hours 15 minutes` → `58 minutes 12 seconds` → `9 seconds`) and ticks
+every second. **Drag the ⠿ handle to reorder** deadlines (the order syncs to your account),
+and **star one as your Active Priority** to pin it in its own section at the top.
+You get a giant time-left number, a sand progress tube, and **The Wall**:
 real calendar pages where every spent day is blacked out, every remaining day stays white,
 today's box fills with sand as the day passes, and each month shows its own % spent.
 
@@ -164,6 +168,30 @@ looks with `?theme=night&bg=forest`.
 **Desktop:** `npm run dist:win` → `release/Compound-Setup-<version>.exe` (mac/linux scripts
 included; macOS builds require a Mac — or use the *Desktop builds* GitHub Action).
 **Mobile:** `npm run build && npx cap sync`, then `npx cap open android` / `npx cap open ios`.
+
+### 📱 Build the Android APK locally
+
+Requires JDK 21 and the Android SDK (easiest via [Android Studio](https://developer.android.com/studio)):
+
+```bash
+npm ci
+npm run build              # web build → dist/
+npx cap sync android       # copy dist/ into the Android project
+cd android
+./gradlew assembleDebug    # → android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Install the APK on a device with `adb install app-debug.apk`, or run it straight from
+Android Studio (`npx cap open android` → Run ▶). No local toolchain? The **Android APK**
+GitHub Action builds it in the cloud — every `v*` tag attaches `Compound-android.apk` to
+the release, and *Actions → Android APK → Run workflow* produces a downloadable artifact.
+
+### ✉️ Supabase email links (self-hosting)
+
+If you point the app at your own Supabase project, set **Auth → URL Configuration**:
+*Site URL* = your deployed origin, and add it to *Redirect URLs* (plus
+`http://localhost:5173` for dev). Otherwise verification / magic-link emails redirect to
+Supabase's default and land on a blank page instead of back in the app.
 
 ## 🛠 Tech
 
