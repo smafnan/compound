@@ -6,279 +6,168 @@
 
 **A motivational countdown timer · daily checklist matrix · compounding growth tracker**
 
-*Days spent are blacked out. Days remaining stay white. Sand fills the box you're living in right now.*
+*Days spent turn black. Days left stay white. Sand fills the box you're living in right now —
+and your progress follows you to every device, live.*
 
 <br/>
 
+### 🌐 [**Use it now → productive-time-track.netlify.app**](https://productive-time-track.netlify.app/)
+
+[![Live](https://img.shields.io/badge/live-productive--time--track.netlify.app-2C8C4A?logo=netlify&logoColor=32E6E2)](https://productive-time-track.netlify.app/)
+[![Windows](https://img.shields.io/badge/Windows-installer-0078D6?logo=windows)](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest)
 ![React](https://img.shields.io/badge/React_18-1B1B1B?logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-1B1B1B?logo=typescript&logoColor=3178C6)
-![Vite](https://img.shields.io/badge/Vite-1B1B1B?logo=vite&logoColor=F7C948)
 ![Capacitor](https://img.shields.io/badge/Capacitor_8-Android_%26_iOS-1B1B1B?logo=capacitor&logoColor=119EFF)
-![PWA](https://img.shields.io/badge/PWA-installable-E4572E)
-![No backend](https://img.shields.io/badge/backend-none%2C_your_data_stays_local-2C8C4A)
+![Supabase](https://img.shields.io/badge/Supabase-accounts_+_live_sync-3FCF8E?logo=supabase&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-0080FF)
 
 <br/>
 
-<img src="docs/countdown.png" width="920" alt="Countdown — the wall of days" />
+<img src="docs/home.png" width="820" alt="Compound — countdown and the wall of days" />
 
 </div>
 
-<br/>
+---
+
+## Get it
+
+| Platform | How |
+|---|---|
+| **Web** | [productive-time-track.netlify.app](https://productive-time-track.netlify.app/) — nothing to install |
+| **Windows** | [Download the installer](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (unsigned — SmartScreen will ask "More info → Run anyway") |
+| **macOS** | [Download the .dmg](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (Apple-silicon build; unsigned — right-click → Open the first time) |
+| **Android** | `npx cap open android` → Run ▶ in Android Studio (project included) |
+| **iOS** | `npx cap open ios` on a Mac → Run ▶ in Xcode (project included) |
+| **PWA** | Open the web app on your phone → *Add to Home Screen* |
+
+One account, every platform: **log in anywhere and your streaks, checklists, deadlines and
+canvas follow you — live.**
+
+---
 
 ## The idea
 
 > 1% better every day for a year is **×37.8**. 1% worse every day is **×0.03**.
 > Small things, done daily, are not small.
 
-Compound makes time *visible* so you actually feel it passing — and makes your daily
-routine *measurable* so you can watch it compound.
+Compound makes time *visible* so you feel it passing, makes your routine *measurable* so you
+can watch it compound, and keeps the whole record safe in your account.
 
-<br/>
+## ⏳ Countdown — "The Wall"
 
-## ✦ What's inside
+Add any number of goals, each with an editable title, an editable **start date** (set it in
+the past — *"how many days ago did I plan to start?"*) and a deadline; date fields open a
+calendar on click. You get a giant days-left number, a sand progress tube, and **The Wall**:
+real calendar pages where every spent day is blacked out, every remaining day stays white,
+today's box fills with sand as the day passes, and each month shows its own % spent.
 
-### ⏳ Countdown — "The Wall"
+## ◔ Today — hours & quarter-hours
 
-Add any goal with a **start date** (set it in the past — *"how many days ago did I plan
-to start this?"*) and a **deadline**, both editable at any time. You get:
+<div align="center"><img src="docs/today.png" width="760" alt="Today — live clock, 24 hour boxes, 96 quarter-hour boxes with sand fill" /></div>
 
-- a giant **days-left** number,
-- **day N** of your journey and a sand progress tube,
-- **The Wall** — real calendar pages where every day you've spent is blacked out, every
-  day you have left stays white, and **today's box slowly fills with sand** as the day
-  goes by. Each month card shows its own % spent.
+A live clock with % of the day gone, a 24-box hour grid and a 96-box **15-minute grid**. The
+box you're inside right now fills with sand in real time — hover any box and a tooltip tells
+you exactly how much of it is filled and how much remains.
 
-There is no better cure for "I still have time" than watching the boxes go black.
+## ▦ Checklist — the habit matrix
 
-### ◔ Today — hours & quarter hours
+<div align="center"><img src="docs/checklist.png" width="760" alt="Checklist — days across the top, tasks down the side, sticky month %" /></div>
 
-<div align="center"><img src="docs/today.png" width="880" alt="Today — live clock, 24 hour boxes, 96 quarter-hour boxes" /></div>
+Days 1–31 across the top, your daily tasks down the side — tap to tick, click a task name to
+**rename it inline**. Per-day score bars, a per-task **month % pinned to the right edge**
+(always visible while the sheet scrolls), and overall month productivity. Future days are
+locked so the record stays honest.
 
-A live clock with **% of today gone**, a 24-box hour grid, and a 96-box grid of
-**15-minute blocks**. The box you are inside right now fills with sand in real time.
-"74 blocks left" hits different when you can see all 74 of them.
+## ◮ Growth — the compounding engine
 
-### ▦ Checklist — the habit matrix
+<div align="center"><img src="docs/growth.png" width="760" alt="Growth — compound index, better/worse comparisons, 90-day curve" /></div>
 
-<div align="center"><img src="docs/checklist.png" width="880" alt="Checklist — days across the top, daily tasks down the side" /></div>
+Today vs yesterday, this week vs last, this month vs last, this year vs last — each as
+*"% better / worse"*. Every fully productive day multiplies your **compound index** by 1.01,
+charted over 90 days with a *"×N in a year at this pace"* projection. An **All** tab shows
+every calculation together on one page.
 
-Days **1–31 across the top**, your daily tasks **down the side** — tick what you did,
-day by day. Compound computes:
+## ✥ Canvas — build the screen you want to stare at
 
-- a **productivity score for every day** (the little bar chart along the bottom),
-- a **monthly % for every task** (the column on the right),
-- your **overall month productivity**.
+<div align="center"><img src="docs/canvas.png" width="760" alt="Canvas — drag-and-drop widgets" /></div>
 
-Future days are locked, so the record stays honest.
+A free-form dashboard: drop **clock, focus timer, countdown, month calendar, hour grid,
+quarter grid, growth cards, the curve, a Spotify player, or a YouTube/local video** anywhere
+on the board. Drag to place, pull the corner to **resize in both directions**, stack as many
+as you like. The **focus (pomodoro) timer takes a task name** and logs every completed block
+to your history. Spotify shows real album art and playback from any pasted link; both media
+widgets are optional.
 
-### ◮ Growth — the compounding engine
+## ◉ You — profile, insights & PDF reports
 
-<div align="center"><img src="docs/growth.png" width="880" alt="Growth — compound index, better/worse comparisons, 90-day curve" /></div>
+<div align="center"><img src="docs/you.png" width="760" alt="You — profile dashboard with stats, insights and PDF export" /></div>
 
-Every day's checklist score feeds the **compound index**: a fully productive day
-multiplies you by **1.01**. Compound then answers the questions that matter:
+An editable profile (name, goal) with headline stats — **streak, 30-day average, total
+ticks, focus hours, weekend-vs-weekday** — plus *Going well*, *Pain points*, data-driven
+*What to improve* suggestions, and your focus-session history. Export a **designed PDF
+progress report** for the last 7 / 30 / 90 / 365 days: stat tiles, daily-rhythm bars, habit
+bars and the compound curve, drawn on-device.
 
-| Question | How it's answered |
-|---|---|
-| Did I do better **today**? | today's score vs yesterday's, as *% better / worse* |
-| Was this a better **week**? | this week's average vs last week's |
-| A better **month**? | this month vs last month |
-| A better **year**? | this year vs last year |
-| Where is this all going? | your 90-day curve + a *"×N in a year at this pace"* projection |
+## 🎨 Make it yours
 
-### ✦ All — everything on one page
+<div align="center"><img src="docs/neo.png" width="760" alt="Neo theme over the animated galaxy background" /></div>
 
-<div align="center"><img src="docs/all.png" width="880" alt="All mode — countdown, month, clock, hours, quarters and growth together" /></div>
+- **Three themes** — hand-drawn Paper, chalkboard Night, and the neon **Neo** above
+- **Six animated backgrounds** — galaxy (shooting stars), aurora, forest (fireflies at
+  night), pixel sunset, ocean, or plain
+- **A 430-font picker** (7 curated + a 423-font library) in a searchable dropdown where
+  every entry previews itself; the chosen font takes over the whole app
+- **Six languages** — English, العربية (full RTL), Français, Deutsch, Español, हिन्दी —
+  switched from the top bar
+- A discreet **✎ style** menu right on the home page; deep-link any look with
+  `?theme=neo&bg=galaxy`
 
-One mode that shows **every calculation together**: the countdown, this month's calendar,
-the live clock, the hour grid, the quarter-hour grid, and all the growth comparisons —
-your entire relationship with time on a single page.
+## ☁️ Accounts, live sync & security
 
-### ✥ Canvas — build the screen you want to stare at
+- **Plain login** — email + password, magic link ("email me a login link"), password reset,
+  or **Continue with GitHub**
+- **Live cross-device sync** — realtime updates plus refresh-on-focus and a 30-second
+  fallback. Sync **merges instead of overwriting**: each section and each checklist day
+  carries its own edit-time, so switching devices can never reset or lose progress — a tick
+  made anywhere survives everywhere
+- **Account page** — edit name, phone, email (confirmation flow) and password
+- **Security center** — TOTP **two-factor** (scan a QR in any authenticator app), a
+  **devices & sessions list** (platform, last active, forget a device), and **log out
+  everywhere**
+- **Account deletion** built in; every table is locked with row-level security so only you
+  can read your data
 
-A free-form dashboard: grab widgets from the tray — **clock, focus (pomodoro) timer,
-countdown, month calendar, hour grid, quarter-hour grid, growth cards, the curve** —
-then drag and drop each one anywhere on the board. Add as many as you like (yes, three
-pomodoro timers is allowed), stack them, arrange them; the layout is saved and restored
-exactly as you left it.
+<div align="center"><img src="docs/mobile.png" width="300" alt="Mobile layout" /></div>
 
-### 🎭 Three themes + full screen
+## 🧮 The math, honestly
 
-- **☀ Paper** — the hand-drawn ink-on-paper light mode
-- **☾ Night** — the same doodle drawn in chalk on a blackboard
-- **◇ Neo** — a modern, futuristic mode: deep space navy, luminous cyan grid, neon
-  magenta accents, glowing sand
+- **Day score** = tasks completed ÷ tasks that existed that day.
+- **Compound index** = start at 1.0; each day multiply by `1 + score/100`.
+- **"% better"** = `(current − previous) / previous`; weeks start Monday.
+- Data lives locally first (works fully offline) and syncs to your account when online.
 
-The picker lives in the top bar next to the **⛶ full screen** toggle, and your choice is
-remembered. Display type across all themes is set in **Goblock** — big, blocky and
-unapologetic.
-
-### 📱 Native Android & iOS apps
-
-<div align="center"><img src="docs/mobile.png" width="300" alt="Mobile layout with bottom tab bar" /></div>
-
-The repo ships **real native projects** for both platforms (built with
-[Capacitor 8](https://capacitorjs.com)) in `android/` and `ios/`, with generated app
-icons and splash screens. On phones your data lives in **native storage**
-(SharedPreferences on Android, UserDefaults on iOS), so the OS can't evict it the way
-it can browser storage. The layout is fully responsive with a bottom tab bar — and if
-you'd rather not build anything, the web app also installs as a **PWA** via
-*Add to Home Screen*.
-
-<br/>
-
-## 🚀 Getting started
+## 🚀 Run it yourself
 
 ```bash
 git clone https://github.com/smafnan/Motivational-Time-Tracker.git
 cd Motivational-Time-Tracker
 npm install
-npm run dev     # → http://localhost:5173
+npm run dev          # http://localhost:5173
+npm run build        # static site in dist/ — deployable anywhere (this repo → Netlify)
 ```
 
-Want to see it with data before building your own routine? Open the **demo mode**:
+Demo mode with generated data: append `?demo`. Deep-link tabs with `?tab=checklist`,
+looks with `?theme=night&bg=forest`.
 
-```
-http://localhost:5173/?demo
-```
-
-(generated sample data — it never touches your real records). You can also deep-link any
-tab with `?tab=countdown|today|checklist|growth|all`.
-
-Production build:
-
-```bash
-npm run build   # static site in dist/ — deploy anywhere (Vercel, Netlify, GitHub Pages…)
-```
-
-### ☁️ Login & cloud backup (optional)
-
-The app runs fully offline by default. To get **accounts + cross-device sync**:
-
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Open its **SQL editor** and run [`supabase/schema.sql`](supabase/schema.sql)
-   (one table, locked down so each user can only read/write their own row)
-3. Copy `.env.example` to `.env` and fill in your project's URL and anon key
-   (Project Settings → API)
-4. Rebuild (`npm run build`) — the 👤 button in the top bar now offers
-   **sign in / create account**
-
-Once signed in, every change is backed up automatically (debounced, whole-state
-upsert). Sign in anywhere else — web, Android, iOS, desktop — and whichever copy
-is newer wins. Tip: for instant sign-ups while testing, disable
-*Authentication → Email → Confirm email* in Supabase.
-
-### 🖥 Desktop apps (Windows .exe / macOS .app)
-
-The repo includes an Electron shell:
-
-```bash
-npm run dist:win     # → release/Compound-Setup-<version>.exe   (build on Windows)
-npm run dist:mac     # → release/Compound-<version>.dmg + .app  (build on macOS)
-npm run electron     # just run it as a desktop window, no installer
-```
-
-macOS apps can only be compiled on a Mac — but you don't need one:
-the **Desktop builds** GitHub Action builds both installers in the cloud.
-Run it from the *Actions* tab (or push a `v*` tag) and download
-`Compound-Windows` / `Compound-macOS` from the run's artifacts.
-
-### Build the Android app
-
-Requires [Android Studio](https://developer.android.com/studio) (any OS):
-
-```bash
-npm run build && npx cap sync
-npx cap open android        # opens Android Studio → press Run ▶
-```
-
-Or from the command line, if you have the Android SDK + JDK 17+:
-
-```bash
-cd android && ./gradlew assembleDebug
-# → android/app/build/outputs/apk/debug/app-debug.apk — install it on any Android phone
-```
-
-### Build the iOS app
-
-Requires a **Mac with Xcode 15+** (an Apple platform rule — iOS apps can't be compiled
-elsewhere). Dependencies use Swift Package Manager, so there's no CocoaPods setup:
-
-```bash
-npm install && npm run build && npx cap sync
-npx cap open ios            # opens Xcode → pick your signing team → press Run ▶
-```
-
-A free Apple ID is enough to run it on your own iPhone; App Store distribution needs a
-developer account.
-
-<br/>
-
-## 🏪 Publishing to the app stores
-
-The projects are store-ready: only INTERNET permission on Android, target SDK 36,
-self-hosted fonts (works offline, no CDN calls), a Content-Security-Policy, RLS-locked
-backend and **in-app account deletion** (required by App Store guideline 5.1.1(v)).
-
-**Google Play**
-1. Create a signing key once:
-   `keytool -genkey -v -keystore upload.keystore -alias upload -keyalg RSA -keysize 2048 -validity 10000`
-   and keep it safe — losing it means losing the app identity.
-2. `cd android && ./gradlew bundleRelease` → `app/build/outputs/bundle/release/app-release.aab`
-   (configure the keystore in `android/app/build.gradle` `signingConfigs`, or let
-   Android Studio's *Build → Generate Signed App Bundle* wizard do it).
-3. In [Play Console](https://play.google.com/console) ($25 once): create the app,
-   upload the AAB, fill the **Data safety** form (collects: email for auth + user
-   content, encrypted in transit, deletable in-app) and link a **privacy policy** URL.
-4. Each new release: bump `versionCode`/`versionName` in `android/app/build.gradle`.
-
-**Apple App Store**
-1. Join the [Apple Developer Program](https://developer.apple.com/programs/) ($99/yr).
-2. On a Mac: `npx cap open ios` → set your team → **Product → Archive** →
-   *Distribute App* → App Store Connect.
-3. In [App Store Connect](https://appstoreconnect.apple.com): create the app record,
-   fill the **privacy nutrition labels** (email + user content, linked to identity),
-   provide the privacy policy URL, submit for review.
-4. Bump the version/build number in Xcode for each release.
-
-Both stores require a public **privacy policy** page because the app has accounts —
-a simple static page describing what's stored (email, your checklist data), where
-(Supabase), and the in-app deletion option is enough.
-
-## 🧮 The math, honestly
-
-- **Day score** = tasks completed ÷ tasks that existed that day. Days before a task was
-  created don't count against it.
-- **Compound index** = start at 1.0; each day multiply by `1 + score/100`. A 100% day
-  is +1%, a 50% day is +0.5%, an empty day changes nothing.
-- **"% better"** = relative change between periods: `(current − previous) / previous`.
-  Weeks start on Monday; months and years are calendar periods.
-- Everything is stored in `localStorage` under `compound.v1` — no account, no server,
-  no tracking. Your data never leaves your browser.
-
-<br/>
-
-## 🎨 Design
-
-Hand-drawn **"ink on paper"** aesthetic inspired by playful illustrated portfolio sites:
-warm paper background, black marker outlines, wobbly borders, sticker-style buttons with
-comic offset shadows, and a dashed street line under the header. Type is set in
-[Permanent Marker](https://fonts.google.com/specimen/Permanent+Marker),
-[Patrick Hand](https://fonts.google.com/specimen/Patrick+Hand) and
-[Caveat](https://fonts.google.com/specimen/Caveat). The palette is ink `#1B1B1B` on paper
-`#FBF7EE`, with sun-yellow sand `#F7C948`, hydrant red `#E4572E`, sky blue `#0080FF` and
-a green `#2C8C4A` for wins.
-
-<br/>
+**Desktop:** `npm run dist:win` → `release/Compound-Setup-<version>.exe` (mac/linux scripts
+included; macOS builds require a Mac — or use the *Desktop builds* GitHub Action).
+**Mobile:** `npm run build && npx cap sync`, then `npx cap open android` / `npx cap open ios`.
 
 ## 🛠 Tech
 
-Vite · React 18 · TypeScript · hand-rolled CSS (no UI framework) · Capacitor 8 for the
-native Android/iOS shells · PWA manifest · localStorage on the web, mirrored to native
-Preferences (SharedPreferences / UserDefaults) on phones. Web bundle ~56 KB gzipped.
-
-<br/>
+Vite · React 18 · TypeScript · hand-rolled CSS · Supabase (auth, Postgres + RLS, realtime)
+· Capacitor 8 (Android/iOS) · Electron (desktop) · jsPDF (on-device reports) · six-language
+i18n with RTL. Deployed on Netlify.
 
 ## License
 

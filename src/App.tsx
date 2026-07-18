@@ -40,8 +40,16 @@ function initialTab(): Tab {
 }
 
 function initialTheme(): Theme {
+  const q = new URLSearchParams(location.search).get('theme') // shareable looks
+  if (q && THEMES.some((x) => x.id === q)) return q as Theme
   const t = localStorage.getItem('compound.theme')
   return THEMES.some((x) => x.id === t) ? (t as Theme) : 'paper'
+}
+
+function initialBg(): BgKind {
+  const q = new URLSearchParams(location.search).get('bg')
+  if (q && BACKDROPS.some((x) => x.id === q)) return q as BgKind
+  return loadPref('bg', 'none') as BgKind
 }
 
 export default function App() {
@@ -49,7 +57,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(initialTab)
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [font, setFont] = useState(() => loadPref('font', 'goblock'))
-  const [bg, setBg] = useState<BgKind>(() => loadPref('bg', 'none') as BgKind)
+  const [bg, setBg] = useState<BgKind>(initialBg)
   const [lang, setLang] = useState<LangId>(() => {
     const l = loadPref('lang', 'en') as LangId
     return LANGS.some((x) => x.id === l) ? l : 'en'
