@@ -1,8 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AppState, Deadline, MONTHS, daysBetween, parseDate, todayStr, uid,
+  AppState, Deadline, MONTHS, TimePart, daysBetween, deadlineEndMs, parseDate,
+  remainingParts, todayStr, uid,
 } from '../lib'
 import { t } from '../i18n'
+
+const UNIT_ONE = { day: 'unitDay', hour: 'unitHour', minute: 'unitMinute', second: 'unitSecond' } as const
+const UNIT_MANY = { day: 'unitDays', hour: 'unitHours', minute: 'unitMinutes', second: 'unitSeconds' } as const
+
+function unitLabel(p: TimePart): string {
+  return t(p.value === 1 ? UNIT_ONE[p.unit] : UNIT_MANY[p.unit])
+}
+
+/** "8 days 5 hours" / "23 hours 15 minutes" / "58 minutes 12 seconds" / "9 seconds" */
+export function smartLeft(d: Deadline, nowMs: number): string {
+  return remainingParts(deadlineEndMs(d) - nowMs)
+    .map((p) => `${p.value} ${unitLabel(p)}`)
+    .join(' ')
+}
 
 /** Open the native calendar dropdown when the field is clicked anywhere,
  *  not only on the small icon. showPicker needs a user gesture and isn't
@@ -27,14 +42,15 @@ export default function Countdown({ state, setState }: Props) {
   const [start, setStart] = useState('')
   const [now, setNow] = useState(() => new Date())
 
-  // keep the sand fresh
+  // tick every second so the countdown text stays live
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30_000)
+    const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
 
   const primary =
     state.deadlines.find((d) => d.id === state.primaryId) ?? state.deadlines[0] ?? null
+  const priority = state.deadlines.find((d) => d.id === state.priorityId) ?? null
 
   function addDeadline(e: React.FormEvent) {
     e.preventDefault()
@@ -64,24 +80,99 @@ export default function Countdown({ state, setState }: Props) {
       ...s,
       deadlines: s.deadlines.filter((d) => d.id !== id),
       primaryId: s.primaryId === id ? null : s.primaryId,
+      priorityId: s.priorityId === id ? null : s.priorityId,
     }))
   }
 
+  function togglePriority(id: string) {
+    setState((s) => ({ ...s, priorityId: s.priorityId === id ? null : id }))
+  }
+
+  // ----- drag-and-drop reorder (pointer events, so touch works too) -----
+  const listRef = useRef<HTMLUListElement>(null)
+  const [dragId, setDragId] = useState<string | null>(null)
+
+  function moveDeadline(from: number, to: number) {
+    setState((s) => {
+      const arr = [...s.deadlines]
+      const [x] = arr.splice(from, 1)
+      arr.splice(to, 0, x)
+      return { ...s, deadlines: arr }
+    })
+  }
+
+  function onDragMove(e: React.PointerEvent) {
+    if (!dragId) return
+    const rows = Array.from(listRef.current?.children ?? []) as HTMLElement[]
+    const from = state.deadlines.findIndex((d) => d.id === dragId)
+    if (from < 0) return
+    // insertion index = how many OTHER rows sit above the pointer
+    let to = 0
+    rows.forEach((r, i) => {
+      if (i === from) return
+      const box = r.getBoundingClientRect()
+      if (e.clientY > box.top + box.height / 2) to++
+    })
+    if (to !== from) moveDeadline(from, to)
+  }
+
+  // the wall only needs a fresh "now" every 30s — no point redrawing
+  // hundreds of calendar cells on every 1-second timer tick
+  const wallTick = Math.floor(now.getTime() / 30_000)
+  const wall = useMemo(
+    () => (primary ? <CalendarWall deadline={primary} now={new Date(wallTick * 30_000)} /> : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [primary, wallTick],
+  )
+
   return (
     <section className="section">
-      {primary ? <Hero deadline={primary} now={now} /> : <EmptyHero />}
+      {priority && (
+        <div className="priority-sec">
+          <Hero deadline={priority} now={now} flag={`★ ${t('activePriority')}`} />
+          <button
+            className="chip-btn prio-clear"
+            title={t('clearPriority')}
+            onClick={() => togglePriority(priority.id)}
+          >
+            ✕ {t('clearPriority')}
+          </button>
+        </div>
+      )}
+      {primary && primary.id !== priority?.id
+        ? <Hero deadline={primary} now={now} />
+        : !priority && <EmptyHero />}
 
       <div className="panel">
         <div className="panel-head">
           <h2>{t('yourDeadlines')}</h2>
         </div>
         {state.deadlines.length > 0 && (
-          <ul className="dl-list">
+          <ul className="dl-list" ref={listRef}>
             {state.deadlines.map((d) => {
               const left = daysBetween(now, parseDate(d.date))
               const since = daysBetween(parseDate(d.start), now)
+              const isPrio = state.priorityId === d.id
               return (
-                <li key={d.id} className={`dl-row ${primary?.id === d.id ? 'primary' : ''}`}>
+                <li
+                  key={d.id}
+                  className={`dl-row ${primary?.id === d.id ? 'primary' : ''} ${dragId === d.id ? 'dragging' : ''}`}
+                >
+                  <span
+                    className="dl-drag"
+                    title={t('dragToReorder')}
+                    aria-label={t('dragToReorder')}
+                    onPointerDown={(e) => {
+                      e.preventDefault()
+                      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+                      setDragId(d.id)
+                    }}
+                    onPointerMove={onDragMove}
+                    onPointerUp={() => setDragId(null)}
+                    onPointerCancel={() => setDragId(null)}
+                  >
+                    ⠿
+                  </span>
                   <div className="dl-pick">
                     <input
                       className="dl-title"
@@ -97,9 +188,18 @@ export default function Countdown({ state, setState }: Props) {
                       onClick={() => setState((s) => ({ ...s, primaryId: d.id }))}
                     >
                       {since >= 0 && <em>{t('day')} {since + 1} · </em>}
-                      {left >= 0 ? `${left} ${t('daysLeft')}` : `${-left} ${t('daysPast')}`}
+                      {left >= 0
+                        ? `${smartLeft(d, now.getTime())} ${t('left')}`
+                        : `${-left} ${t('daysPast')}`}
                     </button>
                   </div>
+                  <button
+                    className={`icon-btn star ${isPrio ? 'on' : ''}`}
+                    title={isPrio ? t('clearPriority') : t('markPriority')}
+                    onClick={() => togglePriority(d.id)}
+                  >
+                    {isPrio ? '★' : '☆'}
+                  </button>
                   <label className="fld">
                     <span>{t('started')}</span>
                     <input
@@ -168,7 +268,7 @@ export default function Countdown({ state, setState }: Props) {
         </p>
       </div>
 
-      {primary && <CalendarWall deadline={primary} now={now} />}
+      {wall}
     </section>
   )
 }
@@ -183,22 +283,35 @@ function EmptyHero() {
   )
 }
 
-export function Hero({ deadline, now }: { deadline: Deadline; now: Date }) {
+export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; flag?: string }) {
   const end = parseDate(deadline.date)
   const start = parseDate(deadline.start)
   const total = Math.max(daysBetween(start, end), 1)
   const gone = Math.min(Math.max(daysBetween(start, now), 0), total)
-  const left = Math.max(daysBetween(now, end), 0)
   const pct = Math.round((gone / total) * 100)
   const over = daysBetween(now, end) < 0
   const since = daysBetween(start, now)
 
+  // live smart countdown: days+hours → hours+minutes → minutes+seconds → seconds
+  const [tick, setTick] = useState(() => Date.now())
+  useEffect(() => {
+    const iv = setInterval(() => setTick(Date.now()), 1000)
+    return () => clearInterval(iv)
+  }, [])
+  const parts = remainingParts(deadlineEndMs(deadline) - Math.max(tick, now.getTime()))
+  const rest = parts.slice(1).map((p) => `${p.value} ${unitLabel(p)}`).join(' ')
+
   return (
     <div className="hero">
+      {flag && <p className="hero-flag">{flag}</p>}
       <p className="hero-kicker">{deadline.title}</p>
       <div className="hero-num">
-        {over ? '0' : left}
-        <span className="hero-unit">{t('daysLeft')}</span>
+        {over ? '0' : parts[0].value}
+        <span className="hero-unit">
+          {over
+            ? t('daysLeft')
+            : `${unitLabel(parts[0])}${rest ? ` ${rest}` : ''} ${t('left')}`}
+        </span>
       </div>
       <p className="hero-sub">
         {since >= 0

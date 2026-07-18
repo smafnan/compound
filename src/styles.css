@@ -474,6 +474,75 @@ body {
 .dl-left em { font-style: normal; color: var(--ink-dim); }
 .dl-left.over { color: var(--ink-faint); }
 
+/* drag-to-reorder handle */
+.dl-drag {
+  cursor: grab;
+  touch-action: none; /* let the pointer drag rows instead of scrolling */
+  user-select: none;
+  font-size: 18px;
+  color: var(--ink-faint);
+  padding: 4px 2px;
+  line-height: 1;
+}
+.dl-drag:hover { color: var(--ink); }
+.dl-row.dragging {
+  cursor: grabbing;
+  box-shadow: var(--shadow-sm), 0 8px 22px rgba(27, 27, 27, 0.18);
+  transform: scale(1.015);
+  z-index: 2;
+  position: relative;
+}
+.dl-row.dragging .dl-drag { cursor: grabbing; }
+
+/* priority star */
+.icon-btn.star:hover { color: var(--accent); }
+.icon-btn.star.on { color: var(--accent); }
+
+/* active-priority hero */
+.priority-sec { position: relative; }
+.priority-sec .hero { border-color: var(--accent); }
+.hero-flag {
+  margin: 0 0 2px;
+  font-family: var(--script);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.prio-clear {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* transient confirmation toast (email verified, …) */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper, #fbf7ee);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 10px 18px;
+  font-family: var(--script);
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: var(--shadow);
+  z-index: 60;
+  animation: toast-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* "account already exists" helper on the sign-up form */
+.exists-note { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.exists-note p { margin: 0; }
+
 /* labelled date fields */
 .fld { display: flex; flex-direction: column; gap: 1px; }
 .fld > span {

@@ -51,6 +51,8 @@ export interface Profile {
 export interface AppState {
   deadlines: Deadline[]
   primaryId: string | null
+  /** the one deadline marked as the active priority (shown pinned on top) */
+  priorityId: string | null
   tasks: Task[]
   /** date (yyyy-mm-dd) -> ids of tasks completed that day */
   completions: Record<string, string[]>
@@ -72,6 +74,7 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
   return {
     deadlines: parsed?.deadlines ?? [],
     primaryId: parsed?.primaryId ?? null,
+    priorityId: parsed?.priorityId ?? null,
     tasks: parsed?.tasks ?? [],
     completions: parsed?.completions ?? {},
     canvas: parsed?.canvas ?? [],
@@ -118,6 +121,34 @@ export function daysBetween(a: Date, b: Date): number {
   const a0 = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime()
   const b0 = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime()
   return Math.round((b0 - a0) / DAY_MS)
+}
+
+export interface TimePart {
+  value: number
+  unit: 'day' | 'hour' | 'minute' | 'second'
+}
+
+/**
+ * Split remaining milliseconds into the two most significant units:
+ * ≥1 day → days+hours, <1 day → hours+minutes, <1 hour → minutes+seconds,
+ * <1 minute → seconds only. Never negative.
+ */
+export function remainingParts(ms: number): TimePart[] {
+  const s = Math.max(0, Math.floor(ms / 1000))
+  const days = Math.floor(s / 86_400)
+  const hours = Math.floor((s % 86_400) / 3600)
+  const minutes = Math.floor((s % 3600) / 60)
+  const seconds = s % 60
+  if (days >= 1) return [{ value: days, unit: 'day' }, { value: hours, unit: 'hour' }]
+  if (hours >= 1) return [{ value: hours, unit: 'hour' }, { value: minutes, unit: 'minute' }]
+  if (minutes >= 1) return [{ value: minutes, unit: 'minute' }, { value: seconds, unit: 'second' }]
+  return [{ value: seconds, unit: 'second' }]
+}
+
+/** A deadline runs through its whole final day — it ends at the midnight
+ *  that closes `date`. */
+export function deadlineEndMs(d: Deadline): number {
+  return parseDate(d.date).getTime() + DAY_MS
 }
 
 export function daysInMonth(year: number, month: number): number {
@@ -172,7 +203,7 @@ function demoState(): AppState {
     { id: 'demo-f2', task: 'Read: Atomic Habits', minutes: 15, endedAt: new Date(Date.now() - 26 * 3600_000).toISOString() },
   ]
   return normalizeState({
-    deadlines: [dl], primaryId: dl.id, tasks, completions, canvas, focus,
+    deadlines: [dl], primaryId: dl.id, priorityId: dl.id, tasks, completions, canvas, focus,
     profile: { name: 'Demo Pilgrim', goal: 'Ship the app before winter', phone: '', joined: day(-34) },
   })
 }
@@ -221,7 +252,7 @@ export function loadPersisted(): AppState | null {
 }
 
 /** Sections that merge wholesale by their own edit-stamp. */
-const SECTIONS = ['deadlines', 'primaryId', 'tasks', 'canvas', 'profile'] as const
+const SECTIONS = ['deadlines', 'primaryId', 'priorityId', 'tasks', 'canvas', 'profile'] as const
 type SectionKey = (typeof SECTIONS)[number]
 
 const eq = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
@@ -288,6 +319,7 @@ function sectionScore(s: AppState, k: SectionKey): number {
     case 'tasks': return s.tasks.length
     case 'canvas': return s.canvas.length
     case 'primaryId': return s.primaryId ? 1 : 0
+    case 'priorityId': return s.priorityId ? 1 : 0
     case 'profile': return (s.profile.name ? 1 : 0) + (s.profile.goal ? 1 : 0) + (s.profile.phone ? 1 : 0)
   }
 }
@@ -352,6 +384,7 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
   return {
     deadlines: winner('deadlines').deadlines,
     primaryId: winner('primaryId').primaryId,
+    priorityId: winner('priorityId').priorityId,
     tasks: winner('tasks').tasks,
     canvas: winner('canvas').canvas,
     profile: winner('profile').profile,
