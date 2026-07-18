@@ -23,6 +23,7 @@ const EN: Dict = {
   daysLeft: 'days left', daysPast: 'days past', gone: 'gone', remains: 'remains',
   started: 'started', ends: 'ends', deadline: 'deadline', day: 'day',
   yourDeadlines: 'Your deadlines', theWall: 'The wall', addDeadline: 'Add deadline',
+  timeOver: "time's up", atTime: 'at (optional)',
   activePriority: 'Active priority', markPriority: 'Mark as priority',
   clearPriority: 'Remove priority', dragToReorder: 'Drag to reorder', left: 'left',
   unitDay: 'day', unitDays: 'days', unitHour: 'hour', unitHours: 'hours',

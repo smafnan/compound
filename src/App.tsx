@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { AppState, IS_DEMO, loadPersisted, loadState, mergeStates, saveState } from './lib'
+import { useDeadlineAlarms } from './alarms'
 import { SyncStatus, cloudEnabled, onAuth, pullState, pushState, subscribeToState, touchDevice } from './cloud'
 import { loadPref, resolveFontFamily, savePref } from './prefs'
 import FontPicker from './FontPicker'
@@ -76,6 +77,8 @@ export default function App() {
   const [sync, setSync] = useState<SyncStatus>(cloudEnabled ? 'signed-out' : 'off')
   const [showAccount, setShowAccount] = useState(false)
   const [verified, setVerified] = useState(false)
+  // chime + toast the moment any deadline's clock hits zero, app-wide
+  const timeUp = useDeadlineAlarms(state)
 
   // Landing here from an email-verification link (?verified=1): the
   // Supabase client has already consumed the tokens in the URL hash and
@@ -339,6 +342,11 @@ export default function App() {
       {verified && (
         <div className="toast" role="status">
           ✓ Email verified — {user ? 'you are logged in. Welcome!' : 'you can log in now.'}
+        </div>
+      )}
+      {timeUp && (
+        <div className="toast alarm" role="alert">
+          ⏰ Time's up — <b>{timeUp}</b>
         </div>
       )}
 

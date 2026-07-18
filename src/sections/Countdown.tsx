@@ -4,6 +4,7 @@ import {
   remainingParts, todayStr, uid,
 } from '../lib'
 import { t } from '../i18n'
+import { alarmEnabled, setAlarmEnabled } from '../alarms'
 
 const UNIT_ONE = { day: 'unitDay', hour: 'unitHour', minute: 'unitMinute', second: 'unitSecond' } as const
 const UNIT_MANY = { day: 'unitDays', hour: 'unitHours', minute: 'unitMinutes', second: 'unitSeconds' } as const
@@ -40,6 +41,8 @@ export default function Countdown({ state, setState }: Props) {
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [start, setStart] = useState('')
+  const [endTime, setEndTime] = useState('')
+  const [alarm, setAlarm] = useState(alarmEnabled)
   const [now, setNow] = useState(() => new Date())
 
   // tick every second so the countdown text stays live
@@ -60,18 +63,23 @@ export default function Countdown({ state, setState }: Props) {
       title: title.trim() || 'Deadline',
       date,
       start: start || todayStr(),
+      ...(endTime ? { time: endTime } : {}),
     }
     setState((s) => ({ ...s, deadlines: [...s.deadlines, d], primaryId: d.id }))
     setTitle('')
     setDate('')
     setStart('')
+    setEndTime('')
   }
 
-  function patch(id: string, field: 'date' | 'start' | 'title', value: string) {
-    if (!value && field !== 'title') return
+  function patch(id: string, field: 'date' | 'start' | 'title' | 'time', value: string) {
+    // clearing is allowed for title and time; dates must stay set
+    if (!value && field !== 'title' && field !== 'time') return
     setState((s) => ({
       ...s,
-      deadlines: s.deadlines.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
+      deadlines: s.deadlines.map((d) =>
+        d.id === id ? { ...d, [field]: field === 'time' && !value ? undefined : value } : d,
+      ),
     }))
   }
 
@@ -146,6 +154,18 @@ export default function Countdown({ state, setState }: Props) {
       <div className="panel">
         <div className="panel-head">
           <h2>{t('yourDeadlines')}</h2>
+          <button
+            className={`icon-btn bell ${alarm ? 'on' : ''}`}
+            title={alarm ? 'Alarm on — chime + notification when a countdown ends' : 'Alarm off'}
+            aria-pressed={alarm}
+            onClick={() => {
+              const v = !alarm
+              setAlarm(v)
+              setAlarmEnabled(v)
+            }}
+          >
+            {alarm ? '🔔' : '🔕'}
+          </button>
         </div>
         {state.deadlines.length > 0 && (
           <ul className="dl-list" ref={listRef}>
@@ -153,6 +173,7 @@ export default function Countdown({ state, setState }: Props) {
               const left = daysBetween(now, parseDate(d.date))
               const since = daysBetween(parseDate(d.start), now)
               const isPrio = state.priorityId === d.id
+              const over = deadlineEndMs(d) <= now.getTime()
               return (
                 <li
                   key={d.id}
@@ -183,14 +204,16 @@ export default function Countdown({ state, setState }: Props) {
                       aria-label={`Deadline title: ${d.title}`}
                     />
                     <button
-                      className={`dl-left ${left < 0 ? 'over' : ''}`}
+                      className={`dl-left ${over ? 'over' : ''}`}
                       title="Show this countdown"
                       onClick={() => setState((s) => ({ ...s, primaryId: d.id }))}
                     >
                       {since >= 0 && <em>{t('day')} {since + 1} · </em>}
-                      {left >= 0
+                      {!over
                         ? `${smartLeft(d, now.getTime())} ${t('left')}`
-                        : `${-left} ${t('daysPast')}`}
+                        : left < 0
+                          ? `${-left} ${t('daysPast')}`
+                          : `⏰ ${t('timeOver')}`}
                     </button>
                   </div>
                   <button
@@ -214,15 +237,26 @@ export default function Countdown({ state, setState }: Props) {
                   </label>
                   <label className="fld">
                     <span>{t('ends')}</span>
-                    <input
-                      type="date"
-                      className="dl-date"
-                      value={d.date}
-                      min={d.start}
-                      onClick={openPicker}
-                      onChange={(e) => patch(d.id, 'date', e.target.value)}
-                      aria-label={`Change deadline date for ${d.title}`}
-                    />
+                    <div className="fld-pair">
+                      <input
+                        type="date"
+                        className="dl-date"
+                        value={d.date}
+                        min={d.start}
+                        onClick={openPicker}
+                        onChange={(e) => patch(d.id, 'date', e.target.value)}
+                        aria-label={`Change deadline date for ${d.title}`}
+                      />
+                      <input
+                        type="time"
+                        className="dl-date dl-time"
+                        value={d.time ?? ''}
+                        onClick={openPicker}
+                        onChange={(e) => patch(d.id, 'time', e.target.value)}
+                        aria-label={`Change end time for ${d.title} (optional)`}
+                        data-tip="Optional end time — clear it to count the whole day"
+                      />
+                    </div>
                   </label>
                   <button className="icon-btn" title="Delete" onClick={() => remove(d.id)}>
                     ✕
@@ -260,6 +294,15 @@ export default function Countdown({ state, setState }: Props) {
               onChange={(e) => setDate(e.target.value)}
             />
           </label>
+          <label className="fld">
+            <span>{t('atTime')}</span>
+            <input
+              type="time"
+              value={endTime}
+              onClick={openPicker}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+          </label>
           <button type="submit" className="btn-accent">{t('addDeadline')}</button>
         </form>
         <p className="muted small">
@@ -289,7 +332,6 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
   const total = Math.max(daysBetween(start, end), 1)
   const gone = Math.min(Math.max(daysBetween(start, now), 0), total)
   const pct = Math.round((gone / total) * 100)
-  const over = daysBetween(now, end) < 0
   const since = daysBetween(start, now)
 
   // live smart countdown: days+hours → hours+minutes → minutes+seconds → seconds
@@ -298,7 +340,9 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
     const iv = setInterval(() => setTick(Date.now()), 1000)
     return () => clearInterval(iv)
   }, [])
-  const parts = remainingParts(deadlineEndMs(deadline) - Math.max(tick, now.getTime()))
+  const nowMs = Math.max(tick, now.getTime())
+  const over = deadlineEndMs(deadline) <= nowMs
+  const parts = remainingParts(deadlineEndMs(deadline) - nowMs)
   const rest = parts.slice(1).map((p) => `${p.value} ${unitLabel(p)}`).join(' ')
 
   return (
@@ -318,6 +362,7 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
           ? <>started <b>{since === 0 ? 'today' : `${since} days ago`}</b> · </>
           : <>starts in <b>{-since} days</b> · </>}
         ends {end.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        {deadline.time ? <> at <b>{deadline.time}</b></> : null}
         {' · '}
         {gone} of {total} days spent
       </p>

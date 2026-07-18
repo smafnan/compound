@@ -2099,3 +2099,68 @@ html[data-theme='neo'] .bg-forest::before { opacity: 0.25; }
 
   .ov-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- deadline end time + alarm ---------- */
+.fld-pair { display: flex; gap: 6px; }
+.fld-pair .dl-time { width: 92px; }
+.icon-btn.bell:hover { color: var(--accent); }
+.icon-btn.bell.on { color: var(--accent); }
+.toast.alarm { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ---------- pomodoro phases & settings ---------- */
+.pomo-phase {
+  font-family: var(--script);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  margin: 2px 0 -4px;
+}
+.pomodoro.break .pomo-phase { color: var(--good); }
+.pomo-settings {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-family: var(--script);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+.pomo-set { display: inline-flex; align-items: center; gap: 6px; }
+.pomo-set b { font-family: var(--display); color: var(--ink); min-width: 34px; text-align: center; }
+.pomo-step {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pomo-step:hover { background: var(--cream); color: var(--accent); }
+
+/* ---------- native app display (safe areas / small screens) ---------- */
+@media (max-width: 680px) {
+  /* keep content clear of the notch/status bar and the fixed tab bar */
+  .app {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+  .content { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .foot { margin-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom)); max-width: calc(100vw - 32px); }
+
+  /* comfortable touch targets */
+  .ctrl-btn, .icon-btn { min-width: 40px; min-height: 40px; }
+  .chip, .chip-btn, .pill-btn { min-height: 38px; }
+  .fld-pair { flex-wrap: wrap; }
+  .fld-pair .dl-time { width: 100%; }
+
+  .hero-num { font-size: clamp(48px, 17vw, 84px); }
+  .style-pop { max-width: calc(100vw - 40px); }
+}

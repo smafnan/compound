@@ -7,6 +7,9 @@ export interface Deadline {
   title: string
   date: string // yyyy-mm-dd, the target
   start: string // yyyy-mm-dd, when the countdown began
+  /** optional HH:MM — the moment on `date` the deadline ends
+   *  (omitted = the deadline runs through its whole final day) */
+  time?: string
 }
 
 export interface Task {
@@ -145,10 +148,15 @@ export function remainingParts(ms: number): TimePart[] {
   return [{ value: seconds, unit: 'second' }]
 }
 
-/** A deadline runs through its whole final day — it ends at the midnight
- *  that closes `date`. */
+/** The exact moment a deadline ends: `time` on its date when set,
+ *  otherwise the midnight that closes `date` (whole final day counts). */
 export function deadlineEndMs(d: Deadline): number {
-  return parseDate(d.date).getTime() + DAY_MS
+  const day = parseDate(d.date).getTime()
+  if (d.time && /^\d{2}:\d{2}$/.test(d.time)) {
+    const [h, m] = d.time.split(':').map(Number)
+    return day + (h * 60 + m) * 60_000
+  }
+  return day + DAY_MS
 }
 
 export function daysInMonth(year: number, month: number): number {

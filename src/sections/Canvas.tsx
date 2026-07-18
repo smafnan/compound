@@ -3,6 +3,7 @@ import { AppState, CanvasItem, FocusSession, WidgetKind, parseDate, uid } from '
 import { Hero, MonthGrid } from './Countdown'
 import { ClockHero, HoursPanel, QuartersPanel, useNow } from './Today'
 import { ChartPanel, GrowthCards } from './Growth'
+import { playBeep, playChime } from '../sound'
 
 interface Props {
   state: AppState
@@ -250,7 +251,15 @@ function Widget({ item, state, now, onCfg, onFocusDone }: WidgetProps) {
     case 'clock':
       return <ClockHero now={now} />
     case 'pomodoro':
-      return <Pomodoro task={item.cfg?.task ?? ''} onTask={(t) => onCfg({ task: t })} onDone={onFocusDone} />
+      return (
+        <Pomodoro
+          task={item.cfg?.task ?? ''}
+          focusMin={clampMin(item.cfg?.focusMin, 25)}
+          breakMin={clampMin(item.cfg?.breakMin, 5)}
+          onCfg={onCfg}
+          onDone={onFocusDone}
+        />
+      )
     case 'countdown':
       return primary
         ? <Hero deadline={primary} now={now} />
@@ -275,48 +284,81 @@ function Widget({ item, state, now, onCfg, onFocusDone }: WidgetProps) {
   }
 }
 
-/** Focus timer with a named task; completed blocks are logged to your account. */
-function Pomodoro({ task, onTask, onDone }: {
+/** Keep configured minutes sane (1–180) with a fallback default. */
+function clampMin(raw: string | undefined, dflt: number): number {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ? Math.min(180, Math.round(n)) : dflt
+}
+
+/**
+ * Focus timer with a named task and adjustable focus/break lengths
+ * (persisted in the widget's config, so they survive restarts and sync
+ * across devices). A finished focus block chimes, logs to your history
+ * and rolls straight into the break; the break chimes and re-arms focus.
+ */
+function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
   task: string
-  onTask: (t: string) => void
+  focusMin: number
+  breakMin: number
+  onCfg: (patch: Record<string, string>) => void
   onDone: (s: FocusSession) => void
 }) {
-  const [total, setTotal] = useState(25 * 60)
-  const [left, setLeft] = useState(25 * 60)
+  const [phase, setPhase] = useState<'focus' | 'break'>('focus')
+  const [left, setLeft] = useState(focusMin * 60)
   const [running, setRunning] = useState(false)
-  const loggedRef = useRef(false)
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
+  const total = (phase === 'focus' ? focusMin : breakMin) * 60
 
   useEffect(() => {
     if (!running) return
     const t = setInterval(() => {
-      setLeft((l) => {
-        if (l <= 1) {
-          setRunning(false)
-          return 0
-        }
-        return l - 1
-      })
+      setLeft((l) => (l <= 1 ? 0 : l - 1))
     }, 1000)
     return () => clearInterval(t)
   }, [running])
 
-  // log exactly once when the sand runs out
+  // phase transitions — log + chime exactly once when the sand runs out
+  const doneRef = useRef(false)
   useEffect(() => {
-    if (left === 0 && !loggedRef.current) {
-      loggedRef.current = true
+    if (left > 0) {
+      doneRef.current = false
+      return
+    }
+    if (doneRef.current) return
+    doneRef.current = true
+    if (phaseRef.current === 'focus') {
+      playChime()
       onDone({
         id: uid(),
         task: task.trim() || 'Untitled focus',
-        minutes: Math.round(total / 60),
+        minutes: focusMin,
         endedAt: new Date().toISOString(),
       })
+      // roll straight into the break
+      setPhase('break')
+      setLeft(breakMin * 60)
+    } else {
+      playBeep()
+      setPhase('focus')
+      setLeft(focusMin * 60)
+      setRunning(false) // focus starts on your command, not by surprise
     }
-    if (left > 0) loggedRef.current = false
   }, [left]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function reset(mins: number) {
-    setTotal(mins * 60)
-    setLeft(mins * 60)
+  function adjust(key: 'focusMin' | 'breakMin', delta: number) {
+    const cur = key === 'focusMin' ? focusMin : breakMin
+    const next = Math.min(180, Math.max(1, cur + delta))
+    onCfg({ [key]: String(next) })
+    // re-arm an idle timer in the phase being adjusted
+    if (!running && ((key === 'focusMin' && phase === 'focus') || (key === 'breakMin' && phase === 'break'))) {
+      setLeft(next * 60)
+    }
+  }
+
+  function restart() {
+    setPhase('focus')
+    setLeft(focusMin * 60)
     setRunning(false)
   }
 
@@ -325,26 +367,38 @@ function Pomodoro({ task, onTask, onDone }: {
   const pct = total === 0 ? 0 : ((total - left) / total) * 100
 
   return (
-    <div className="pomodoro">
+    <div className={`pomodoro ${phase}`}>
       <input
         className="pomo-task"
         placeholder="What are you focusing on?"
         value={task}
-        onChange={(e) => onTask(e.target.value)}
+        onChange={(e) => onCfg({ task: e.target.value })}
       />
+      <div className="pomo-phase">{phase === 'focus' ? '● focus' : '☕ break'}</div>
       <div className={`pomo-time ${left === 0 ? 'done' : ''}`}>{mm}:{ss}</div>
       <div className="bar" data-tip={`${Math.round(pct)}% done · ${Math.round(100 - pct)}% to go`}>
         <div className="bar-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="pomo-controls">
-        <button className="btn-accent" onClick={() => (left === 0 ? reset(total / 60) : setRunning(!running))}>
-          {left === 0 ? 'again' : running ? 'pause' : 'start'}
+        <button className="btn-accent" onClick={() => setRunning(!running)}>
+          {running ? 'pause' : 'start'}
         </button>
-        {[25, 15, 5].map((m) => (
-          <button key={m} className="btn-ghost" onClick={() => reset(m)}>{m}m</button>
-        ))}
+        <button className="btn-ghost" onClick={restart}>reset</button>
       </div>
-      {left === 0 && <p className="muted small">logged to your focus history ✓</p>}
+      <div className="pomo-settings">
+        <span className="pomo-set">
+          focus
+          <button className="pomo-step" aria-label="Shorter focus" onClick={() => adjust('focusMin', -5)}>−</button>
+          <b>{focusMin}m</b>
+          <button className="pomo-step" aria-label="Longer focus" onClick={() => adjust('focusMin', 5)}>+</button>
+        </span>
+        <span className="pomo-set">
+          break
+          <button className="pomo-step" aria-label="Shorter break" onClick={() => adjust('breakMin', -1)}>−</button>
+          <b>{breakMin}m</b>
+          <button className="pomo-step" aria-label="Longer break" onClick={() => adjust('breakMin', 1)}>+</button>
+        </span>
+      </div>
     </div>
   )
 }
