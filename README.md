@@ -11,10 +11,10 @@ and your progress follows you to every device, live.*
 
 <br/>
 
-### 🌐 [**Use it now → productive-time-track.netlify.app**](https://productive-time-track.netlify.app/)
+### 🌐 [**Use it now → compoundtracker.netlify.app**](https://compoundtracker.netlify.app/)
 
-[![Live](https://img.shields.io/badge/live-productive--time--track.netlify.app-2C8C4A?logo=netlify&logoColor=32E6E2)](https://productive-time-track.netlify.app/)
-[![Windows](https://img.shields.io/badge/Windows-installer-0078D6?logo=windows)](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest)
+[![Live](https://img.shields.io/badge/live-compoundtracker.netlify.app-2C8C4A?logo=netlify&logoColor=32E6E2)](https://compoundtracker.netlify.app/)
+[![Windows](https://img.shields.io/badge/Windows-installer-0078D6?logo=windows)](https://github.com/smafnan/compound/releases/latest)
 ![React](https://img.shields.io/badge/React_18-1B1B1B?logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-1B1B1B?logo=typescript&logoColor=3178C6)
 ![Capacitor](https://img.shields.io/badge/Capacitor_8-Android_%26_iOS-1B1B1B?logo=capacitor&logoColor=119EFF)
@@ -33,10 +33,10 @@ and your progress follows you to every device, live.*
 
 | Platform | How |
 |---|---|
-| **Web** | [productive-time-track.netlify.app](https://productive-time-track.netlify.app/) — nothing to install |
-| **Windows** | [Download the installer](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (unsigned — SmartScreen will ask "More info → Run anyway") |
-| **macOS** | [Download the .dmg](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (Apple-silicon build; unsigned — right-click → Open the first time) |
-| **Android** | [Download the APK](https://github.com/smafnan/Motivational-Time-Tracker/releases/latest) (`Compound-android.apk`; debug-signed — allow "Install unknown apps" when asked) |
+| **Web** | [compoundtracker.netlify.app](https://compoundtracker.netlify.app/) — nothing to install |
+| **Windows** | [Download the installer](https://github.com/smafnan/compound/releases/latest) (unsigned — SmartScreen will ask "More info → Run anyway") |
+| **macOS** | [Download the .dmg](https://github.com/smafnan/compound/releases/latest) (Apple-silicon build; unsigned — right-click → Open the first time) |
+| **Android** | [Download the APK](https://github.com/smafnan/compound/releases/latest) (`Compound-android.apk`; debug-signed — allow "Install unknown apps" when asked) |
 | **iOS** | `npx cap open ios` on a Mac → Run ▶ in Xcode (project included) — or install the PWA below |
 | **PWA** | Open the web app on your phone → **Add to Home Screen** (Android Chrome: ⋮ menu · iPhone/iPad Safari: Share → Add to Home Screen). Installs like a native app, has its own icon + splash screen, and works offline |
 
@@ -155,8 +155,8 @@ bars and the compound curve, drawn on-device.
 ## 🚀 Run it yourself
 
 ```bash
-git clone https://github.com/smafnan/Motivational-Time-Tracker.git
-cd Motivational-Time-Tracker
+git clone https://github.com/smafnan/compound.git
+cd compound
 npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ — deployable anywhere (this repo → Netlify)

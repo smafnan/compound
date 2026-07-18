@@ -24,7 +24,7 @@ export const cloudEnabled = Boolean(url && key)
 
 /** The deployed web app — where email links must land (a native webview
  *  can't receive an https redirect, and file:// origins are meaningless). */
-const SITE_URL = 'https://productive-time-track.netlify.app'
+const SITE_URL = 'https://compoundtracker.netlify.app'
 
 function redirectHome(): string {
   if (Capacitor.isNativePlatform()) return SITE_URL
