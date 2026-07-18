@@ -554,6 +554,7 @@ body {
   transform: rotate(-1deg);
 }
 .fld input[type='date'],
+.fld input[type='time'],
 .dl-date {
   background: var(--card);
   border: 2px solid var(--ink);
