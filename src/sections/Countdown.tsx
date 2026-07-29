@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AppState, Deadline, MONTHS, TimePart, daysBetween, deadlineEndMs, parseDate,
-  remainingParts, todayStr, uid,
+  AppState, Deadline, MONTHS, TimePart, clockLeft, daysBetween, deadlineEndMs,
+  fmtClock, fmtDate, fmtDuration, isTimer, makeTimer, parseDate, remainingParts,
+  timerAt, timerStartMs, todayStr, uid,
 } from '../lib'
 import { t } from '../i18n'
 import { alarmEnabled, setAlarmEnabled } from '../alarms'
@@ -32,18 +33,35 @@ function openPicker(e: React.MouseEvent<HTMLInputElement>) {
   }
 }
 
+/** One-tap timer lengths, in minutes. */
+const PRESETS = [25, 60, 120, 240, 480]
+
+const presetLabel = (min: number) => (min < 60 ? `${min}m` : `${min / 60}h`)
+
+/** Digits only, capped — keeps the hour/minute boxes from taking junk. */
+function digits(raw: string, max: number): string {
+  const clean = raw.replace(/\D/g, '').slice(0, 3)
+  if (!clean) return ''
+  return String(Math.min(max, Number(clean)))
+}
+
 interface Props {
   state: AppState
   setState: React.Dispatch<React.SetStateAction<AppState>>
 }
 
 export default function Countdown({ state, setState }: Props) {
+  const [mode, setMode] = useState<'date' | 'timer'>('date')
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [start, setStart] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [hrs, setHrs] = useState('')
+  const [mins, setMins] = useState('')
   const [alarm, setAlarm] = useState(alarmEnabled)
   const [now, setNow] = useState(() => new Date())
+
+  const totalMin = Number(hrs || 0) * 60 + Number(mins || 0)
 
   // tick every second so the countdown text stays live
   useEffect(() => {
@@ -57,19 +75,54 @@ export default function Countdown({ state, setState }: Props) {
 
   function addDeadline(e: React.FormEvent) {
     e.preventDefault()
-    if (!date) return
-    const d: Deadline = {
-      id: uid(),
-      title: title.trim() || 'Deadline',
-      date,
-      start: start || todayStr(),
-      ...(endTime ? { time: endTime } : {}),
+    let d: Deadline
+    if (mode === 'timer') {
+      if (totalMin < 1) return
+      d = makeTimer(title, totalMin)
+    } else {
+      if (!date) return
+      d = {
+        id: uid(),
+        title: title.trim() || 'Deadline',
+        date,
+        start: start || todayStr(),
+        ...(endTime ? { time: endTime } : {}),
+      }
     }
     setState((s) => ({ ...s, deadlines: [...s.deadlines, d], primaryId: d.id }))
     setTitle('')
     setDate('')
     setStart('')
     setEndTime('')
+    setHrs('')
+    setMins('')
+  }
+
+  /** Move a running timer's finish line, keeping its start fixed so the
+   *  progress bar still measures the whole stretch. Never lands in the past. */
+  function nudge(id: string, deltaMin: number) {
+    setState((s) => ({
+      ...s,
+      deadlines: s.deadlines.map((d) => {
+        if (d.id !== id || !isTimer(d)) return d
+        const from = timerStartMs(d)
+        const end = Math.max(Date.now(), (d.endMs as number) + deltaMin * 60_000)
+        return { ...d, ...timerAt(end, (end - from) / 60_000) }
+      }),
+    }))
+  }
+
+  /** Run the same timer again from this moment. */
+  function restart(id: string) {
+    setState((s) => ({
+      ...s,
+      deadlines: s.deadlines.map((d) => {
+        if (d.id !== id || !isTimer(d)) return d
+        const len = Math.max(1, d.durMin ?? 1)
+        const from = Date.now()
+        return { ...d, start: fmtDate(new Date(from)), ...timerAt(from + len * 60_000, len) }
+      }),
+    }))
   }
 
   function patch(id: string, field: 'date' | 'start' | 'title' | 'time', value: string) {
@@ -125,10 +178,13 @@ export default function Countdown({ state, setState }: Props) {
   }
 
   // the wall only needs a fresh "now" every 30s — no point redrawing
-  // hundreds of calendar cells on every 1-second timer tick
+  // hundreds of calendar cells on every 1-second timer tick. A duration
+  // timer has no days to cross off, so it gets no wall.
   const wallTick = Math.floor(now.getTime() / 30_000)
   const wall = useMemo(
-    () => (primary ? <CalendarWall deadline={primary} now={new Date(wallTick * 30_000)} /> : null),
+    () => (primary && !isTimer(primary)
+      ? <CalendarWall deadline={primary} now={new Date(wallTick * 30_000)} />
+      : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [primary, wallTick],
   )
@@ -173,7 +229,9 @@ export default function Countdown({ state, setState }: Props) {
               const left = daysBetween(now, parseDate(d.date))
               const since = daysBetween(parseDate(d.start), now)
               const isPrio = state.priorityId === d.id
-              const over = deadlineEndMs(d) <= now.getTime()
+              const end = deadlineEndMs(d)
+              const over = end <= now.getTime()
+              const timer = isTimer(d)
               return (
                 <li
                   key={d.id}
@@ -208,10 +266,12 @@ export default function Countdown({ state, setState }: Props) {
                       title="Show this countdown"
                       onClick={() => setState((s) => ({ ...s, primaryId: d.id }))}
                     >
-                      {since >= 0 && <em>{t('day')} {since + 1} · </em>}
+                      {!timer && since >= 0 && <em>{t('day')} {since + 1} · </em>}
                       {!over
-                        ? `${smartLeft(d, now.getTime())} ${t('left')}`
-                        : left < 0
+                        ? timer
+                          ? `⏱ ${clockLeft(end - Math.max(now.getTime(), Date.now()))}`
+                          : `${smartLeft(d, now.getTime())} ${t('left')}`
+                        : !timer && left < 0
                           ? `${-left} ${t('daysPast')}`
                           : `⏰ ${t('timeOver')}`}
                     </button>
@@ -223,41 +283,84 @@ export default function Countdown({ state, setState }: Props) {
                   >
                     {isPrio ? '★' : '☆'}
                   </button>
-                  <label className="fld">
-                    <span>{t('started')}</span>
-                    <input
-                      type="date"
-                      className="dl-date"
-                      value={d.start}
-                      max={d.date}
-                      onClick={openPicker}
-                      onChange={(e) => patch(d.id, 'start', e.target.value)}
-                      aria-label={`Change start date for ${d.title}`}
-                    />
-                  </label>
-                  <label className="fld">
-                    <span>{t('ends')}</span>
-                    <div className="fld-pair">
-                      <input
-                        type="date"
-                        className="dl-date"
-                        value={d.date}
-                        min={d.start}
-                        onClick={openPicker}
-                        onChange={(e) => patch(d.id, 'date', e.target.value)}
-                        aria-label={`Change deadline date for ${d.title}`}
-                      />
-                      <input
-                        type="time"
-                        className="dl-date dl-time"
-                        value={d.time ?? ''}
-                        onClick={openPicker}
-                        onChange={(e) => patch(d.id, 'time', e.target.value)}
-                        aria-label={`Change end time for ${d.title} (optional)`}
-                        data-tip="Optional end time — clear it to count the whole day"
-                      />
+                  {timer ? (
+                    <div className="fld dl-timer">
+                      <span>{t('ends')}</span>
+                      <div className="tm-row">
+                        <span
+                          className="tm-at"
+                          data-tip={`${fmtDuration(d.durMin ?? 0)} timer — ends ${new Date(end).toLocaleString()}`}
+                        >
+                          {fmtClock(end)}
+                        </span>
+                        <button
+                          type="button"
+                          className="tm-step"
+                          title="15 minutes less"
+                          aria-label={`Take 15 minutes off ${d.title}`}
+                          onClick={() => nudge(d.id, -15)}
+                        >
+                          −
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-step"
+                          title="15 minutes more"
+                          aria-label={`Add 15 minutes to ${d.title}`}
+                          onClick={() => nudge(d.id, 15)}
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-step"
+                          title={`${t('restartTimer')} — ${fmtDuration(d.durMin ?? 0)}`}
+                          aria-label={`${t('restartTimer')}: ${d.title}`}
+                          onClick={() => restart(d.id)}
+                        >
+                          ↻
+                        </button>
+                      </div>
                     </div>
-                  </label>
+                  ) : (
+                    <>
+                      <label className="fld">
+                        <span>{t('started')}</span>
+                        <input
+                          type="date"
+                          className="dl-date"
+                          value={d.start}
+                          max={d.date}
+                          onClick={openPicker}
+                          onChange={(e) => patch(d.id, 'start', e.target.value)}
+                          aria-label={`Change start date for ${d.title}`}
+                        />
+                      </label>
+                      <label className="fld">
+                        <span>{t('ends')}</span>
+                        <div className="fld-pair">
+                          <input
+                            type="date"
+                            className="dl-date"
+                            value={d.date}
+                            min={d.start}
+                            onClick={openPicker}
+                            onChange={(e) => patch(d.id, 'date', e.target.value)}
+                            aria-label={`Change deadline date for ${d.title}`}
+                          />
+                          <input
+                            type="time"
+                            className="dl-date dl-time"
+                            value={d.time ?? ''}
+                            onClick={openPicker}
+                            onChange={(e) => patch(d.id, 'time', e.target.value)}
+                            aria-label={`Change end time for ${d.title} (optional)`}
+                            data-tip="Optional end time — clear it to count the whole day"
+                          />
+                        </div>
+                      </label>
+                    </>
+                  )}
                   <button className="icon-btn" title="Delete" onClick={() => remove(d.id)}>
                     ✕
                   </button>
@@ -266,48 +369,125 @@ export default function Countdown({ state, setState }: Props) {
             })}
           </ul>
         )}
-        <form className="add-form" onSubmit={addDeadline}>
+        <form className={`add-form ${mode === 'timer' ? 'timer-mode' : ''}`} onSubmit={addDeadline}>
+          <div className="mode-seg" role="group" aria-label="Count down to a date or for a length of time">
+            <button
+              type="button"
+              className={mode === 'date' ? 'on' : ''}
+              aria-pressed={mode === 'date'}
+              onClick={() => setMode('date')}
+            >
+              📅 {t('byDate')}
+            </button>
+            <button
+              type="button"
+              className={mode === 'timer' ? 'on' : ''}
+              aria-pressed={mode === 'timer'}
+              onClick={() => setMode('timer')}
+            >
+              ⏱ {t('byTimer')}
+            </button>
+          </div>
           <input
             type="text"
-            placeholder="What's the goal? (e.g. Launch day)"
+            placeholder={
+              mode === 'timer'
+                ? "What are you timing? (e.g. Deep work)"
+                : "What's the goal? (e.g. Launch day)"
+            }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <label className="fld">
-            <span>{t('started')}</span>
-            <input
-              type="date"
-              value={start}
-              max={date || undefined}
-              onClick={openPicker}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </label>
-          <label className="fld">
-            <span>{t('deadline')}</span>
-            <input
-              type="date"
-              required
-              value={date}
-              min={start || undefined}
-              onClick={openPicker}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-          <label className="fld">
-            <span>{t('atTime')}</span>
-            <input
-              type="time"
-              value={endTime}
-              onClick={openPicker}
-              onChange={(e) => setEndTime(e.target.value)}
-            />
-          </label>
-          <button type="submit" className="btn-accent">{t('addDeadline')}</button>
+          {mode === 'date' ? (
+            <>
+              <label className="fld">
+                <span>{t('started')}</span>
+                <input
+                  type="date"
+                  value={start}
+                  max={date || undefined}
+                  onClick={openPicker}
+                  onChange={(e) => setStart(e.target.value)}
+                />
+              </label>
+              <label className="fld">
+                <span>{t('deadline')}</span>
+                <input
+                  type="date"
+                  required
+                  value={date}
+                  min={start || undefined}
+                  onClick={openPicker}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </label>
+              <label className="fld">
+                <span>{t('atTime')}</span>
+                <input
+                  type="time"
+                  value={endTime}
+                  onClick={openPicker}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="fld">
+                <span>{t('hrsLabel')}</span>
+                <input
+                  className="dur-in"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={hrs}
+                  onChange={(e) => setHrs(digits(e.target.value, 999))}
+                  aria-label="Hours to count down"
+                />
+              </label>
+              <label className="fld">
+                <span>{t('minLabel')}</span>
+                <input
+                  className="dur-in"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="00"
+                  value={mins}
+                  onChange={(e) => setMins(digits(e.target.value, 59))}
+                  aria-label="Minutes to count down"
+                />
+              </label>
+              <div className="dur-chips">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`chip-btn ${totalMin === p ? 'on' : ''}`}
+                    onClick={() => {
+                      setHrs(p >= 60 ? String(Math.floor(p / 60)) : '')
+                      setMins(p % 60 ? String(p % 60) : '')
+                    }}
+                  >
+                    {presetLabel(p)}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          <button type="submit" className="btn-accent">
+            {mode === 'timer' ? t('startTimer') : t('addDeadline')}
+          </button>
         </form>
         <p className="muted small">
-          "Started" can be in the past — set it to the day you planned to begin, and every day
-          since then gets blacked out on the wall.
+          {mode === 'timer'
+            ? totalMin > 0
+              ? <>Counts down <b>{fmtDuration(totalMin)}</b> from the moment you start — ending
+                  around <b>{fmtClock(now.getTime() + totalMin * 60_000)}</b>. It keeps running
+                  while the app is closed.</>
+              : <>Pick a length — hours, minutes, or one of the presets — for a session you want
+                  to finish inside, like deep work or an exam.</>
+            : <>"Started" can be in the past — set it to the day you planned to begin, and every
+                day since then gets blacked out on the wall.</>}
         </p>
       </div>
 
@@ -327,6 +507,22 @@ function EmptyHero() {
 }
 
 export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; flag?: string }) {
+  // live smart countdown: days+hours → hours+minutes → minutes+seconds → seconds
+  const [tick, setTick] = useState(() => Date.now())
+  useEffect(() => {
+    const iv = setInterval(() => setTick(Date.now()), 1000)
+    return () => clearInterval(iv)
+  }, [])
+  // tick/now only force the re-render — read the clock fresh so a timer
+  // face never sits a second behind the real remaining time
+  const nowMs = Math.max(tick, now.getTime(), Date.now())
+  const endMs = deadlineEndMs(deadline)
+  const over = endMs <= nowMs
+
+  if (isTimer(deadline)) {
+    return <TimerHero deadline={deadline} nowMs={nowMs} endMs={endMs} over={over} flag={flag} />
+  }
+
   const end = parseDate(deadline.date)
   const start = parseDate(deadline.start)
   const total = Math.max(daysBetween(start, end), 1)
@@ -334,15 +530,7 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
   const pct = Math.round((gone / total) * 100)
   const since = daysBetween(start, now)
 
-  // live smart countdown: days+hours → hours+minutes → minutes+seconds → seconds
-  const [tick, setTick] = useState(() => Date.now())
-  useEffect(() => {
-    const iv = setInterval(() => setTick(Date.now()), 1000)
-    return () => clearInterval(iv)
-  }, [])
-  const nowMs = Math.max(tick, now.getTime())
-  const over = deadlineEndMs(deadline) <= nowMs
-  const parts = remainingParts(deadlineEndMs(deadline) - nowMs)
+  const parts = remainingParts(endMs - nowMs)
   const rest = parts.slice(1).map((p) => `${p.value} ${unitLabel(p)}`).join(' ')
 
   return (
@@ -367,6 +555,41 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
         {gone} of {total} days spent
       </p>
       <div className="bar" data-tip={`${gone} days spent · ${total - gone} days remain`}>
+        <div className="bar-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="bar-meta">
+        <span>{pct}% {t('gone')}</span>
+        <span>{100 - pct}% {t('remains')}</span>
+      </div>
+    </div>
+  )
+}
+
+/** The same speech-bubble hero, told in clock time: a live H:MM:SS face and
+ *  a bar that measures the timer's own length instead of calendar days. */
+function TimerHero({
+  deadline, nowMs, endMs, over, flag,
+}: { deadline: Deadline; nowMs: number; endMs: number; over: boolean; flag?: string }) {
+  const startMs = timerStartMs(deadline)
+  const total = Math.max(endMs - startMs, 60_000)
+  const gone = Math.min(Math.max(nowMs - startMs, 0), total)
+  const pct = Math.round((gone / total) * 100)
+  const spentMin = Math.round(gone / 60_000)
+  const leftMin = Math.round((total - gone) / 60_000)
+
+  return (
+    <div className="hero">
+      {flag && <p className="hero-flag">{flag}</p>}
+      <p className="hero-kicker">{deadline.title}</p>
+      <div className={`hero-num timer ${over ? 'dim' : ''}`}>
+        {over ? '0:00' : clockLeft(endMs - nowMs)}
+        <span className="hero-unit">{over ? t('timeOver') : t('left')}</span>
+      </div>
+      <p className="hero-sub">
+        <b>{fmtDuration(deadline.durMin ?? 0)}</b> timer · {over ? 'ended' : 'ends'} at{' '}
+        <b>{fmtClock(endMs)}</b> · {fmtDuration(spentMin)} spent
+      </p>
+      <div className="bar" data-tip={`${fmtDuration(spentMin)} spent · ${fmtDuration(leftMin)} remain`}>
         <div className="bar-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="bar-meta">
