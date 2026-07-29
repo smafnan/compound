@@ -49,6 +49,8 @@ const EN: Dict = {
   password: 'Password', memberSince: 'Member since', deleteAccount: 'Delete account',
   save: 'save', everyDayCounts: 'every day counts !',
   last7: 'Last 7 days', last30d: 'Last 30 days', last90: 'Last 90 days', lastYear: 'Last year',
+  byDate: 'Date', byTimer: 'Timer', startTimer: 'Start timer',
+  hrsLabel: 'hours', minLabel: 'minutes', restartTimer: 'Restart timer',
 }
 
 const AR: Dict = {
@@ -80,6 +82,8 @@ const AR: Dict = {
   password: 'كلمة المرور', memberSince: 'عضو منذ', deleteAccount: 'حذف الحساب',
   save: 'حفظ', everyDayCounts: '! كل يوم له قيمة',
   last7: 'آخر ٧ أيام', last30d: 'آخر ٣٠ يومًا', last90: 'آخر ٩٠ يومًا', lastYear: 'السنة الأخيرة',
+  byDate: 'تاريخ', byTimer: 'مؤقّت', startTimer: 'ابدأ المؤقّت',
+  hrsLabel: 'ساعات', minLabel: 'دقائق', restartTimer: 'أعد تشغيل المؤقّت',
 }
 
 const FR: Dict = {
@@ -111,6 +115,8 @@ const FR: Dict = {
   password: 'Mot de passe', memberSince: 'Membre depuis', deleteAccount: 'Supprimer le compte',
   save: 'enregistrer', everyDayCounts: 'chaque jour compte !',
   last7: '7 derniers jours', last30d: '30 derniers jours', last90: '90 derniers jours', lastYear: 'Dernière année',
+  byDate: 'Date', byTimer: 'Minuteur', startTimer: 'Lancer le minuteur',
+  hrsLabel: 'heures', minLabel: 'minutes', restartTimer: 'Relancer le minuteur',
 }
 
 const DE: Dict = {
@@ -142,6 +148,8 @@ const DE: Dict = {
   password: 'Passwort', memberSince: 'Mitglied seit', deleteAccount: 'Konto löschen',
   save: 'speichern', everyDayCounts: 'jeder Tag zählt !',
   last7: 'Letzte 7 Tage', last30d: 'Letzte 30 Tage', last90: 'Letzte 90 Tage', lastYear: 'Letztes Jahr',
+  byDate: 'Datum', byTimer: 'Timer', startTimer: 'Timer starten',
+  hrsLabel: 'Stunden', minLabel: 'Minuten', restartTimer: 'Timer neu starten',
 }
 
 const ES: Dict = {
@@ -173,6 +181,8 @@ const ES: Dict = {
   password: 'Contraseña', memberSince: 'Miembro desde', deleteAccount: 'Eliminar cuenta',
   save: 'guardar', everyDayCounts: '¡ cada día cuenta !',
   last7: 'Últimos 7 días', last30d: 'Últimos 30 días', last90: 'Últimos 90 días', lastYear: 'Último año',
+  byDate: 'Fecha', byTimer: 'Temporizador', startTimer: 'Iniciar temporizador',
+  hrsLabel: 'horas', minLabel: 'minutos', restartTimer: 'Reiniciar temporizador',
 }
 
 const HI: Dict = {
@@ -204,6 +214,8 @@ const HI: Dict = {
   password: 'पासवर्ड', memberSince: 'सदस्य कब से', deleteAccount: 'खाता हटाएँ',
   save: 'सहेजें', everyDayCounts: 'हर दिन मायने रखता है !',
   last7: 'पिछले 7 दिन', last30d: 'पिछले 30 दिन', last90: 'पिछले 90 दिन', lastYear: 'पिछला वर्ष',
+  byDate: 'तिथि', byTimer: 'टाइमर', startTimer: 'टाइमर शुरू करें',
+  hrsLabel: 'घंटे', minLabel: 'मिनट', restartTimer: 'टाइमर फिर से शुरू करें',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }

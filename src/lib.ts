@@ -10,6 +10,12 @@ export interface Deadline {
   /** optional HH:MM — the moment on `date` the deadline ends
    *  (omitted = the deadline runs through its whole final day) */
   time?: string
+  /** duration-timer mode: the exact instant it ends (epoch ms). Set only by
+   *  "count down N hours" timers — `date`/`time` still mirror it so the wall,
+   *  the hero and every date helper keep working unchanged. */
+  endMs?: number
+  /** how long that timer runs, in minutes (its progress bar's total) */
+  durMin?: number
 }
 
 export interface Task {
@@ -148,15 +154,77 @@ export function remainingParts(ms: number): TimePart[] {
   return [{ value: seconds, unit: 'second' }]
 }
 
-/** The exact moment a deadline ends: `time` on its date when set,
- *  otherwise the midnight that closes `date` (whole final day counts). */
+/** The exact moment a deadline ends: the timer's instant when it is one,
+ *  else `time` on its date when set, otherwise the midnight that closes
+ *  `date` (whole final day counts). */
 export function deadlineEndMs(d: Deadline): number {
+  if (isTimer(d)) return d.endMs as number
   const day = parseDate(d.date).getTime()
   if (d.time && /^\d{2}:\d{2}$/.test(d.time)) {
     const [h, m] = d.time.split(':').map(Number)
     return day + (h * 60 + m) * 60_000
   }
   return day + DAY_MS
+}
+
+// ---------- Duration timers ----------
+
+/** True for deadlines set as a length of time ("3 hours") rather than a date. */
+export function isTimer(d: Deadline): boolean {
+  return typeof d.endMs === 'number' && Number.isFinite(d.endMs)
+}
+
+/** The instant a timer began — its end, minus the length it was set for. */
+export function timerStartMs(d: Deadline): number {
+  return (d.endMs ?? 0) - Math.max(1, d.durMin ?? 1) * 60_000
+}
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+/** Live timer face: "2:14:07" with hours left, "14:07" without. */
+export function clockLeft(ms: number): string {
+  const s = Math.max(0, Math.ceil(ms / 1000))
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  return h > 0 ? `${h}:${pad2(m)}:${pad2(s % 60)}` : `${m}:${pad2(s % 60)}`
+}
+
+/** An instant as local wall-clock time — "4:35 PM" / "16:35". */
+export function fmtClock(ms: number): string {
+  return new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+}
+
+/** A length of time in words: "3 hrs 20 min" / "45 min". */
+export function fmtDuration(min: number): string {
+  const n = Math.max(0, Math.round(min))
+  const h = Math.floor(n / 60)
+  const m = n % 60
+  if (h && m) return `${h} ${h === 1 ? 'hr' : 'hrs'} ${m} min`
+  if (h) return `${h} ${h === 1 ? 'hr' : 'hrs'}`
+  return `${m} min`
+}
+
+/** The fields that pin a timer to a moment. `date`/`time` mirror `endMs`
+ *  so date-based views (the wall, "ends …") need no special casing. */
+export function timerAt(endMs: number, durMin: number): Required<Pick<Deadline, 'date' | 'time' | 'endMs' | 'durMin'>> {
+  const e = new Date(endMs)
+  return {
+    date: fmtDate(e),
+    time: `${pad2(e.getHours())}:${pad2(e.getMinutes())}`,
+    endMs,
+    durMin: Math.max(1, Math.round(durMin)),
+  }
+}
+
+/** A fresh timer of `minutes`, counting down from now. */
+export function makeTimer(title: string, minutes: number, fromMs: number = Date.now()): Deadline {
+  const mins = Math.max(1, Math.round(minutes))
+  return {
+    id: uid(),
+    title: title.trim() || 'Timer',
+    start: fmtDate(new Date(fromMs)),
+    ...timerAt(fromMs + mins * 60_000, mins),
+  }
 }
 
 export function daysInMonth(year: number, month: number): number {

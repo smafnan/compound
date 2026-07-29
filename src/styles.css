@@ -189,7 +189,7 @@ html[data-theme='neo'] .tab.active { transform: scale(1.05); }
 html[data-theme='neo'] :is(.panel, .hero, .tab, .dl-row, .month, .stat-card, .bar,
 .msand, .add-form input, .fld input, .dl-date, .btn-ghost, .btn-accent, .tick,
 .day-bar, .widget, .pal-chip, .ctrl-btn, .theme-picker, .chip, .chip-btn,
-.auth-tab, .acc-row input, .style-pop, .style-btn) {
+.auth-tab, .acc-row input, .style-pop, .style-btn, .mode-seg, .tm-at, .tm-step) {
   border-width: 1px;
   border-color: rgba(143, 163, 200, 0.3);
 }
@@ -2107,6 +2107,96 @@ html[data-theme='neo'] .bg-forest::before { opacity: 0.25; }
 .icon-btn.bell:hover { color: var(--accent); }
 .icon-btn.bell.on { color: var(--accent); }
 .toast.alarm { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ---------- Countdown: duration timers ---------- */
+
+/* date ⇄ timer switch, sitting on the add form's baseline */
+.mode-seg {
+  display: inline-flex;
+  align-self: flex-end;
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.mode-seg button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: var(--hand);
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+.mode-seg button + button { border-left: 2px solid var(--ink); }
+.mode-seg button:hover { background: var(--cream); color: var(--ink); }
+.mode-seg button.on { background: var(--sand); color: var(--on-sand); font-weight: 700; }
+
+/* how long? — hours / minutes boxes and their one-tap presets */
+.dur-in {
+  width: 78px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  border-radius: var(--wob-sm);
+  padding: 5px 8px;
+  font-family: var(--hand);
+  font-size: 14px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.dur-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-bottom: 3px; }
+
+/* a running timer's row: when it lands, plus quick adjustments */
+.dl-timer { min-width: 0; }
+.dl-timer .tm-row { display: flex; align-items: center; gap: 6px; }
+.tm-at {
+  border: 2px dashed var(--ink-faint);
+  border-radius: var(--wob-sm);
+  padding: 5px 10px;
+  font-family: var(--hand);
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tm-step {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.tm-step:hover { background: var(--cream); color: var(--accent); }
+.tm-step:active { transform: translate(1px, 2px); box-shadow: none; }
+
+/* the clock face is longer than a day count — let it breathe, not overflow */
+.hero-num.timer { font-size: clamp(42px, 11vw, 92px); letter-spacing: 0.02em; }
+
+@media (max-width: 680px) {
+  .mode-seg { flex: 1 1 100%; }
+  .mode-seg button { flex: 1; padding: 11px 8px; }
+  /* let hours and minutes pair up on their own line */
+  .add-form.timer-mode input[type='text'] { flex: 1 1 100%; }
+  .dur-chips { flex: 1 1 100%; }
+  .dl-timer { flex: 1 1 100%; }
+  .tm-at { flex: 1; text-align: center; }
+  .tm-step { width: 38px; height: 38px; font-size: 16px; }
+  .hero-num.timer { font-size: clamp(34px, 13vw, 66px); }
+}
 
 /* ---------- pomodoro phases & settings ---------- */
 .pomo-phase {
