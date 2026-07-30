@@ -1692,9 +1692,9 @@ html:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-r
    fully opaque, and the blur keeps moving detail from bleeding into the
    letterforms. Toggle lives in "set a mood". */
 html[data-glass='on']:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-row) {
-  background-color: color-mix(in srgb, var(--card) 58%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.35);
-  backdrop-filter: blur(18px) saturate(1.35);
+  background-color: color-mix(in srgb, var(--card) 38%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
   box-shadow:
     var(--shadow-sm),
     inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent),
@@ -1703,7 +1703,7 @@ html[data-glass='on']:not([data-bg='none']) :is(.panel, .hero, .stat-card, .mont
 /* the hero is the biggest pane, so it gets a touch more veil behind the
    large display numerals */
 html[data-glass='on']:not([data-bg='none']) .hero {
-  background-color: color-mix(in srgb, var(--card) 64%, transparent);
+  background-color: color-mix(in srgb, var(--card) 44%, transparent);
 }
 /* nested boxes would otherwise stack two layers of glass and turn milky */
 html[data-glass='on']:not([data-bg='none']) .widget :is(.panel, .hero, .stat-card, .month) {
@@ -1716,20 +1716,20 @@ html[data-glass='on']:not([data-bg='none']) .widget :is(.panel, .hero, .stat-car
    which reads as a lid clamped over the scene — glass them too so the
    whole surface feels like one pane */
 html[data-glass='on']:not([data-bg='none']) :is(.topbar, .tabs) {
-  background-color: color-mix(in srgb, var(--paper) 62%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(1.35);
-  backdrop-filter: blur(18px) saturate(1.35);
+  background-color: color-mix(in srgb, var(--paper) 42%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
 }
 
 /* dimmed text is the first thing to lose legibility on glass — lift it */
 html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .panel-stat) {
-  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  color: color-mix(in srgb, var(--ink) 88%, transparent);
 }
 /* Safari/older Android without backdrop-filter would show raw video behind
    text, so those fall back to a near-solid pane */
 @supports not (backdrop-filter: blur(1px)) {
   html[data-glass='on']:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-row) {
-    background-color: color-mix(in srgb, var(--card) 92%, transparent);
+    background-color: color-mix(in srgb, var(--card) 90%, transparent);
   }
 }
 
