@@ -319,15 +319,15 @@ export default function App() {
       )}
 
       <main className="content">
-        {tab === 'countdown' && (
-          <StyleQuick
-            glass={glass}
-            setGlass={setGlass}
-            theme={theme} setTheme={(t) => setTheme(t as Theme)}
-            font={font} setFont={setFont}
-            bg={bg} setBg={setBg}
-          />
-        )}
+        {/* every section, not just the home page — the scene and the glass
+            are visible everywhere, so the way to change them should be too */}
+        <StyleQuick
+          glass={glass}
+          setGlass={setGlass}
+          theme={theme} setTheme={(t) => setTheme(t as Theme)}
+          font={font} setFont={setFont}
+          bg={bg} setBg={setBg}
+        />
         <div className="view" key={tab}>
           {tab === 'countdown' && <Countdown state={state} setState={setState} />}
           {tab === 'today' && <Today state={state} setState={setState} />}
