@@ -1393,19 +1393,36 @@ body {
   overflow: hidden;
 }
 
+/* Each line is its own block: as bare text in a flex container the inline
+   <em> became a sibling flex item and was laid out beside the sentence
+   instead of inside it, which knocked the whole hint off centre. */
 .board-hint {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  padding: 24px;
   text-align: center;
-  font-family: var(--script);
-  font-size: 24px;
-  color: var(--ink-faint);
   pointer-events: none;
-  line-height: 1.5;
 }
+.board-hint p {
+  margin: 0;
+  max-width: min(38ch, 100%);
+  font-family: var(--script);
+  font-size: clamp(16px, 2.1vw, 24px);
+  line-height: 1.45;
+  /* readable over a video scene, not just over paper */
+  color: var(--ink);
+  background: color-mix(in srgb, var(--card) 78%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  padding: 6px 18px;
+}
+.board-hint em { font-style: normal; font-weight: 700; color: var(--accent); }
 
 .widget {
   position: absolute;

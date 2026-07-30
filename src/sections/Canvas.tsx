@@ -181,9 +181,8 @@ export default function Canvas({ state, setState }: Props) {
       <div className="board" ref={boardRef} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
         {items.length === 0 && (
           <div className="board-hint">
-            your space is empty — grab a widget from the tray above
-            <br />
-            and build the screen <em>you</em> want to stare at
+            <p>your space is empty — grab a widget from the tray above</p>
+            <p>and build the screen <em>you</em> want to stare at</p>
           </div>
         )}
         {items.map((item) => {
