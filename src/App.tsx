@@ -6,7 +6,7 @@ import { SyncStatus, cloudEnabled, onAuth, pullState, pushState, subscribeToStat
 import { loadPref, resolveFontFamily, savePref } from './prefs'
 import FontPicker from './FontPicker'
 import { LANGS, LangId, applyLang, langDir, t } from './i18n'
-import Backdrop, { BACKDROPS, BgKind, CSS_SCENES, VIDEO_SCENES } from './Backdrop'
+import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
 import Account from './Account'
 import Countdown from './sections/Countdown'
 import Today from './sections/Today'
@@ -416,21 +416,11 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
           <div className="style-row">
             <span className="style-k">{t('scene')}</span>
             <div className="chips">
-              {CSS_SCENES.map((b) => (
+              {BACKDROPS.map((b) => (
                 <button key={b.id} className={`chip ${bg === b.id ? 'on' : ''}`} onClick={() => setBg(b.id)}>
                   {b.icon} {b.label}
                 </button>
               ))}
-              {VIDEO_SCENES.length > 0 && (
-                <>
-                  <span className="bg-split">{t('videoScenes')}</span>
-                  {VIDEO_SCENES.map((b) => (
-                    <button key={b.id} className={`chip ${bg === b.id ? 'on' : ''}`} onClick={() => setBg(b.id)}>
-                      {b.icon} {b.label}
-                    </button>
-                  ))}
-                </>
-              )}
             </div>
           </div>
         </div>

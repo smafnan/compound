@@ -5,7 +5,7 @@ import {
 } from '../lib'
 import { SyncStatus, cloudEnabled } from '../cloud'
 import FontPicker from '../FontPicker'
-import { BgKind, CSS_SCENES, VIDEO_SCENES, sceneCardBg } from '../Backdrop'
+import { BACKDROPS, BgKind, sceneCardBg } from '../Backdrop'
 import { downloadReport, ReportRange } from '../report'
 import { t } from '../i18n'
 
@@ -197,38 +197,20 @@ export default function Profile({
         </div>
         <div className="pref-block">
           <span className="pref-label">{t('backgroundScene')}</span>
-          <div className="bg-grid">
-            {CSS_SCENES.map((b) => (
+          <div className="bg-grid videos">
+            {BACKDROPS.map((b) => (
               <button
                 key={b.id}
-                className={`bg-card bgp-${b.id} ${bg === b.id ? 'on' : ''}`}
+                className={`bg-card ${b.video ? 'is-video' : 'bgp-none'} ${bg === b.id ? 'on' : ''}`}
+                style={{ backgroundImage: sceneCardBg(b) }}
                 onClick={() => setBg(b.id)}
-                data-tip={b.id === 'none' ? 'No background' : `${b.label} — animated`}
+                data-tip={b.video ? `${b.label} — looping video` : 'No background'}
               >
                 <span className="bg-icon">{b.icon}</span>
                 <span>{b.label}</span>
               </button>
             ))}
           </div>
-          {VIDEO_SCENES.length > 0 && (
-            <>
-              <div className="bg-split">{t('videoScenes')}</div>
-              <div className="bg-grid videos">
-                {VIDEO_SCENES.map((b) => (
-                  <button
-                    key={b.id}
-                    className={`bg-card is-video ${bg === b.id ? 'on' : ''}`}
-                    style={{ backgroundImage: sceneCardBg(b) }}
-                    onClick={() => setBg(b.id)}
-                    data-tip={`${b.label} — looping video`}
-                  >
-                    <span className="bg-icon">{b.icon}</span>
-                    <span>{b.label}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
         </div>
         <div className="pref-block">
           <span className="pref-label">{t('theme')}</span>

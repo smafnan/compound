@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-/** Scenes drawn with CSS only. */
-export type CssBg = 'none' | 'galaxy' | 'aurora' | 'forest' | 'pixel' | 'ocean'
+/** The plain (no backdrop) option. */
+export type CssBg = 'none'
 /** Scenes backed by a looping video file in public/scenes/. */
 export type VideoBg = `vid-${string}`
 export type BgKind = CssBg | VideoBg
@@ -73,17 +73,11 @@ export const VIDEO_SCENES: Scene[] = [
   },
 ]
 
-export const CSS_SCENES: Scene[] = [
-  { id: 'none', label: 'Plain', icon: '·' },
-  { id: 'galaxy', label: 'Galaxy', icon: '✦' },
-  { id: 'aurora', label: 'Aurora', icon: '≋' },
-  { id: 'forest', label: 'Forest', icon: '❦' },
-  { id: 'pixel', label: 'Pixel', icon: '▚' },
-  { id: 'ocean', label: 'Ocean', icon: '◠' },
-]
+/** Plain is the only non-video option, and leads the list. */
+export const PLAIN: Scene = { id: 'none', label: 'Plain', icon: '·' }
 
-/** Every selectable scene, CSS ones first. */
-export const BACKDROPS: Scene[] = [...CSS_SCENES, ...VIDEO_SCENES]
+/** Every selectable scene: Plain first, then the video scenes. */
+export const BACKDROPS: Scene[] = [PLAIN, ...VIDEO_SCENES]
 
 export const sceneById = (id: BgKind): Scene | undefined =>
   BACKDROPS.find((s) => s.id === id)
@@ -116,59 +110,12 @@ function usePrefersReducedMotion(): boolean {
   return reduced
 }
 
-/** Fixed animated scene rendered behind the app. The CSS ones are cheap on
- *  battery; video scenes pause themselves whenever the app isn't visible.
- *  A theme-aware scrim (see styles.css) keeps content readable on top. */
+/** Fixed scene rendered behind the app. Video scenes pause themselves
+ *  whenever the app isn't visible; a theme-aware scrim (see styles.css)
+ *  keeps content readable on top. Plain renders nothing at all. */
 export default function Backdrop({ kind }: { kind: BgKind }) {
   const scene = sceneById(kind)
-  if (!scene || kind === 'none') return null
-  if (scene.video) return <VideoBackdrop scene={scene} />
-
-  return (
-    <div className={`backdrop bg-${kind}`} aria-hidden>
-      {kind === 'galaxy' && (
-        <>
-          <div className="stars s1" />
-          <div className="stars s2" />
-          <div className="stars s3" />
-          <div className="nebula" />
-        </>
-      )}
-      {kind === 'aurora' && (
-        <>
-          <div className="ribbon r1" />
-          <div className="ribbon r2" />
-          <div className="ribbon r3" />
-        </>
-      )}
-      {kind === 'forest' && (
-        <>
-          <div className="hills h1" />
-          <div className="hills h2" />
-          {Array.from({ length: 10 }, (_, i) => (
-            <span key={i} className="leaf" style={{ ['--i' as string]: i }}>❧</span>
-          ))}
-        </>
-      )}
-      {kind === 'pixel' && (
-        <>
-          <div className="px-sun" />
-          <div className="px-cloud c1" />
-          <div className="px-cloud c2" />
-          <div className="px-ground" />
-        </>
-      )}
-      {kind === 'ocean' && (
-        <>
-          <div className="wave w1" />
-          <div className="wave w2" />
-          {Array.from({ length: 8 }, (_, i) => (
-            <span key={i} className="bubble" style={{ ['--i' as string]: i }} />
-          ))}
-        </>
-      )}
-    </div>
-  )
+  return scene?.video ? <VideoBackdrop scene={scene} /> : null
 }
 
 /**
