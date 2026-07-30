@@ -119,6 +119,10 @@ bars and the compound curve, drawn on-device.
 - **Three themes** — hand-drawn Paper, chalkboard Night, and the neon **Neo** above
 - **Six animated backgrounds** — galaxy (shooting stars), aurora, forest (fireflies at
   night), pixel sunset, ocean, or plain
+- **Eight live video scenes** — Milky Way, Earth from orbit, the Amazon canopy, a beach,
+  rain on a window, Berlin at blue hour, Victorian Oxford and a Mughal-era Lahore bazaar.
+  Silent, seamlessly looping, and paused whenever the app isn't on screen so they don't
+  cost you battery ([how to add your own](docs/video-scenes.md))
 - **A 430-font picker** (7 curated + a 423-font library) in a searchable dropdown where
   every entry previews itself; the chosen font takes over the whole app
 - **Six languages** — English, العربية (full RTL), Français, Deutsch, Español, हिन्दी —
