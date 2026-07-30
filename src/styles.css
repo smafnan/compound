@@ -1715,10 +1715,34 @@ html[data-glass='on']:not([data-bg='none']) .widget :is(.panel, .hero, .stat-car
 /* the sticky top bar and the mobile tab bar are solid paper by default,
    which reads as a lid clamped over the scene — glass them too so the
    whole surface feels like one pane */
-html[data-glass='on']:not([data-bg='none']) :is(.topbar, .tabs) {
+html[data-glass='on']:not([data-bg='none']) .topbar {
   background-color: color-mix(in srgb, var(--paper) 42%, transparent);
   -webkit-backdrop-filter: blur(22px) saturate(1.5);
   backdrop-filter: blur(22px) saturate(1.5);
+}
+/* .tabs lives INSIDE .topbar on desktop — glassing both blurs the same
+   pixels twice and the strip reads as a grey patch cut into the bar. It
+   only needs its own pane on mobile, where it is a detached fixed bar
+   (see the mobile block below). */
+html[data-glass='on']:not([data-bg='none']) .topbar .tabs {
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* The checklist's sticky first/last columns and its tick buttons are solid
+   card colour so they can occlude the grid scrolling under them. Over a
+   scene that reads as white blocks punched through the glass, so give them
+   the same treatment — the blur still hides whatever slides beneath. */
+html[data-glass='on']:not([data-bg='none']) :is(.sh-corner, .sh-task, .sheet .stick-r) {
+  background-color: color-mix(in srgb, var(--card) 62%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+html[data-glass='on']:not([data-bg='none']) :is(.tick:not(.done), .day-bar) {
+  background-color: color-mix(in srgb, var(--card) 42%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* dimmed text is the first thing to lose legibility on glass — lift it */
@@ -2271,6 +2295,14 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   .slot-note { flex-wrap: wrap; gap: 4px; }
   .slot-note-when { min-width: 0; }
   .slot-note input { flex: 1 1 100%; min-height: 40px; }
+
+  /* the mobile tab bar is detached from the top bar, so here it does need
+     its own pane */
+  html[data-glass='on']:not([data-bg='none']) .tabs {
+    background-color: color-mix(in srgb, var(--paper) 42%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    backdrop-filter: blur(22px) saturate(1.5);
+  }
 
   /* 24 columns of quarter-hour cells are ~31px on a phone — fine to look
      at, too small to tap reliably once they become buttons. Widen the grid
