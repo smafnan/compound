@@ -1019,6 +1019,21 @@ b.bad, .challenge-score .bad { color: var(--bad); }
 .day-bar i.mid { background: var(--sand); }
 .day-bar i.lo { background: var(--accent); }
 
+/* The label pill: on plain paper it is just a layout box, but under glass
+   it carries the surface so the tint hugs the text instead of banding the
+   whole column. */
+.sh-pill {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 3px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sh-pct {
   display: flex;
   align-items: center;
@@ -1752,9 +1767,22 @@ html[data-glass='on']:not([data-bg='none']) .topbar {
    stay the one surface that cannot match the panel exactly. Tuned down from
    62% to the least that still reads cleanly while scrolled. */
 html[data-glass='on']:not([data-bg='none']) :is(.sh-corner, .sh-task, .sheet .stick-r) {
-  background-color: color-mix(in srgb, var(--card) calc((var(--glass) + 7) * 1%), transparent);
+  /* Only a whisper of tint on the cell — the heavy full-width band is what
+     made these read as hard rectangles, but pure transparency let day
+     numbers ghost through the frozen column. A third of the glass level
+     knocks that back while staying well below the threshold where it reads
+     as a band; the pill carries the contrast the text needs. */
+  background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 0.34 * 1%), transparent);
   -webkit-backdrop-filter: blur(calc(var(--glass) * 0.42px));
   backdrop-filter: blur(calc(var(--glass) * 0.42px));
+}
+html[data-glass='on']:not([data-bg='none']) :is(.sh-pill, .sh-task-name) {
+  background-color: color-mix(in srgb, var(--card) calc((var(--glass) + 18) * 1%), transparent);
+  border-radius: 999px;
+}
+/* the task name is an editable input, so it gets the same pill treatment */
+html[data-glass='on']:not([data-bg='none']) .sh-task-name {
+  padding: 3px 10px;
 }
 /* The ticks and day-score bars occlude nothing — they scroll WITH the grid —
    so they need no blur and barely any tint, and stop reading as white boxes
@@ -2103,7 +2131,7 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
 
   .add-form .fld { flex: 1 1 40%; }
 
-  .sheet { grid-template-columns: minmax(112px, 132px) repeat(var(--days), 29px) 46px; }
+  .sheet { grid-template-columns: minmax(134px, 152px) repeat(var(--days), 29px) 50px; }
   .tick { width: 29px; height: 29px; }
   .icon-btn.tiny { opacity: 1; }
 

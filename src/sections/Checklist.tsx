@@ -108,7 +108,7 @@ export default function Checklist({ state, setState }: Props) {
         <div className="sheet-scroll">
           <div className="sheet" style={{ ['--days' as string]: days }}>
             {/* header row */}
-            <div className="sh-corner">{t('task')}</div>
+            <div className="sh-corner"><span className="sh-pill">{t('task')}</span></div>
             {Array.from({ length: days }, (_, i) => {
               const date = dateOf(i + 1)
               return (
@@ -117,7 +117,7 @@ export default function Checklist({ state, setState }: Props) {
                 </div>
               )
             })}
-            <div className="sh-corner right stick-r">%</div>
+            <div className="sh-corner right stick-r"><span className="sh-pill">%</span></div>
 
             {/* one row per task */}
             {state.tasks.map((t) => {
@@ -150,7 +150,7 @@ export default function Checklist({ state, setState }: Props) {
             })}
 
             {/* footer: per-day productivity */}
-            <div className="sh-corner foot-label">{t('dayScore')}</div>
+            <div className="sh-corner foot-label"><span className="sh-pill">{t('dayScore')}</span></div>
             {dayScores.map((v, i) => {
               const date = dateOf(i + 1)
               const future = date > today
@@ -167,7 +167,7 @@ export default function Checklist({ state, setState }: Props) {
               )
             })}
             <div className="sh-corner right foot-label stick-r">
-              {monthAvg === null ? '—' : `${Math.round(monthAvg * 100)}%`}
+              <span className="sh-pill">{monthAvg === null ? '—' : `${Math.round(monthAvg * 100)}%`}</span>
             </div>
           </div>
         </div>
@@ -213,7 +213,7 @@ function TaskRow({
       </div>
       {cells}
       <div className="sh-pct stick-r" data-tip={pct === null ? undefined : `${name}: ${Math.round(pct * 100)}% this month`}>
-        {pct === null ? '—' : `${Math.round(pct * 100)}%`}
+        <span className="sh-pill">{pct === null ? '—' : `${Math.round(pct * 100)}%`}</span>
       </div>
     </>
   )
