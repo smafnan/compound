@@ -395,7 +395,7 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
         onClick={() => setOpen((o) => !o)}
         data-tip={open ? undefined : `${t('theme')} · ${t('font')} · ${t('scene')}`}
       >
-        ✎ {t('style')}
+        ✦ {t('setMood')}
       </button>
       {open && (
         <div className="style-pop">

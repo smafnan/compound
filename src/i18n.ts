@@ -52,6 +52,7 @@ const EN: Dict = {
   byDate: 'Date', byTimer: 'Timer', startTimer: 'Start timer',
   hrsLabel: 'hours', minLabel: 'minutes', restartTimer: 'Restart timer',
   videoScenes: 'Video',
+  setMood: 'set a mood',
 }
 
 const AR: Dict = {
@@ -86,6 +87,7 @@ const AR: Dict = {
   byDate: 'تاريخ', byTimer: 'مؤقّت', startTimer: 'ابدأ المؤقّت',
   hrsLabel: 'ساعات', minLabel: 'دقائق', restartTimer: 'أعد تشغيل المؤقّت',
   videoScenes: 'فيديو',
+  setMood: 'اختر أجواءً',
 }
 
 const FR: Dict = {
@@ -120,6 +122,7 @@ const FR: Dict = {
   byDate: 'Date', byTimer: 'Minuteur', startTimer: 'Lancer le minuteur',
   hrsLabel: 'heures', minLabel: 'minutes', restartTimer: 'Relancer le minuteur',
   videoScenes: 'Vidéo',
+  setMood: 'choisir une ambiance',
 }
 
 const DE: Dict = {
@@ -154,6 +157,7 @@ const DE: Dict = {
   byDate: 'Datum', byTimer: 'Timer', startTimer: 'Timer starten',
   hrsLabel: 'Stunden', minLabel: 'Minuten', restartTimer: 'Timer neu starten',
   videoScenes: 'Video',
+  setMood: 'Stimmung wählen',
 }
 
 const ES: Dict = {
@@ -188,6 +192,7 @@ const ES: Dict = {
   byDate: 'Fecha', byTimer: 'Temporizador', startTimer: 'Iniciar temporizador',
   hrsLabel: 'horas', minLabel: 'minutos', restartTimer: 'Reiniciar temporizador',
   videoScenes: 'Vídeo',
+  setMood: 'elige un ambiente',
 }
 
 const HI: Dict = {
@@ -222,6 +227,7 @@ const HI: Dict = {
   byDate: 'तिथि', byTimer: 'टाइमर', startTimer: 'टाइमर शुरू करें',
   hrsLabel: 'घंटे', minLabel: 'मिनट', restartTimer: 'टाइमर फिर से शुरू करें',
   videoScenes: 'वीडियो',
+  setMood: 'माहौल चुनें',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }
