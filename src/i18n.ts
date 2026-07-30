@@ -51,6 +51,7 @@ const EN: Dict = {
   last7: 'Last 7 days', last30d: 'Last 30 days', last90: 'Last 90 days', lastYear: 'Last year',
   byDate: 'Date', byTimer: 'Timer', startTimer: 'Start timer',
   hrsLabel: 'hours', minLabel: 'minutes', restartTimer: 'Restart timer',
+  videoScenes: 'Video',
 }
 
 const AR: Dict = {
@@ -84,6 +85,7 @@ const AR: Dict = {
   last7: 'آخر ٧ أيام', last30d: 'آخر ٣٠ يومًا', last90: 'آخر ٩٠ يومًا', lastYear: 'السنة الأخيرة',
   byDate: 'تاريخ', byTimer: 'مؤقّت', startTimer: 'ابدأ المؤقّت',
   hrsLabel: 'ساعات', minLabel: 'دقائق', restartTimer: 'أعد تشغيل المؤقّت',
+  videoScenes: 'فيديو',
 }
 
 const FR: Dict = {
@@ -117,6 +119,7 @@ const FR: Dict = {
   last7: '7 derniers jours', last30d: '30 derniers jours', last90: '90 derniers jours', lastYear: 'Dernière année',
   byDate: 'Date', byTimer: 'Minuteur', startTimer: 'Lancer le minuteur',
   hrsLabel: 'heures', minLabel: 'minutes', restartTimer: 'Relancer le minuteur',
+  videoScenes: 'Vidéo',
 }
 
 const DE: Dict = {
@@ -150,6 +153,7 @@ const DE: Dict = {
   last7: 'Letzte 7 Tage', last30d: 'Letzte 30 Tage', last90: 'Letzte 90 Tage', lastYear: 'Letztes Jahr',
   byDate: 'Datum', byTimer: 'Timer', startTimer: 'Timer starten',
   hrsLabel: 'Stunden', minLabel: 'Minuten', restartTimer: 'Timer neu starten',
+  videoScenes: 'Video',
 }
 
 const ES: Dict = {
@@ -183,6 +187,7 @@ const ES: Dict = {
   last7: 'Últimos 7 días', last30d: 'Últimos 30 días', last90: 'Últimos 90 días', lastYear: 'Último año',
   byDate: 'Fecha', byTimer: 'Temporizador', startTimer: 'Iniciar temporizador',
   hrsLabel: 'horas', minLabel: 'minutos', restartTimer: 'Reiniciar temporizador',
+  videoScenes: 'Vídeo',
 }
 
 const HI: Dict = {
@@ -216,6 +221,7 @@ const HI: Dict = {
   last7: 'पिछले 7 दिन', last30d: 'पिछले 30 दिन', last90: 'पिछले 90 दिन', lastYear: 'पिछला वर्ष',
   byDate: 'तिथि', byTimer: 'टाइमर', startTimer: 'टाइमर शुरू करें',
   hrsLabel: 'घंटे', minLabel: 'मिनट', restartTimer: 'टाइमर फिर से शुरू करें',
+  videoScenes: 'वीडियो',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }

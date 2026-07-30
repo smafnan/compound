@@ -5,7 +5,7 @@ import {
 } from '../lib'
 import { SyncStatus, cloudEnabled } from '../cloud'
 import FontPicker from '../FontPicker'
-import { BACKDROPS, BgKind } from '../Backdrop'
+import { BgKind, CSS_SCENES, VIDEO_SCENES, sceneCardBg } from '../Backdrop'
 import { downloadReport, ReportRange } from '../report'
 import { t } from '../i18n'
 
@@ -198,7 +198,7 @@ export default function Profile({
         <div className="pref-block">
           <span className="pref-label">{t('backgroundScene')}</span>
           <div className="bg-grid">
-            {BACKDROPS.map((b) => (
+            {CSS_SCENES.map((b) => (
               <button
                 key={b.id}
                 className={`bg-card bgp-${b.id} ${bg === b.id ? 'on' : ''}`}
@@ -210,6 +210,25 @@ export default function Profile({
               </button>
             ))}
           </div>
+          {VIDEO_SCENES.length > 0 && (
+            <>
+              <div className="bg-split">{t('videoScenes')}</div>
+              <div className="bg-grid videos">
+                {VIDEO_SCENES.map((b) => (
+                  <button
+                    key={b.id}
+                    className={`bg-card is-video ${bg === b.id ? 'on' : ''}`}
+                    style={{ backgroundImage: sceneCardBg(b) }}
+                    onClick={() => setBg(b.id)}
+                    data-tip={`${b.label} — looping video`}
+                  >
+                    <span className="bg-icon">{b.icon}</span>
+                    <span>{b.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         <div className="pref-block">
           <span className="pref-label">{t('theme')}</span>

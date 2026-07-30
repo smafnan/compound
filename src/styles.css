@@ -1580,6 +1580,17 @@ html[dir='rtl'] .sheet .stick-r { right: auto; left: 0; }
 html[data-theme='night'] { --scrim: color-mix(in srgb, var(--paper) 42%, transparent); }
 html[data-theme='neo'] { --scrim: color-mix(in srgb, var(--paper) 42%, transparent); }
 
+/* video scenes — the tint lives on .backdrop, the frames fill it */
+.bg-video { background-size: cover !important; background-position: center !important; }
+.bg-vid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* the scrim is drawn by .backdrop::after, which paints above this */
+}
+
 html:not([data-bg='none']) body { background-color: transparent; background-image: none; }
 html:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-row) {
   background-color: color-mix(in srgb, var(--card) 90%, transparent);
@@ -2048,6 +2059,50 @@ html[data-theme='neo'] .bg-forest::before { opacity: 0.25; }
 .bgp-forest { background: linear-gradient(#a8cf9f, #2f5c40); }
 .bgp-pixel { background: linear-gradient(#6a2f7d 0 33%, #ff7d54 33% 66%, #ffd77a 66%); }
 .bgp-ocean { background: linear-gradient(#0b3a5c, #02182b); }
+
+/* video scenes: a quiet caption splits them from the CSS ones so the
+   picker still scans as one short list */
+.bg-split {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 6px;
+  font-family: var(--script);
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+.bg-split::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1.5px dashed var(--line);
+}
+.chips .bg-split { flex: 1 1 100%; margin: 6px 0 0; }
+/* auto-fill (not auto-fit) so one or two video scenes stay card-sized
+   instead of stretching across the whole row */
+.bg-grid.videos { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+/* video cards show their own poster frame, so you pick by sight */
+.bg-card.is-video {
+  position: relative;
+  background-size: cover, 100% 100%;
+  background-position: center;
+  justify-content: flex-end;
+  min-height: 62px;
+}
+/* keep the label legible over whatever the still happens to be */
+.bg-card.is-video > span:last-child {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.bg-card.is-video .bg-icon { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8); }
+/* the little ▶ marks which scenes cost bandwidth/battery */
+.bg-card.is-video::after {
+  content: '▶';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 9px;
+  opacity: 0.75;
+}
 
 /* ---------- Mobile ---------- */
 
