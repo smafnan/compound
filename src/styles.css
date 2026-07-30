@@ -114,6 +114,10 @@
   --left-fg: var(--ink);
   --on-sand: #1b1b1b;
   --primary-row: #fff8df;
+  /* how much veil the frosted panels carry, 8 (barely there) to 80 (opaque);
+     the "set a mood" slider writes this. Blur and the checklist surfaces are
+     derived from it so the whole system moves together. */
+  --glass: 38;
   --month-bg: #fffdf6;
   --speckle: radial-gradient(rgba(27, 27, 27, 0.035) 1px, transparent 1.4px);
   --speckle-size: 26px 26px;
@@ -1692,9 +1696,9 @@ html:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-r
    fully opaque, and the blur keeps moving detail from bleeding into the
    letterforms. Toggle lives in "set a mood". */
 html[data-glass='on']:not([data-bg='none']) :is(.panel, .hero, .stat-card, .month, .widget, .dl-row) {
-  background-color: color-mix(in srgb, var(--card) 38%, transparent);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  backdrop-filter: blur(22px) saturate(1.5);
+  background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 1%), transparent);
+  -webkit-backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
+  backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
   box-shadow:
     var(--shadow-sm),
     inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent),
@@ -1703,7 +1707,7 @@ html[data-glass='on']:not([data-bg='none']) :is(.panel, .hero, .stat-card, .mont
 /* the hero is the biggest pane, so it gets a touch more veil behind the
    large display numerals */
 html[data-glass='on']:not([data-bg='none']) .hero {
-  background-color: color-mix(in srgb, var(--card) 44%, transparent);
+  background-color: color-mix(in srgb, var(--card) calc((var(--glass) + 6) * 1%), transparent);
 }
 /* nested boxes would otherwise stack two layers of glass and turn milky */
 html[data-glass='on']:not([data-bg='none']) .widget :is(.panel, .hero, .stat-card, .month) {
@@ -1716,9 +1720,9 @@ html[data-glass='on']:not([data-bg='none']) .widget :is(.panel, .hero, .stat-car
    which reads as a lid clamped over the scene — glass them too so the
    whole surface feels like one pane */
 html[data-glass='on']:not([data-bg='none']) .topbar {
-  background-color: color-mix(in srgb, var(--paper) 42%, transparent);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  backdrop-filter: blur(22px) saturate(1.5);
+  background-color: color-mix(in srgb, var(--paper) calc((var(--glass) + 4) * 1%), transparent);
+  -webkit-backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
+  backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
 }
 /* .tabs lives INSIDE .topbar on desktop — glassing both blurs the same
    pixels twice and the strip reads as a grey patch cut into the bar. Scoped
@@ -1748,15 +1752,15 @@ html[data-glass='on']:not([data-bg='none']) .topbar {
    stay the one surface that cannot match the panel exactly. Tuned down from
    62% to the least that still reads cleanly while scrolled. */
 html[data-glass='on']:not([data-bg='none']) :is(.sh-corner, .sh-task, .sheet .stick-r) {
-  background-color: color-mix(in srgb, var(--card) 45%, transparent);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background-color: color-mix(in srgb, var(--card) calc((var(--glass) + 7) * 1%), transparent);
+  -webkit-backdrop-filter: blur(calc(var(--glass) * 0.42px));
+  backdrop-filter: blur(calc(var(--glass) * 0.42px));
 }
 /* The ticks and day-score bars occlude nothing — they scroll WITH the grid —
    so they need no blur and barely any tint, and stop reading as white boxes
    entirely. */
 html[data-glass='on']:not([data-bg='none']) :is(.tick:not(.done), .day-bar) {
-  background-color: color-mix(in srgb, var(--card) 18%, transparent);
+  background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 0.47 * 1%), transparent);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -2315,9 +2319,9 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   /* the mobile tab bar is detached from the top bar, so here it does need
      its own pane */
   html[data-glass='on']:not([data-bg='none']) .tabs {
-    background-color: color-mix(in srgb, var(--paper) 42%, transparent);
-    -webkit-backdrop-filter: blur(22px) saturate(1.5);
-    backdrop-filter: blur(22px) saturate(1.5);
+    background-color: color-mix(in srgb, var(--paper) calc((var(--glass) + 4) * 1%), transparent);
+    -webkit-backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
+    backdrop-filter: blur(calc(var(--glass) * 0.58px)) saturate(1.5);
   }
 
   /* 24 columns of quarter-hour cells are ~31px on a phone — fine to look
@@ -2325,4 +2329,54 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
      only while judging, so the compact view is untouched. */
   .panel.challenging .qgrid { grid-template-columns: repeat(8, 1fr); }
   .panel.challenging .qcell.judgeable { font-size: 13px; }
+}
+
+/* ---------- Frostiness slider ---------- */
+
+.glass-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-family: var(--script);
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+.glass-slider b {
+  font-family: var(--hand);
+  color: var(--ink);
+  min-width: 42px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.glass-slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  height: 8px;
+  border-radius: 99px;
+  border: 2px solid var(--ink);
+  background: linear-gradient(90deg, transparent, var(--sand));
+  cursor: pointer;
+}
+.glass-slider input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sand);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+}
+.glass-slider input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sand);
+  border: 2px solid var(--ink);
+}
+@media (max-width: 680px) {
+  .glass-slider input[type='range'] { height: 12px; }
+  .glass-slider input[type='range']::-webkit-slider-thumb { width: 26px; height: 26px; }
 }
