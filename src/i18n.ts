@@ -53,6 +53,7 @@ const EN: Dict = {
   hrsLabel: 'hours', minLabel: 'minutes', restartTimer: 'Restart timer',
   videoScenes: 'Video',
   setMood: 'set a mood',
+  glass: 'Glass', glassOn: 'frosted', glassOff: 'solid',
 }
 
 const AR: Dict = {
@@ -88,6 +89,7 @@ const AR: Dict = {
   hrsLabel: 'ساعات', minLabel: 'دقائق', restartTimer: 'أعد تشغيل المؤقّت',
   videoScenes: 'فيديو',
   setMood: 'اختر أجواءً',
+  glass: 'زجاج', glassOn: 'مصنفر', glassOff: 'صلب',
 }
 
 const FR: Dict = {
@@ -123,6 +125,7 @@ const FR: Dict = {
   hrsLabel: 'heures', minLabel: 'minutes', restartTimer: 'Relancer le minuteur',
   videoScenes: 'Vidéo',
   setMood: 'choisir une ambiance',
+  glass: 'Verre', glassOn: 'dépoli', glassOff: 'opaque',
 }
 
 const DE: Dict = {
@@ -158,6 +161,7 @@ const DE: Dict = {
   hrsLabel: 'Stunden', minLabel: 'Minuten', restartTimer: 'Timer neu starten',
   videoScenes: 'Video',
   setMood: 'Stimmung wählen',
+  glass: 'Glas', glassOn: 'satiniert', glassOff: 'deckend',
 }
 
 const ES: Dict = {
@@ -193,6 +197,7 @@ const ES: Dict = {
   hrsLabel: 'horas', minLabel: 'minutos', restartTimer: 'Reiniciar temporizador',
   videoScenes: 'Vídeo',
   setMood: 'elige un ambiente',
+  glass: 'Cristal', glassOn: 'esmerilado', glassOff: 'sólido',
 }
 
 const HI: Dict = {
@@ -228,6 +233,7 @@ const HI: Dict = {
   hrsLabel: 'घंटे', minLabel: 'मिनट', restartTimer: 'टाइमर फिर से शुरू करें',
   videoScenes: 'वीडियो',
   setMood: 'माहौल चुनें',
+  glass: 'काँच', glassOn: 'धुँधला', glassOff: 'ठोस',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }
