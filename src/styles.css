@@ -2224,3 +2224,51 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   /* the mood button is a primary action on mobile — full comfortable target */
   .style-btn { min-height: 42px; padding: 9px 20px; font-size: 16px; }
 }
+
+/* ---------- Note yourself ---------- */
+
+.slot-notes {
+  margin-top: 14px;
+  border-top: 2px dashed var(--ink-faint);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.slot-notes-head {
+  font-family: var(--script);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+}
+.slot-note { display: flex; align-items: center; gap: 10px; }
+.slot-note-when {
+  flex: 0 0 auto;
+  min-width: 74px;
+  font-family: var(--hand);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim);
+}
+.slot-note-when.is-hit { color: var(--good); font-weight: 700; }
+.slot-note-when.is-miss { color: var(--bad); font-weight: 700; }
+.slot-note input {
+  flex: 1;
+  min-width: 0;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 14px;
+  padding: 7px 11px;
+}
+.slot-note input:focus { outline: none; border-color: var(--accent); }
+
+@media (max-width: 680px) {
+  /* stack so the field gets the full width on a phone */
+  .slot-note { flex-wrap: wrap; gap: 4px; }
+  .slot-note-when { min-width: 0; }
+  .slot-note input { flex: 1 1 100%; min-height: 40px; }
+}

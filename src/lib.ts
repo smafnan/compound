@@ -78,6 +78,8 @@ export interface AppState {
   focus: FocusSession[]
   /** challenge mode: date (yyyy-mm-dd) -> slot key -> hit/miss */
   slots: Record<string, Record<string, SlotMark>>
+  /** "note yourself": date -> slot key -> what you did in that block */
+  slotNotes: Record<string, Record<string, string>>
   /** per-date last-edit stamps for slot verdicts and notes */
   slotAt?: Record<string, string>
   profile: Profile
@@ -100,6 +102,7 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
     canvas: parsed?.canvas ?? [],
     focus: parsed?.focus ?? [],
     slots: parsed?.slots ?? {},
+    slotNotes: parsed?.slotNotes ?? {},
     slotAt: parsed?.slotAt ?? {},
     profile: {
       name: parsed?.profile?.name ?? '',
@@ -384,9 +387,12 @@ export function saveState(s: AppState, preStamped = false): AppState {
           changed = true
         }
       }
-      const slotDates = new Set([...Object.keys(s.slots), ...Object.keys(prev.slots)])
+      const slotDates = new Set([
+        ...Object.keys(s.slots), ...Object.keys(prev.slots),
+        ...Object.keys(s.slotNotes), ...Object.keys(prev.slotNotes),
+      ])
       for (const d of slotDates) {
-        if (!eq(s.slots[d], prev.slots[d])) {
+        if (!eq(s.slots[d], prev.slots[d]) || !eq(s.slotNotes[d], prev.slotNotes[d])) {
           slotAt[d] = now
           changed = true
         }
@@ -470,20 +476,23 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
   // challenge-mode slots: per day, newest edit wins; unstamped days merge
   // key-by-key so a verdict recorded on either device survives
   const slots: Record<string, Record<string, SlotMark>> = {}
+  const slotNotes: Record<string, Record<string, string>> = {}
   const slotAt: Record<string, string> = {}
   const slotDates = new Set([
     ...Object.keys(local.slots), ...Object.keys(remote.slots),
+    ...Object.keys(local.slotNotes), ...Object.keys(remote.slotNotes),
     ...Object.keys(local.slotAt ?? {}), ...Object.keys(remote.slotAt ?? {}),
   ])
   for (const d of slotDates) {
     const la = local.slotAt?.[d]
     const ra = remote.slotAt?.[d]
-    let val: Record<string, SlotMark> | undefined
-    if (la && ra) val = Date.parse(ra) > Date.parse(la) ? remote.slots[d] : local.slots[d]
-    else if (la) val = local.slots[d]
-    else if (ra) val = remote.slots[d]
-    else val = { ...(remote.slots[d] ?? {}), ...(local.slots[d] ?? {}) }
-    if (val && Object.keys(val).length) slots[d] = val
+    // verdicts and notes for a day move together, so a day never ends up
+    // with one device's ticks beside another device's notes
+    const win = la && ra ? (Date.parse(ra) > Date.parse(la) ? remote : local) : la ? local : ra ? remote : null
+    const marks = win ? win.slots[d] : { ...(remote.slots[d] ?? {}), ...(local.slots[d] ?? {}) }
+    const notes = win ? win.slotNotes[d] : { ...(remote.slotNotes[d] ?? {}), ...(local.slotNotes[d] ?? {}) }
+    if (marks && Object.keys(marks).length) slots[d] = marks
+    if (notes && Object.keys(notes).length) slotNotes[d] = notes
     const at = maxIso(la, ra)
     if (at) slotAt[d] = at
   }
@@ -509,6 +518,7 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     completions,
     focus,
     slots,
+    slotNotes,
     slotAt,
     sec,
     compAt,

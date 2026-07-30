@@ -27,6 +27,20 @@ const NEXT: Record<string, SlotMark | undefined> = { none: 'hit', hit: 'miss', m
 export function useSlots({ state, setState }: SlotProps) {
   const date = todayStr()
   const marks = state?.slots?.[date] ?? {}
+  const notes = state?.slotNotes?.[date] ?? {}
+
+  function note(key: string, text: string) {
+    if (!setState) return
+    setState((s) => {
+      const day = { ...(s.slotNotes[date] ?? {}) }
+      if (text.trim()) day[key] = text
+      else delete day[key]
+      const slotNotes = { ...s.slotNotes }
+      if (Object.keys(day).length) slotNotes[date] = day
+      else delete slotNotes[date]
+      return { ...s, slotNotes }
+    })
+  }
 
   function cycle(key: string) {
     if (!setState) return
@@ -42,7 +56,7 @@ export function useSlots({ state, setState }: SlotProps) {
     })
   }
 
-  return { marks, cycle }
+  return { marks, notes, cycle, note }
 }
 
 /** hits / misses / how much of what you judged you actually used */
@@ -94,6 +108,54 @@ function ChallengeBar({ on, setOn, state }: { on: boolean; setOn: (v: boolean) =
   )
 }
 
+/**
+ * "Note yourself": one line per judged block saying what you actually did.
+ * It lives under the grid rather than inside the cells — a 96-cell grid has
+ * no room for a text field, and a list is far easier to fill on a phone.
+ */
+function SlotNotes({
+  marks, notes, note, label, prefix, current,
+}: {
+  marks: Record<string, SlotMark>
+  notes: Record<string, string>
+  note: (key: string, text: string) => void
+  label: (i: number) => string
+  prefix: 'h' | 'q'
+  current: number
+}) {
+  // everything judged or already annotated, plus the block running now
+  const idx = new Set<number>()
+  for (const k of Object.keys(marks)) if (k.startsWith(prefix)) idx.add(Number(k.slice(1)))
+  for (const k of Object.keys(notes)) if (k.startsWith(prefix)) idx.add(Number(k.slice(1)))
+  idx.add(current)
+  const rows = [...idx].filter((i) => Number.isFinite(i) && i >= 0).sort((a, b) => a - b)
+  if (rows.length === 0) return null
+
+  return (
+    <div className="slot-notes">
+      <div className="slot-notes-head">✎ {t('noteYourself')}</div>
+      {rows.map((i) => {
+        const key = `${prefix}${i}`
+        const mark = marks[key]
+        return (
+          <label className="slot-note" key={key}>
+            <span className={`slot-note-when ${mark ? `is-${mark}` : ''}`}>
+              {mark === 'hit' ? '✓' : mark === 'miss' ? '✗' : '·'} {label(i)}
+            </span>
+            <input
+              type="text"
+              value={notes[key] ?? ''}
+              placeholder={t('notePlaceholder')}
+              onChange={(e) => note(key, e.target.value)}
+              aria-label={`What you did at ${label(i)}`}
+            />
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
 export function ClockHero({ now }: { now: Date }) {
   const h = now.getHours()
   const m = now.getMinutes()
@@ -127,7 +189,7 @@ export function HoursPanel({ now, state, setState, challenge }: { now: Date } & 
   const h = now.getHours()
   const hourFill = ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100
   const hoursLeft = 24 - h - 1
-  const { marks, cycle } = useSlots({ state, setState })
+  const { marks, notes, cycle, note } = useSlots({ state, setState })
   const live = !!challenge && !!setState
   const score = tally(marks, 'h')
 
@@ -173,6 +235,12 @@ export function HoursPanel({ now, state, setState, challenge }: { now: Date } & 
         })}
       </div>
       {live && <p className="muted small">{t('challengeLegend')}</p>}
+      {live && (
+        <SlotNotes
+          marks={marks} notes={notes} note={note} prefix="h" current={h}
+          label={(i) => `${String(i).padStart(2, '0')}:00`}
+        />
+      )}
     </div>
   )
 }
@@ -182,7 +250,7 @@ export function QuartersPanel({ now, state, setState, challenge }: { now: Date }
   const quarterIdx = Math.floor(minutesGone / 15) // 0..95, the one running now
   const quartersLeft = 96 - quarterIdx - 1
   const quarterFill = ((((minutesGone % 15) * 60) + now.getSeconds()) / 900) * 100
-  const { marks, cycle } = useSlots({ state, setState })
+  const { marks, notes, cycle, note } = useSlots({ state, setState })
   const live = !!challenge && !!setState
   const score = tally(marks, 'q')
 
@@ -230,6 +298,12 @@ export function QuartersPanel({ now, state, setState, challenge }: { now: Date }
           ? t('challengeLegend')
           : `Each square is 15 minutes. ${quartersLeft} blocks is ${(quartersLeft / 4).toFixed(1)} hours — enough to move something forward.`}
       </p>
+      {live && (
+        <SlotNotes
+          marks={marks} notes={notes} note={note} prefix="q" current={quarterIdx}
+          label={(i) => `${String(Math.floor(i / 4)).padStart(2, '0')}:${String((i % 4) * 15).padStart(2, '0')}`}
+        />
+      )}
     </div>
   )
 }

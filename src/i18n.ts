@@ -56,6 +56,7 @@ const EN: Dict = {
   glass: 'Glass', glassOn: 'frosted', glassOff: 'solid',
   challengeMode: 'challenge yourself', slotsUsed: 'used', challengeHint: 'judge every hour and quarter — tick it or cross it',
   challengeLegend: 'Tap a block: ✓ used it · ✗ wasted it · tap again to clear. Only blocks that have started can be judged.',
+  noteYourself: 'note yourself', notePlaceholder: 'what did you do in this block?',
 }
 
 const AR: Dict = {
@@ -94,6 +95,7 @@ const AR: Dict = {
   glass: 'زجاج', glassOn: 'مصنفر', glassOff: 'صلب',
   challengeMode: 'تحدَّ نفسك', slotsUsed: 'مستغلّ', challengeHint: 'احكم على كل ساعة وربع ساعة — صحّ أو خطأ',
   challengeLegend: 'اضغط على مربع: ✓ استُغل · ✗ أُهدر · اضغط مجددًا للمسح. المربعات التي بدأت فقط يمكن الحكم عليها.',
+  noteYourself: 'دوّن لنفسك', notePlaceholder: 'ماذا فعلت في هذه الفترة؟',
 }
 
 const FR: Dict = {
@@ -132,6 +134,7 @@ const FR: Dict = {
   glass: 'Verre', glassOn: 'dépoli', glassOff: 'opaque',
   challengeMode: 'défie-toi', slotsUsed: 'utilisé', challengeHint: 'juge chaque heure et quart d\u2019heure — coche ou croix',
   challengeLegend: 'Touchez un bloc : ✓ bien utilisé · ✗ gaspillé · touchez encore pour effacer. Seuls les blocs commencés sont jugeables.',
+  noteYourself: 'note-toi', notePlaceholder: 'qu\u2019avez-vous fait sur ce créneau ?',
 }
 
 const DE: Dict = {
@@ -170,6 +173,7 @@ const DE: Dict = {
   glass: 'Glas', glassOn: 'satiniert', glassOff: 'deckend',
   challengeMode: 'fordere dich', slotsUsed: 'genutzt', challengeHint: 'bewerte jede Stunde und Viertelstunde — Haken oder Kreuz',
   challengeLegend: 'Block antippen: ✓ genutzt · ✗ vergeudet · nochmal für leer. Nur begonnene Blöcke sind bewertbar.',
+  noteYourself: 'notiere dich', notePlaceholder: 'was hast du in diesem Block gemacht?',
 }
 
 const ES: Dict = {
@@ -208,6 +212,7 @@ const ES: Dict = {
   glass: 'Cristal', glassOn: 'esmerilado', glassOff: 'sólido',
   challengeMode: 'rétate', slotsUsed: 'aprovechado', challengeHint: 'juzga cada hora y cuarto de hora — tick o cruz',
   challengeLegend: 'Toca un bloque: ✓ aprovechado · ✗ desperdiciado · toca otra vez para borrar. Solo se juzgan los bloques ya empezados.',
+  noteYourself: 'anótate', notePlaceholder: '¿qué hiciste en este bloque?',
 }
 
 const HI: Dict = {
@@ -246,6 +251,7 @@ const HI: Dict = {
   glass: 'काँच', glassOn: 'धुँधला', glassOff: 'ठोस',
   challengeMode: 'खुद को चुनौती दें', slotsUsed: 'उपयोग', challengeHint: 'हर घंटे और पंद्रह मिनट को आँकें — सही या गलत',
   challengeLegend: 'ब्लॉक टैप करें: ✓ उपयोग हुआ · ✗ बर्बाद · मिटाने के लिए फिर टैप करें। केवल शुरू हो चुके ब्लॉक आँके जा सकते हैं।',
+  noteYourself: 'खुद को नोट करें', notePlaceholder: 'इस ब्लॉक में आपने क्या किया?',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }
