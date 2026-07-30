@@ -1832,24 +1832,32 @@ html[data-theme='neo'] .bg-forest::before { opacity: 0.25; }
   justify-content: flex-end;
   margin: 2px 0 10px;
 }
+/* "set a mood" — the way into themes, fonts and scenes, so it earns a
+   real button rather than the faint dashed hint it used to be */
 .style-btn {
   appearance: none;
-  border: 1.5px dashed var(--ink-faint);
-  background: transparent;
-  color: var(--ink-faint);
+  border: 2px solid var(--ink);
+  background: var(--sand);
+  color: var(--on-sand);
   border-radius: 999px;
-  padding: 4px 14px;
-  font-family: var(--script);
-  font-weight: 600;
+  padding: 8px 18px;
+  font-family: var(--hand);
+  font-weight: 700;
   font-size: 15px;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-1deg);
+  transition: transform 0.12s, filter 0.15s, box-shadow 0.12s;
 }
-.style-btn:hover, .style-btn.open {
-  color: var(--ink);
-  border-color: var(--ink);
-  border-style: solid;
-  background: var(--card);
+.style-btn:hover {
+  filter: brightness(1.07);
+  transform: rotate(0deg) scale(1.04);
+}
+.style-btn:active { transform: translate(1px, 2px); box-shadow: none; }
+.style-btn.open {
+  transform: rotate(0deg);
+  box-shadow: var(--shadow-sm), 0 0 0 3px var(--accent-soft, rgba(228, 87, 46, 0.25));
 }
 .style-pop {
   position: absolute;
@@ -2309,4 +2317,6 @@ html[data-theme='neo'] .bg-forest::before { opacity: 0.25; }
 
   .hero-num { font-size: clamp(48px, 17vw, 84px); }
   .style-pop { max-width: calc(100vw - 40px); }
+  /* the mood button is a primary action on mobile — full comfortable target */
+  .style-btn { min-height: 42px; padding: 9px 20px; font-size: 16px; }
 }
