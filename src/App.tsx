@@ -63,6 +63,7 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(initialTheme)
   const [font, setFont] = useState(() => loadPref('font', 'goblock'))
   const [bg, setBg] = useState<BgKind>(initialBg)
+  const [glass, setGlass] = useState(() => loadPref('glass', 'on') === 'on')
   const [lang, setLang] = useState<LangId>(() => {
     const l = loadPref('lang', 'en') as LangId
     return LANGS.some((x) => x.id === l) ? l : 'en'
@@ -179,6 +180,12 @@ export default function App() {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('compound.theme', theme)
   }, [theme])
+
+  // frosted panels let the scene through; only meaningful over a video
+  useEffect(() => {
+    document.documentElement.dataset.glass = glass ? 'on' : 'off'
+    savePref('glass', glass ? 'on' : 'off')
+  }, [glass])
 
   useEffect(() => {
     const family = resolveFontFamily(font)
@@ -314,6 +321,8 @@ export default function App() {
       <main className="content">
         {tab === 'countdown' && (
           <StyleQuick
+            glass={glass}
+            setGlass={setGlass}
             theme={theme} setTheme={(t) => setTheme(t as Theme)}
             font={font} setFont={setFont}
             bg={bg} setBg={setBg}
@@ -362,10 +371,11 @@ export default function App() {
 }
 
 /** Discreet look-&-feel switcher that lives on the home page. */
-function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
+function StyleQuick({ theme, setTheme, font, setFont, bg, setBg, glass, setGlass }: {
   theme: string; setTheme: (t: string) => void
   font: string; setFont: (f: string) => void
   bg: BgKind; setBg: (b: BgKind) => void
+  glass: boolean; setGlass: (g: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -421,6 +431,17 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg }: {
                   {b.icon} {b.label}
                 </button>
               ))}
+            </div>
+          </div>
+          <div className="style-row">
+            <span className="style-k">{t('glass')}</span>
+            <div className="chips">
+              <button className={`chip ${glass ? 'on' : ''}`} onClick={() => setGlass(true)}>
+                ◫ {t('glassOn')}
+              </button>
+              <button className={`chip ${!glass ? 'on' : ''}`} onClick={() => setGlass(false)}>
+                ▪ {t('glassOff')}
+              </button>
             </div>
           </div>
         </div>
