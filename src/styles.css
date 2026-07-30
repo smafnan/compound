@@ -1721,13 +1721,16 @@ html[data-glass='on']:not([data-bg='none']) .topbar {
   backdrop-filter: blur(22px) saturate(1.5);
 }
 /* .tabs lives INSIDE .topbar on desktop — glassing both blurs the same
-   pixels twice and the strip reads as a grey patch cut into the bar. It
-   only needs its own pane on mobile, where it is a detached fixed bar
-   (see the mobile block below). */
-html[data-glass='on']:not([data-bg='none']) .topbar .tabs {
-  background-color: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+   pixels twice and the strip reads as a grey patch cut into the bar. Scoped
+   to desktop widths on purpose: on mobile .tabs is a fixed bottom bar that
+   very much needs its own pane, and this selector would otherwise out-
+   specify the mobile rule and leave it fully transparent. */
+@media (min-width: 681px) {
+  html[data-glass='on']:not([data-bg='none']) .topbar .tabs {
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 /* The checklist's sticky first/last columns and its tick buttons are solid
