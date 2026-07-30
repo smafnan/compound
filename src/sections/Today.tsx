@@ -19,6 +19,8 @@ export interface SlotProps {
   setState?: React.Dispatch<React.SetStateAction<AppState>>
   /** challenge mode on — cells become tick/cross buttons */
   challenge?: boolean
+  /** note mode on — the per-slot "what did you do" list is shown */
+  notesOn?: boolean
 }
 
 /** none → hit → miss → none, so one control cycles the whole verdict. */
@@ -72,19 +74,32 @@ export default function Today({ state, setState }: SlotProps) {
   // the mode sticks between visits, so the verdicts you left keep their
   // context instead of reappearing as unexplained coloured cells
   const [challenge, setChallenge] = useState(() => loadPref('challenge', 'off') === 'on')
+  // deliberately independent of challenge mode: judging your time and
+  // recording what you did are separate habits, so neither drags the
+  // other on
+  const [notesOn, setNotesOn] = useState(() => loadPref('notes', 'off') === 'on')
   useEffect(() => { savePref('challenge', challenge ? 'on' : 'off') }, [challenge])
+  useEffect(() => { savePref('notes', notesOn ? 'on' : 'off') }, [notesOn])
   return (
     <section className="section">
       <ClockHero now={now} />
-      <ChallengeBar on={challenge} setOn={setChallenge} state={state} />
-      <HoursPanel now={now} state={state} setState={setState} challenge={challenge} />
-      <QuartersPanel now={now} state={state} setState={setState} challenge={challenge} />
+      <ChallengeBar
+        on={challenge} setOn={setChallenge}
+        notesOn={notesOn} setNotesOn={setNotesOn}
+        state={state}
+      />
+      <HoursPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} />
+      <QuartersPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} />
     </section>
   )
 }
 
-/** The switch into challenge mode, plus today's running score. */
-function ChallengeBar({ on, setOn, state }: { on: boolean; setOn: (v: boolean) => void; state?: AppState }) {
+/** The two independent switches, plus today's running score. */
+function ChallengeBar({ on, setOn, notesOn, setNotesOn, state }: {
+  on: boolean; setOn: (v: boolean) => void
+  notesOn: boolean; setNotesOn: (v: boolean) => void
+  state?: AppState
+}) {
   const marks = state?.slots?.[todayStr()] ?? {}
   const all = Object.values(marks)
   const hit = all.filter((m) => m === 'hit').length
@@ -95,6 +110,9 @@ function ChallengeBar({ on, setOn, state }: { on: boolean; setOn: (v: boolean) =
     <div className={`challenge-bar ${on ? 'on' : ''}`}>
       <button className={`chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => setOn(!on)}>
         ⚔ {t('challengeMode')}
+      </button>
+      <button className={`chip ${notesOn ? 'on' : ''}`} aria-pressed={notesOn} onClick={() => setNotesOn(!notesOn)}>
+        ✎ {t('noteYourself')}
       </button>
       {on ? (
         <span className="challenge-score">
@@ -185,7 +203,7 @@ export function ClockHero({ now }: { now: Date }) {
   )
 }
 
-export function HoursPanel({ now, state, setState, challenge }: { now: Date } & SlotProps) {
+export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: Date } & SlotProps) {
   const h = now.getHours()
   const hourFill = ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100
   const hoursLeft = 24 - h - 1
@@ -235,7 +253,7 @@ export function HoursPanel({ now, state, setState, challenge }: { now: Date } & 
         })}
       </div>
       {live && <p className="muted small">{t('challengeLegend')}</p>}
-      {live && (
+      {!!notesOn && !!setState && (
         <SlotNotes
           marks={marks} notes={notes} note={note} prefix="h" current={h}
           label={(i) => `${String(i).padStart(2, '0')}:00`}
@@ -245,7 +263,7 @@ export function HoursPanel({ now, state, setState, challenge }: { now: Date } & 
   )
 }
 
-export function QuartersPanel({ now, state, setState, challenge }: { now: Date } & SlotProps) {
+export function QuartersPanel({ now, state, setState, challenge, notesOn }: { now: Date } & SlotProps) {
   const minutesGone = now.getHours() * 60 + now.getMinutes()
   const quarterIdx = Math.floor(minutesGone / 15) // 0..95, the one running now
   const quartersLeft = 96 - quarterIdx - 1
@@ -298,7 +316,7 @@ export function QuartersPanel({ now, state, setState, challenge }: { now: Date }
           ? t('challengeLegend')
           : `Each square is 15 minutes. ${quartersLeft} blocks is ${(quartersLeft / 4).toFixed(1)} hours — enough to move something forward.`}
       </p>
-      {live && (
+      {!!notesOn && !!setState && (
         <SlotNotes
           marks={marks} notes={notes} note={note} prefix="q" current={quarterIdx}
           label={(i) => `${String(Math.floor(i / 4)).padStart(2, '0')}:${String((i % 4) * 15).padStart(2, '0')}`}
