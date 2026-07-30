@@ -1734,18 +1734,31 @@ html[data-glass='on']:not([data-bg='none']) .topbar {
 }
 
 /* The checklist's sticky first/last columns and its tick buttons are solid
-   card colour so they can occlude the grid scrolling under them. Over a
-   scene that reads as white blocks punched through the glass, so give them
-   the same treatment — the blur still hides whatever slides beneath. */
+   card colour so they can occlude the grid scrolling under them.
+   .panel already carries a backdrop-filter, which makes it a BACKDROP ROOT:
+   a descendant's own backdrop-filter can only sample what is painted inside
+   that root — the panel's flat fill — never the scene behind it. So their
+   tint stacked on the panel's and they read as solid blocks however much
+   blur was applied. The blur is still worth keeping (it smears the cells
+   scrolling underneath, which is the whole job of a frozen column) but the
+   tint has to stay low so the column sits close to the panel it floats on. */
+/* The two frozen columns DO have to occlude: they float over the grid as it
+   scrolls sideways, and blur alone does not hide it — a 29px cell's border
+   ghosts straight through a 16px blur. Opacity is what hides it, so these
+   stay the one surface that cannot match the panel exactly. Tuned down from
+   62% to the least that still reads cleanly while scrolled. */
 html[data-glass='on']:not([data-bg='none']) :is(.sh-corner, .sh-task, .sheet .stick-r) {
-  background-color: color-mix(in srgb, var(--card) 62%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  backdrop-filter: blur(14px) saturate(1.4);
+  background-color: color-mix(in srgb, var(--card) 45%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
+/* The ticks and day-score bars occlude nothing — they scroll WITH the grid —
+   so they need no blur and barely any tint, and stop reading as white boxes
+   entirely. */
 html[data-glass='on']:not([data-bg='none']) :is(.tick:not(.done), .day-bar) {
-  background-color: color-mix(in srgb, var(--card) 42%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background-color: color-mix(in srgb, var(--card) 18%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* dimmed text is the first thing to lose legibility on glass — lift it */
