@@ -50,6 +50,13 @@ export interface FocusSession {
   endedAt: string // ISO
 }
 
+/** A verdict on one timeslot in challenge mode. */
+export type SlotMark = 'hit' | 'miss'
+
+/** Slot keys are "h<0-23>" for hours and "q<0-95>" for quarter hours. */
+export const hourKey = (i: number) => `h${i}`
+export const quarterKey = (i: number) => `q${i}`
+
 export interface Profile {
   name: string
   goal: string
@@ -69,6 +76,10 @@ export interface AppState {
   canvas: CanvasItem[]
   /** completed focus-timer sessions */
   focus: FocusSession[]
+  /** challenge mode: date (yyyy-mm-dd) -> slot key -> hit/miss */
+  slots: Record<string, Record<string, SlotMark>>
+  /** per-date last-edit stamps for slot verdicts and notes */
+  slotAt?: Record<string, string>
   profile: Profile
   /** last CONTENT change (ISO). Only bumped when something is actually edited. */
   updatedAt?: string
@@ -88,6 +99,8 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
     completions: parsed?.completions ?? {},
     canvas: parsed?.canvas ?? [],
     focus: parsed?.focus ?? [],
+    slots: parsed?.slots ?? {},
+    slotAt: parsed?.slotAt ?? {},
     profile: {
       name: parsed?.profile?.name ?? '',
       goal: parsed?.profile?.goal ?? '',
@@ -356,6 +369,7 @@ export function saveState(s: AppState, preStamped = false): AppState {
       const now = new Date().toISOString()
       const sec: Record<string, string> = { ...prev.sec, ...s.sec }
       const compAt: Record<string, string> = { ...prev.compAt, ...s.compAt }
+      const slotAt: Record<string, string> = { ...prev.slotAt, ...s.slotAt }
       let changed = false
       for (const k of SECTIONS) {
         if (!eq(s[k], prev[k])) {
@@ -370,8 +384,15 @@ export function saveState(s: AppState, preStamped = false): AppState {
           changed = true
         }
       }
+      const slotDates = new Set([...Object.keys(s.slots), ...Object.keys(prev.slots)])
+      for (const d of slotDates) {
+        if (!eq(s.slots[d], prev.slots[d])) {
+          slotAt[d] = now
+          changed = true
+        }
+      }
       if (!eq(s.focus, prev.focus)) changed = true
-      out = { ...s, sec, compAt, updatedAt: changed ? now : prev.updatedAt }
+      out = { ...s, sec, compAt, slotAt, updatedAt: changed ? now : prev.updatedAt }
     }
     const json = JSON.stringify(out)
     localStorage.setItem(KEY, json)
@@ -446,6 +467,27 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     if (at) compAt[d] = at
   }
 
+  // challenge-mode slots: per day, newest edit wins; unstamped days merge
+  // key-by-key so a verdict recorded on either device survives
+  const slots: Record<string, Record<string, SlotMark>> = {}
+  const slotAt: Record<string, string> = {}
+  const slotDates = new Set([
+    ...Object.keys(local.slots), ...Object.keys(remote.slots),
+    ...Object.keys(local.slotAt ?? {}), ...Object.keys(remote.slotAt ?? {}),
+  ])
+  for (const d of slotDates) {
+    const la = local.slotAt?.[d]
+    const ra = remote.slotAt?.[d]
+    let val: Record<string, SlotMark> | undefined
+    if (la && ra) val = Date.parse(ra) > Date.parse(la) ? remote.slots[d] : local.slots[d]
+    else if (la) val = local.slots[d]
+    else if (ra) val = remote.slots[d]
+    else val = { ...(remote.slots[d] ?? {}), ...(local.slots[d] ?? {}) }
+    if (val && Object.keys(val).length) slots[d] = val
+    const at = maxIso(la, ra)
+    if (at) slotAt[d] = at
+  }
+
   // focus sessions: append-only union
   const focusMap = new Map<string, FocusSession>()
   for (const f of [...remote.focus, ...local.focus]) focusMap.set(f.id, f)
@@ -466,6 +508,8 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     profile: winner('profile').profile,
     completions,
     focus,
+    slots,
+    slotAt,
     sec,
     compAt,
     updatedAt: maxIso(local.updatedAt, remote.updatedAt),

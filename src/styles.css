@@ -827,6 +827,78 @@ body {
   animation: pulse 2.4s ease-in-out infinite;
 }
 
+/* ---------- Challenge yourself ---------- */
+
+.challenge-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 -6px;
+}
+.challenge-bar .chip { font-size: 15px; padding: 8px 16px; }
+.challenge-score {
+  font-family: var(--script);
+  font-size: 17px;
+  color: var(--ink-dim);
+}
+.challenge-score b { font-family: var(--hand); }
+.challenge-hint { margin: 0; }
+b.good, .challenge-score .good { color: var(--good); }
+b.bad, .challenge-score .bad { color: var(--bad); }
+
+/* a panel in challenge mode says so quietly */
+.panel.challenging { border-color: var(--accent); }
+
+/* judgeable cells are real buttons: reset the UA styling, keep the grid
+   geometry the span version had */
+.cell.judgeable, .qcell.judgeable {
+  appearance: none;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.15s, border-color 0.15s;
+}
+.hgrid .cell.judgeable { font-size: 13px; font-family: var(--hand); }
+.cell.judgeable:hover, .qcell.judgeable:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: var(--accent);
+}
+.cell.judgeable:active, .qcell.judgeable:active { transform: scale(0.94); }
+/* an unjudged block that could be judged — invite the tap */
+.cell.judgeable:not(.mark-hit):not(.mark-miss),
+.qcell.judgeable:not(.mark-hit):not(.mark-miss) {
+  border-style: dashed;
+}
+
+/* the verdicts. Colour AND glyph, so it never depends on colour alone */
+.cell.mark-hit, .qcell.mark-hit {
+  background: color-mix(in srgb, var(--good) 26%, var(--card));
+  border: 2px solid var(--good);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  animation: none;
+}
+.cell.mark-miss, .qcell.mark-miss {
+  background: color-mix(in srgb, var(--bad) 22%, var(--card));
+  border: 2px solid var(--bad);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  animation: none;
+}
+/* the sand fill would muddy a verdict colour on the running block */
+.cell.mark-hit::after, .cell.mark-miss::after,
+.qcell.mark-hit::after, .qcell.mark-miss::after { display: none; }
+.qcell.mark-hit, .qcell.mark-miss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+}
+
 /* ---------- Checklist sheet ---------- */
 
 .sheet-head { align-items: center; }
