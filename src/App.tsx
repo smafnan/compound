@@ -330,7 +330,7 @@ export default function App() {
         )}
         <div className="view" key={tab}>
           {tab === 'countdown' && <Countdown state={state} setState={setState} />}
-          {tab === 'today' && <Today />}
+          {tab === 'today' && <Today state={state} setState={setState} />}
           {tab === 'checklist' && <Checklist state={state} setState={setState} />}
           {tab === 'growth' && <Growth state={state} />}
           {tab === 'all' && <Overview state={state} />}
