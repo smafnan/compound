@@ -8,7 +8,14 @@ export interface FontChoice {
   family: string
 }
 
+/** Arial Rounded is a system face on Apple platforms; the stack falls back
+ *  through the rounded faces shipped by other OSes, then ui-rounded (Safari),
+ *  then plain sans, so it degrades sensibly everywhere. */
+export const ROUNDED =
+  "'Arial Rounded MT Bold', 'Arial Rounded MT', 'Helvetica Rounded', 'Varela Round', ui-rounded, 'Segoe UI', system-ui, sans-serif"
+
 export const FONTS: FontChoice[] = [
+  { id: 'rounded', label: 'Arial Rounded', family: ROUNDED },
   { id: 'goblock', label: 'Goblock', family: "'Goblock', 'Permanent Marker', cursive" },
   { id: 'marker', label: 'Marker', family: "'Permanent Marker', cursive" },
   { id: 'bangers', label: 'Bangers', family: "'Bangers', cursive" },
