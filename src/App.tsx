@@ -61,7 +61,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(loadState)
   const [tab, setTab] = useState<Tab>(initialTab)
   const [theme, setTheme] = useState<Theme>(initialTheme)
-  const [font, setFont] = useState(() => loadPref('font', 'goblock'))
+  const [font, setFont] = useState(() => loadPref('font', 'rounded'))
   const [bg, setBg] = useState<BgKind>(initialBg)
   const [glass, setGlass] = useState(() => loadPref('glass', 'on') === 'on')
   const [lang, setLang] = useState<LangId>(() => {
@@ -191,8 +191,9 @@ export default function App() {
     const family = resolveFontFamily(font)
     const root = document.documentElement.style
     root.setProperty('--display', family)
-    // non-default fonts take over the labels and hand-written notes too,
-    // so the whole page speaks in the chosen voice
+    // every font except Goblock takes over the labels and hand-written
+    // notes too, so the whole page speaks in the chosen voice; Goblock is
+    // the display-only face the app was originally drawn around
     if (font === 'goblock') {
       root.removeProperty('--script')
       root.removeProperty('--hand')
