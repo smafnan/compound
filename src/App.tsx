@@ -64,6 +64,7 @@ export default function App() {
   const [font, setFont] = useState(() => loadPref('font', 'rounded'))
   const [bg, setBg] = useState<BgKind>(initialBg)
   const [glass, setGlass] = useState(() => loadPref('glass', 'on') === 'on')
+  const [glassLevel, setGlassLevel] = useState(() => Number(loadPref('glassLevel', '38')) || 38)
   const [lang, setLang] = useState<LangId>(() => {
     const l = loadPref('lang', 'en') as LangId
     return LANGS.some((x) => x.id === l) ? l : 'en'
@@ -186,6 +187,12 @@ export default function App() {
     document.documentElement.dataset.glass = glass ? 'on' : 'off'
     savePref('glass', glass ? 'on' : 'off')
   }, [glass])
+
+  // one number drives every glass surface (see --glass in styles.css)
+  useEffect(() => {
+    document.documentElement.style.setProperty('--glass', String(glassLevel))
+    savePref('glassLevel', String(glassLevel))
+  }, [glassLevel])
 
   useEffect(() => {
     const family = resolveFontFamily(font)
@@ -325,6 +332,8 @@ export default function App() {
         <StyleQuick
           glass={glass}
           setGlass={setGlass}
+          glassLevel={glassLevel}
+          setGlassLevel={setGlassLevel}
           theme={theme} setTheme={(t) => setTheme(t as Theme)}
           font={font} setFont={setFont}
           bg={bg} setBg={setBg}
@@ -372,11 +381,12 @@ export default function App() {
 }
 
 /** Discreet look-&-feel switcher that lives on the home page. */
-function StyleQuick({ theme, setTheme, font, setFont, bg, setBg, glass, setGlass }: {
+function StyleQuick({ theme, setTheme, font, setFont, bg, setBg, glass, setGlass, glassLevel, setGlassLevel }: {
   theme: string; setTheme: (t: string) => void
   font: string; setFont: (f: string) => void
   bg: BgKind; setBg: (b: BgKind) => void
   glass: boolean; setGlass: (g: boolean) => void
+  glassLevel: number; setGlassLevel: (n: number) => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -444,6 +454,21 @@ function StyleQuick({ theme, setTheme, font, setFont, bg, setBg, glass, setGlass
                 ▪ {t('glassOff')}
               </button>
             </div>
+            {glass && (
+              <label className="glass-slider">
+                <span>{t('frostiness')}</span>
+                <input
+                  type="range"
+                  min={8}
+                  max={80}
+                  step={2}
+                  value={glassLevel}
+                  onChange={(e) => setGlassLevel(Number(e.target.value))}
+                  aria-label={t('frostiness')}
+                />
+                <b>{glassLevel}%</b>
+              </label>
+            )}
           </div>
         </div>
       )}
