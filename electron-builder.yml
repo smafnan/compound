@@ -30,6 +30,18 @@ mac:
   category: public.app-category.productivity
   icon: build/icon.png
   artifactName: Compound-${version}-${arch}.${ext}
+  # Ad-hoc sign. Without this electron-builder skips signing entirely and the
+  # app ships carrying Electron's own linker signature, which no longer matches
+  # the bundle once our asar and icons are inside it. macOS reads a signature
+  # that fails to verify as tampering and says "Compound is damaged" — a dead
+  # end, with no right-click → Open to get past it. An ad-hoc signature is
+  # still unidentified, but it is *valid*, so Gatekeeper falls back to the
+  # ordinary "unverified developer" prompt that can be opened through.
+  identity: '-'
+  # Hardened runtime enforces library validation, which rejects the pre-signed
+  # Electron framework under an ad-hoc identity. It only exists to enable
+  # notarization, which needs a real certificate anyway.
+  hardenedRuntime: false
 linux:
   target:
     - AppImage
