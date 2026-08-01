@@ -45,7 +45,8 @@ and your progress follows you to every device, live.*
 | **PWA** | Open the web app on your phone → **Add to Home Screen** (Android Chrome: ⋮ menu · iPhone/iPad Safari: Share → Add to Home Screen). Installs like a native app, has its own icon + splash screen, and works offline |
 
 One account, every platform: **log in anywhere and your streaks, checklists, deadlines and
-canvas follow you — live.**
+canvas follow you — live.** And once you have it, **it tells you when there's a new
+version** — see [Updates](#-updates--every-copy-keeps-itself-current) below.
 
 ---
 
@@ -238,7 +239,8 @@ looks with `?theme=night&bg=vid-rain`.
 **Desktop:** `npm run dist:win` / `dist:mac` / `dist:linux` → installers in `release/`
 (each OS builds its own; or push a `v*` tag and the *Desktop builds* Action produces
 Windows `.exe`, macOS `.dmg`/`.zip` and a Linux `.AppImage` and attaches them to the
-release).
+release, along with the `latest*.yml` files that installed copies read to discover the
+update — see [docs/releasing.md](docs/releasing.md)).
 **Mobile:** `npm run build && npx cap sync`, then `npx cap open android` / `npx cap open ios`.
 
 ### 📱 Build the Android APK locally
@@ -274,11 +276,29 @@ If you point the app at your own Supabase project, set **Auth → URL Configurat
 `http://localhost:5173` for dev). Otherwise verification / magic-link emails redirect to
 Supabase's default and land on a blank page instead of back in the app.
 
+## 🔄 Updates — every copy keeps itself current
+
+Install it once and it stays current. A few seconds after launch — and every six hours
+after that — the app checks whether a newer release exists, and if one does, a small card
+appears in the corner with the version, the release notes and one button. Nothing installs
+without being asked, and "not now" hides that version for good.
+
+| Where | What happens |
+|---|---|
+| **Windows · macOS · Linux** | downloads in the background with a progress bar, then restarts into the new version |
+| **Web / PWA** | the new build is fetched and parked; one tap swaps it in |
+| **Android** | opens the release page for the new APK (a sideloaded app can't replace itself) |
+
+Under the hood: `electron-updater` against GitHub releases on desktop, the service worker
+on the web, the releases API on Android — all three normalised into one hook and one card.
+Full write-up in [docs/updates.md](docs/updates.md).
+
 ## 🛠 Tech
 
 Vite · React 18 · TypeScript · hand-rolled CSS (`backdrop-filter` glass, `color-mix`
 theming) · Supabase (auth, Postgres + RLS, realtime) · Capacitor 8 (Android/iOS) · Electron
-(desktop) · jsPDF (on-device reports) · six-language i18n with RTL. Deployed on Netlify.
++ electron-updater (desktop) · jsPDF (on-device reports) · six-language i18n with RTL.
+Deployed on Netlify.
 
 No UI framework, no CSS framework, no state library — the whole interface is hand-written.
 

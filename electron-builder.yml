@@ -6,6 +6,15 @@ directories:
 files:
   - dist/**/*
   - electron/**/*
+# Where installed copies look for new versions. This block is what makes
+# electron-builder write `app-update.yml` into the app and generate the
+# `latest*.yml` files next to the installers — without it nothing updates.
+# electron-updater is a production dependency, so it is copied in automatically.
+publish:
+  - provider: github
+    owner: smafnan
+    repo: compound
+    releaseType: release # never offer a draft or prerelease to users
 win:
   target:
     - nsis

@@ -58,6 +58,9 @@ const EN: Dict = {
   challengeLegend: 'Tap a block: ✓ used it · ✗ wasted it · tap again to clear. Only blocks that have started can be judged.',
   noteYourself: 'note yourself', notePlaceholder: 'what did you do in this block?',
   frostiness: 'frostiness',
+  updateAvailable: 'A new version is out', updateDownloading: 'Downloading the update…',
+  updateReady: 'Update ready', updateNow: 'Update now', updateRestart: 'Restart & install',
+  updateReload: 'Reload now', updateGet: 'Get it', updateLater: 'Not now', whatsNew: "what's new",
 }
 
 const AR: Dict = {
@@ -98,6 +101,9 @@ const AR: Dict = {
   challengeLegend: 'اضغط على مربع: ✓ استُغل · ✗ أُهدر · اضغط مجددًا للمسح. المربعات التي بدأت فقط يمكن الحكم عليها.',
   noteYourself: 'دوّن لنفسك', notePlaceholder: 'ماذا فعلت في هذه الفترة؟',
   frostiness: 'درجة الضباب',
+  updateAvailable: 'صدر إصدار جديد', updateDownloading: '…يجري تنزيل التحديث',
+  updateReady: 'التحديث جاهز', updateNow: 'حدّث الآن', updateRestart: 'أعد التشغيل وثبّت',
+  updateReload: 'أعد التحميل', updateGet: 'احصل عليه', updateLater: 'ليس الآن', whatsNew: 'الجديد',
 }
 
 const FR: Dict = {
@@ -138,6 +144,9 @@ const FR: Dict = {
   challengeLegend: 'Touchez un bloc : ✓ bien utilisé · ✗ gaspillé · touchez encore pour effacer. Seuls les blocs commencés sont jugeables.',
   noteYourself: 'note-toi', notePlaceholder: 'qu\u2019avez-vous fait sur ce créneau ?',
   frostiness: 'givrage',
+  updateAvailable: 'Une nouvelle version est sortie', updateDownloading: 'Téléchargement de la mise à jour…',
+  updateReady: 'Mise à jour prête', updateNow: 'Mettre à jour', updateRestart: 'Redémarrer et installer',
+  updateReload: 'Recharger', updateGet: 'Obtenir', updateLater: 'Plus tard', whatsNew: 'nouveautés',
 }
 
 const DE: Dict = {
@@ -178,6 +187,9 @@ const DE: Dict = {
   challengeLegend: 'Block antippen: ✓ genutzt · ✗ vergeudet · nochmal für leer. Nur begonnene Blöcke sind bewertbar.',
   noteYourself: 'notiere dich', notePlaceholder: 'was hast du in diesem Block gemacht?',
   frostiness: 'Mattierung',
+  updateAvailable: 'Eine neue Version ist da', updateDownloading: 'Update wird geladen…',
+  updateReady: 'Update bereit', updateNow: 'Jetzt aktualisieren', updateRestart: 'Neu starten & installieren',
+  updateReload: 'Neu laden', updateGet: 'Holen', updateLater: 'Später', whatsNew: 'was ist neu',
 }
 
 const ES: Dict = {
@@ -218,6 +230,9 @@ const ES: Dict = {
   challengeLegend: 'Toca un bloque: ✓ aprovechado · ✗ desperdiciado · toca otra vez para borrar. Solo se juzgan los bloques ya empezados.',
   noteYourself: 'anótate', notePlaceholder: '¿qué hiciste en este bloque?',
   frostiness: 'esmerilado',
+  updateAvailable: 'Hay una versión nueva', updateDownloading: 'Descargando la actualización…',
+  updateReady: 'Actualización lista', updateNow: 'Actualizar ahora', updateRestart: 'Reiniciar e instalar',
+  updateReload: 'Recargar', updateGet: 'Obtenerla', updateLater: 'Ahora no', whatsNew: 'novedades',
 }
 
 const HI: Dict = {
@@ -258,6 +273,9 @@ const HI: Dict = {
   challengeLegend: 'ब्लॉक टैप करें: ✓ उपयोग हुआ · ✗ बर्बाद · मिटाने के लिए फिर टैप करें। केवल शुरू हो चुके ब्लॉक आँके जा सकते हैं।',
   noteYourself: 'खुद को नोट करें', notePlaceholder: 'इस ब्लॉक में आपने क्या किया?',
   frostiness: 'धुँधलापन',
+  updateAvailable: 'नया संस्करण आ गया है', updateDownloading: 'अपडेट डाउनलोड हो रहा है…',
+  updateReady: 'अपडेट तैयार है', updateNow: 'अभी अपडेट करें', updateRestart: 'पुनः आरंभ कर इंस्टॉल करें',
+  updateReload: 'फिर लोड करें', updateGet: 'प्राप्त करें', updateLater: 'अभी नहीं', whatsNew: 'क्या नया है',
 }
 
 const DICTS: Record<LangId, Dict> = { en: EN, ar: AR, fr: FR, de: DE, es: ES, hi: HI }

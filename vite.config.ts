@@ -1,15 +1,25 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 
 export default defineConfig({
   // relative base so the same build works on the web, in Capacitor
   // webviews and from file:// inside Electron
   base: './',
+  // the running version, so the update check has something to compare
+  // GitHub's newest release against
+  define: { __APP_VERSION__: JSON.stringify(version) },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // new deploys take over silently on next visit
+      // 'prompt', not 'autoUpdate': a new deploy waits for the person to accept
+      // it (see src/update.ts) instead of swapping the app out mid-session
+      registerType: 'prompt',
+      // src/update.ts owns registration so the banner can hook into it
+      injectRegister: null,
       manifest: false, // public/manifest.webmanifest is hand-maintained
       workbox: {
         // jpg picks up the scene posters (~200 KB total) — they are the offline

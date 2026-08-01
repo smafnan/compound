@@ -543,6 +543,131 @@ body {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+/* ---------- "a new version is out" card ----------
+   Sits in the corner rather than across the middle: it is news, not an
+   interruption, and the countdown behind it keeps running. */
+.update-card {
+  position: fixed;
+  right: 18px;
+  bottom: 22px;
+  z-index: 70;
+  width: min(330px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 15px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob);
+  box-shadow: var(--shadow);
+  animation: update-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes update-in {
+  from { opacity: 0; transform: translateY(14px) rotate(1.2deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0deg); }
+}
+[dir='rtl'] .update-card { right: auto; left: 18px; }
+
+.update-head { display: flex; align-items: center; gap: 10px; }
+/* the arrow gets the accent so the card reads at a glance */
+.update-mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  background: var(--sand);
+  color: var(--on-sand);
+  font-family: var(--display);
+  font-size: 15px;
+  line-height: 1;
+}
+.update-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.update-text b { font-family: var(--script); font-size: 17px; font-weight: 700; }
+.update-ver {
+  font-family: var(--hand);
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  letter-spacing: 0.02em;
+}
+
+.update-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.update-go {
+  appearance: none;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--wob-sm);
+  padding: 6px 15px;
+  font-family: var(--hand);
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.update-go:hover { transform: translateY(-1px); }
+.update-go:active { transform: translate(1px, 2px); box-shadow: none; }
+.update-skip {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  font-family: var(--hand);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 2px;
+  text-decoration: underline dotted;
+}
+.update-skip:hover { color: var(--ink); }
+
+/* download progress — a filling ink bar, same language as the day grids.
+   The percentage sits beside the bar rather than on top of it: over the
+   fill line it would need to be legible against both ink and cream at
+   once, which no single colour manages in all three themes. */
+.update-prog { display: flex; align-items: center; gap: 10px; }
+.update-bar {
+  flex: 1;
+  min-width: 0;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  background: var(--cream);
+  overflow: hidden;
+}
+.update-bar i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.3s ease-out;
+}
+.update-prog > span {
+  flex: none;
+  min-width: 34px;
+  text-align: right;
+  font-family: var(--hand);
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.update-notes {
+  margin: 0;
+  max-height: 168px;
+  overflow: auto;
+  padding: 9px 11px;
+  background: var(--cream);
+  border: 1.5px solid var(--ink-faint);
+  border-radius: var(--wob-sm);
+  font-family: var(--hand);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 /* "account already exists" helper on the sign-up form */
 .exists-note { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .exists-note p { margin: 0; }
@@ -2284,6 +2409,14 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   .content { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
   .foot { margin-bottom: calc(64px + env(safe-area-inset-bottom)); }
   .toast { bottom: calc(84px + env(safe-area-inset-bottom)); max-width: calc(100vw - 32px); }
+  /* clear the fixed bottom tab bar, and go full width — a 330px card
+     floating in a corner reads as a stray sticker on a phone */
+  .update-card {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
 
   /* comfortable touch targets */
   .ctrl-btn, .icon-btn { min-width: 40px; min-height: 40px; }
