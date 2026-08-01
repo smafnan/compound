@@ -38,7 +38,7 @@ and your progress follows you to every device, live.*
 |---|---|
 | **Web** | [compoundtracker.netlify.app](https://compoundtracker.netlify.app/) — nothing to install |
 | **Windows** | [Download the installer](https://github.com/smafnan/compound/releases/latest) (unsigned — SmartScreen will ask "More info → Run anyway") |
-| **macOS** | [Download the .dmg](https://github.com/smafnan/compound/releases/latest) (Apple-silicon build; unsigned — right-click → Open the first time) |
+| **macOS** | [Download the .dmg](https://github.com/smafnan/compound/releases/latest) (Apple-silicon build; unsigned — [one extra step on first launch](#macos-first-launch)) |
 | **Linux** | [Download the AppImage](https://github.com/smafnan/compound/releases/latest) (`chmod +x` then run) |
 | **Android** | [Download the APK](https://github.com/smafnan/compound/releases/latest) (`Compound-android.apk`; debug-signed — allow "Install unknown apps" when asked) |
 | **iOS** | `npx cap open ios` on a Mac → Run ▶ in Xcode (project included) — or install the PWA below |
@@ -47,6 +47,24 @@ and your progress follows you to every device, live.*
 One account, every platform: **log in anywhere and your streaks, checklists, deadlines and
 canvas follow you — live.** And once you have it, **it tells you when there's a new
 version** — see [Updates](#-updates--every-copy-keeps-itself-current) below.
+
+#### macOS first launch
+
+The Mac build is signed, but not *notarized* — that needs a paid Apple Developer certificate.
+So the first time you open it, macOS blocks it with **"Apple could not verify Compound is free
+of malware…"**. Getting past it takes four clicks, once:
+
+1. Drag **Compound** into **Applications** — don't run it from the mounted disk image
+2. Double-click it, let the warning appear, click **Done**
+3. Open **System Settings → Privacy & Security** and scroll down to **Security**
+4. Next to *"Compound was blocked to protect your Mac"*, click **Open Anyway** and authenticate
+
+**Open Anyway** only appears *after* a blocked attempt and it expires after about an hour, so
+step 2 is not optional. Prefer the terminal? `xattr -dr com.apple.quarantine
+/Applications/Compound.app` clears the download flag and it opens normally.
+
+> On macOS 14 and earlier this was a right-click → **Open**. Apple removed that bypass in
+> macOS 15 Sequoia; the override now lives in System Settings.
 
 ---
 
