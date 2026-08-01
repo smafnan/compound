@@ -8,6 +8,8 @@ import FontPicker from './FontPicker'
 import { LANGS, LangId, applyLang, langDir, t } from './i18n'
 import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
 import Account from './Account'
+import UpdateBanner from './UpdateBanner'
+import { useAppUpdate } from './update'
 import Countdown from './sections/Countdown'
 import Today from './sections/Today'
 import Checklist from './sections/Checklist'
@@ -85,6 +87,8 @@ export default function App() {
   const [verified, setVerified] = useState(false)
   // chime + toast the moment any deadline's clock hits zero, app-wide
   const timeUp = useDeadlineAlarms(state)
+  // desktop auto-update, PWA service-worker refresh, Android release check
+  const update = useAppUpdate()
 
   // Landing here from an email-verification link (?verified=1): the
   // Supabase client has already consumed the tokens in the URL hash and
@@ -372,6 +376,8 @@ export default function App() {
           ⏰ Time's up — <b>{timeUp}</b>
         </div>
       )}
+
+      <UpdateBanner update={update} />
 
       <footer className="foot">{t('everyDayCounts')}</footer>
       <Backdrop kind={bg} />
