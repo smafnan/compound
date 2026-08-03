@@ -476,6 +476,19 @@ function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
     setRunning(false)
   }
 
+  /**
+   * Take a break (or end one) on your own say-so, instead of only when a
+   * focus block runs out. A break you call for starts counting straight
+   * away — waiting to press start on a rest is silly — while focus still
+   * waits for you. Cutting a focus block short doesn't log it: it wasn't
+   * finished, and the history is only worth reading if that stays true.
+   */
+  function toPhase(next: 'focus' | 'break') {
+    setPhase(next)
+    setLeft((next === 'focus' ? focusMin : breakMin) * 60)
+    setRunning(next === 'break')
+  }
+
   const mm = String(Math.floor(left / 60)).padStart(2, '0')
   const ss = String(left % 60).padStart(2, '0')
   const pct = total === 0 ? 0 : ((total - left) / total) * 100
@@ -496,6 +509,13 @@ function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
       <div className="pomo-controls">
         <button className="btn-accent" onClick={() => setRunning(!running)}>
           {running ? 'pause' : 'start'}
+        </button>
+        <button
+          className="btn-ghost"
+          onClick={() => toPhase(phase === 'focus' ? 'break' : 'focus')}
+          data-tip={phase === 'focus' ? `Start a ${breakMin}m break now` : `Back to a ${focusMin}m focus block`}
+        >
+          {phase === 'focus' ? '☕ break' : '● focus'}
         </button>
         <button className="btn-ghost" onClick={restart}>reset</button>
       </div>

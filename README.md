@@ -147,8 +147,9 @@ A free-form dashboard: drop **clock, focus timer, countdown, month calendar, hou
 quarter grid, growth cards, the curve, a Spotify player, or a YouTube/local video** anywhere
 on the board. Drag to place, pull the corner to **resize in both directions**, stack as many
 as you like. The **focus (pomodoro) timer takes a task name** and logs every completed block
-to your history. Spotify shows real album art and playback from any pasted link; both media
-widgets are optional.
+to your history, then rolls into a break on its own — or hit **☕ break** to start one
+whenever you want, and **● focus** to get back to work. Spotify shows real album art and
+playback from any pasted link; both media widgets are optional.
 
 Hit **⛶ full screen** and the canvas takes the whole display on its own — no top bar, no
 tabs, no footer, just your board (and the video scene behind it). The widget tray tucks
