@@ -150,6 +150,10 @@ as you like. The **focus (pomodoro) timer takes a task name** and logs every com
 to your history. Spotify shows real album art and playback from any pasted link; both media
 widgets are optional.
 
+Hit **⛶ full screen** and the canvas takes the whole display on its own — no top bar, no
+tabs, no footer, just your board (and the video scene behind it). The widget tray tucks
+into a corner button, and **Esc** brings the rest of the app back.
+
 ## ◉ You — profile, insights & PDF reports
 
 <div align="center"><img src="docs/you.jpg" width="760" alt="You — profile dashboard with stats, insights and PDF export" /></div>

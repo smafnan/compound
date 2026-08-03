@@ -1640,6 +1640,59 @@ b.bad, .challenge-score .bad { color: var(--bad); }
 }
 .board-hint em { font-style: normal; font-weight: 700; color: var(--accent); }
 
+/* ---------- Canvas full screen: the board, and nothing else ---------- */
+
+.zen-btn { margin-left: auto; }
+
+/* The board leaves the page flow and takes the whole viewport. It paints no
+   background of its own, so the scene (fixed, z-index -1) still shows behind
+   the widgets — full screen without giving up the view. */
+.canvas-zen .board {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/* everything that isn't the board steps aside — the top bar (which carries
+   the tab bar, docked to the bottom on phones), the footer, the mood
+   switcher and any update nag */
+html[data-zen='canvas'] :is(.topbar, .foot, .style-quick, .update-card) { display: none; }
+html[data-zen='canvas'], html[data-zen='canvas'] body { overflow: hidden; }
+html[data-zen='canvas'] .app { padding: 0; }
+/* a deadline hitting zero still gets through */
+html[data-zen='canvas'] .toast { z-index: 9998; }
+
+/* Above any widget: widget z-indexes climb by one each time one is brought
+   to the front, so the controls sit far out of their reach. */
+.zen-bar {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 9999;
+  display: flex;
+  gap: 8px;
+  opacity: 0.4; /* out of the way until you go looking for it */
+  transition: opacity 0.18s;
+}
+.zen-bar:hover, .zen-bar:focus-within { opacity: 1; }
+.zen-bar .btn-ghost.on { background: var(--sand); color: var(--on-sand); }
+
+.zen-tray {
+  position: absolute;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 9999;
+  max-width: min(560px, calc(100vw - 28px));
+  padding: 12px 14px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob);
+  box-shadow: var(--shadow);
+}
+
 .widget {
   position: absolute;
   background: var(--card);

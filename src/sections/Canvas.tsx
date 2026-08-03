@@ -42,6 +42,13 @@ export default function Canvas({ state, setState }: Props) {
   const liveRef = useRef<{ id: string; x: number; y: number } | null>(null)
   const [liveW, setLiveW] = useState<{ id: string; w: number; h: number } | null>(null)
   const liveWRef = useRef<{ id: string; w: number; h: number } | null>(null)
+  // full-screen canvas: the board alone, nothing else on screen
+  const [zen, setZen] = useState(false)
+  const [tray, setTray] = useState(false)
+  /** true only while WE put the document into native full screen, so
+   *  leaving zen never yanks someone out of the app-wide full screen
+   *  they turned on themselves from the top bar. */
+  const ownsFsRef = useRef(false)
 
   const items = state.canvas
   const maxZ = items.reduce((m, i) => Math.max(m, i.z), 0)
@@ -77,6 +84,87 @@ export default function Canvas({ state, setState }: Props) {
   function bringToFront(id: string) {
     setState((s) => ({ ...s, canvas: s.canvas.map((i) => (i.id === id ? { ...i, z: maxZ + 1 } : i)) }))
   }
+
+  // ---- full screen (this board only) ----
+  function enterZen() {
+    setZen(true)
+    const root = document.documentElement
+    // no native full screen (iOS Safari) — the CSS-only mode still stands in
+    if (document.fullscreenElement || !root.requestFullscreen) return
+    // the whole document goes full screen — CSS hides everything but the
+    // board, which keeps the video scene (rendered app-wide) behind it
+    root.requestFullscreen()
+      .then(() => { ownsFsRef.current = true })
+      .catch(() => { /* denied — the CSS-only mode still stands in */ })
+  }
+
+  function exitZen() {
+    setZen(false)
+    setTray(false)
+    if (!ownsFsRef.current) return
+    ownsFsRef.current = false
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => { /* ok */ })
+  }
+
+  useEffect(() => {
+    if (!zen) return
+    document.documentElement.dataset.zen = 'canvas'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') exitZen()
+    }
+    // Esc / F11 leave native full screen without telling us — follow along
+    const onFs = () => {
+      if (!document.fullscreenElement && ownsFsRef.current) {
+        ownsFsRef.current = false
+        setZen(false)
+        setTray(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('fullscreenchange', onFs)
+    return () => {
+      delete document.documentElement.dataset.zen
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('fullscreenchange', onFs)
+    }
+  }, [zen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // leaving the tab mid-zen shouldn't strand the window in full screen
+  useEffect(() => () => {
+    if (ownsFsRef.current && document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => { /* ok */ })
+    }
+  }, [])
+
+  // Coming back to the small board: anything parked out past its edges would
+  // be clipped away by the board's overflow, so walk it back into view.
+  const wasZen = useRef(false)
+  useEffect(() => {
+    if (zen) {
+      wasZen.current = true
+      return
+    }
+    if (!wasZen.current) return
+    wasZen.current = false
+    const id = requestAnimationFrame(() => {
+      const r = boardRef.current?.getBoundingClientRect()
+      if (!r) return
+      const maxX = Math.max(r.width - 120, 0)
+      const maxY = Math.max(r.height - 48, 0)
+      setState((s) => {
+        let moved = false
+        const canvas = s.canvas.map((i) => {
+          const x = Math.min(i.x, maxX)
+          const y = Math.min(i.y, maxY)
+          if (x === i.x && y === i.y) return i
+          moved = true
+          return { ...i, x, y }
+        })
+        return moved ? { ...s, canvas } : s
+      })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [zen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault()
@@ -150,33 +238,42 @@ export default function Canvas({ state, setState }: Props) {
     setLiveW(null)
   }
 
+  const palette = (
+    <div className="palette">
+      {PALETTE.map((p) => (
+        <button
+          key={p.kind}
+          className="pal-chip"
+          draggable
+          onDragStart={(e) => e.dataTransfer.setData('widget', p.kind)}
+          onClick={() => add(p.kind)}
+          title={`Add ${p.label}`}
+        >
+          <span aria-hidden>{p.icon}</span> {p.label}
+        </button>
+      ))}
+      {items.length > 0 && (
+        <button className="btn-ghost" onClick={() => setState((s) => ({ ...s, canvas: [] }))}>
+          clear all
+        </button>
+      )}
+    </div>
+  )
+
   return (
-    <section className="section">
-      <div className="panel pal-panel">
-        <div className="panel-head">
-          <h2>Canvas</h2>
-          <div className="panel-stat">click to add · drag to place · pull the corner to resize</div>
-        </div>
-        <div className="palette">
-          {PALETTE.map((p) => (
-            <button
-              key={p.kind}
-              className="pal-chip"
-              draggable
-              onDragStart={(e) => e.dataTransfer.setData('widget', p.kind)}
-              onClick={() => add(p.kind)}
-              title={`Add ${p.label}`}
-            >
-              <span aria-hidden>{p.icon}</span> {p.label}
+    <section className={`section ${zen ? 'canvas-zen' : ''}`}>
+      {!zen && (
+        <div className="panel pal-panel">
+          <div className="panel-head">
+            <h2>Canvas</h2>
+            <div className="panel-stat">click to add · drag to place · pull the corner to resize</div>
+            <button className="btn-ghost zen-btn" onClick={enterZen} data-tip="Just the board, nothing else">
+              ⛶ full screen
             </button>
-          ))}
-          {items.length > 0 && (
-            <button className="btn-ghost" onClick={() => setState((s) => ({ ...s, canvas: [] }))}>
-              clear all
-            </button>
-          )}
+          </div>
+          {palette}
         </div>
-      </div>
+      )}
 
       <div className="board" ref={boardRef} onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
         {items.length === 0 && (
@@ -229,6 +326,24 @@ export default function Canvas({ state, setState }: Props) {
             </div>
           )
         })}
+
+        {zen && (
+          <>
+            <div className="zen-bar">
+              <button
+                className={`btn-ghost ${tray ? 'on' : ''}`}
+                onClick={() => setTray((v) => !v)}
+                data-tip="Add a widget"
+              >
+                ✥ widgets
+              </button>
+              <button className="btn-ghost" onClick={exitZen} data-tip="Esc">
+                🗗 exit
+              </button>
+            </div>
+            {tray && <div className="zen-tray">{palette}</div>}
+          </>
+        )}
       </div>
     </section>
   )
