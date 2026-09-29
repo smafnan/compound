@@ -16,6 +16,9 @@ export interface Deadline {
   endMs?: number
   /** how long that timer runs, in minutes (its progress bar's total) */
   durMin?: number
+  /** set while a timer is paused: the ms left at the moment it was paused.
+   *  `endMs` is left stale until resume, which picks a fresh one. */
+  pausedLeftMs?: number
 }
 
 export interface Task {
@@ -170,11 +173,13 @@ export function remainingParts(ms: number): TimePart[] {
   return [{ value: seconds, unit: 'second' }]
 }
 
-/** The exact moment a deadline ends: the timer's instant when it is one,
+/** The exact moment a deadline ends: the timer's instant when it is one
+ *  (a live projection, `now + time left`, while paused — so a paused
+ *  timer never looks "over" just because real time went on without it),
  *  else `time` on its date when set, otherwise the midnight that closes
  *  `date` (whole final day counts). */
 export function deadlineEndMs(d: Deadline): number {
-  if (isTimer(d)) return d.endMs as number
+  if (isTimer(d)) return isPaused(d) ? Date.now() + (d.pausedLeftMs as number) : (d.endMs as number)
   const day = parseDate(d.date).getTime()
   if (d.time && /^\d{2}:\d{2}$/.test(d.time)) {
     const [h, m] = d.time.split(':').map(Number)
@@ -193,6 +198,26 @@ export function isTimer(d: Deadline): boolean {
 /** The instant a timer began — its end, minus the length it was set for. */
 export function timerStartMs(d: Deadline): number {
   return (d.endMs ?? 0) - Math.max(1, d.durMin ?? 1) * 60_000
+}
+
+/** True for a duration timer that's frozen mid-run — remaining time held,
+ *  not ticking down. */
+export function isPaused(d: Deadline): boolean {
+  return isTimer(d) && typeof d.pausedLeftMs === 'number'
+}
+
+/** Freeze a running timer, holding whatever time it has left. No-op on a
+ *  date deadline or one already paused. */
+export function pauseTimer(d: Deadline, nowMs: number = Date.now()): Deadline {
+  if (!isTimer(d) || isPaused(d)) return d
+  return { ...d, pausedLeftMs: Math.max(0, (d.endMs as number) - nowMs) }
+}
+
+/** Unfreeze a paused timer: picks a fresh end instant that keeps the same
+ *  time left, so the amount already spent survives the pause. */
+export function resumeTimer(d: Deadline, nowMs: number = Date.now()): Deadline {
+  if (!isPaused(d)) return d
+  return { ...d, endMs: nowMs + (d.pausedLeftMs as number), pausedLeftMs: undefined }
 }
 
 const pad2 = (n: number) => String(n).padStart(2, '0')

@@ -121,9 +121,12 @@ export default function App() {
       setState(merged)
     }
     if (mergedJson !== JSON.stringify(remote)) {
-      pushState(merged, setSync) // cloud was missing something we have
+      pushState(merged, setSync) // cloud was missing something we have — let its own
+      // status callback carry 'syncing' through to 'synced'/'error' when the debounced
+      // write actually lands, instead of claiming "backed up" a beat early
+    } else {
+      setSync('synced')
     }
-    setSync('synced')
   }
 
   useEffect(() => {
@@ -148,7 +151,6 @@ export default function App() {
           reconcile(remote.state, remote.updatedAt)
         } else {
           pushState(saveState(stateRef.current), setSync) // brand-new account
-          setSync('synced')
         }
       })
     })

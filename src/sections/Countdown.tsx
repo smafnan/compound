@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppState, Deadline, MONTHS, TimePart, clockLeft, daysBetween, deadlineEndMs,
-  fmtClock, fmtDate, fmtDuration, isTimer, makeTimer, parseDate, remainingParts,
-  timerAt, timerStartMs, todayStr, uid,
+  fmtClock, fmtDate, fmtDuration, isPaused, isTimer, makeTimer, parseDate, pauseTimer,
+  remainingParts, resumeTimer, timerAt, timerStartMs, todayStr, uid,
 } from '../lib'
 import { t } from '../i18n'
 import { alarmEnabled, setAlarmEnabled } from '../alarms'
@@ -99,12 +99,19 @@ export default function Countdown({ state, setState }: Props) {
   }
 
   /** Move a running timer's finish line, keeping its start fixed so the
-   *  progress bar still measures the whole stretch. Never lands in the past. */
+   *  progress bar still measures the whole stretch. Never lands in the past.
+   *  On a paused timer, nudges the held time left (and its total) instead,
+   *  so time already spent before the pause isn't disturbed. */
   function nudge(id: string, deltaMin: number) {
     setState((s) => ({
       ...s,
       deadlines: s.deadlines.map((d) => {
         if (d.id !== id || !isTimer(d)) return d
+        if (isPaused(d)) {
+          const left = Math.max(0, (d.pausedLeftMs as number) + deltaMin * 60_000)
+          const durMin = Math.max(1, (d.durMin ?? 1) + deltaMin)
+          return { ...d, pausedLeftMs: left, durMin }
+        }
         const from = timerStartMs(d)
         const end = Math.max(Date.now(), (d.endMs as number) + deltaMin * 60_000)
         return { ...d, ...timerAt(end, (end - from) / 60_000) }
@@ -112,7 +119,7 @@ export default function Countdown({ state, setState }: Props) {
     }))
   }
 
-  /** Run the same timer again from this moment. */
+  /** Run the same timer again from this moment (also clears any pause). */
   function restart(id: string) {
     setState((s) => ({
       ...s,
@@ -120,7 +127,18 @@ export default function Countdown({ state, setState }: Props) {
         if (d.id !== id || !isTimer(d)) return d
         const len = Math.max(1, d.durMin ?? 1)
         const from = Date.now()
-        return { ...d, start: fmtDate(new Date(from)), ...timerAt(from + len * 60_000, len) }
+        return { ...d, pausedLeftMs: undefined, start: fmtDate(new Date(from)), ...timerAt(from + len * 60_000, len) }
+      }),
+    }))
+  }
+
+  /** Freeze or unfreeze a running timer. */
+  function togglePause(id: string) {
+    setState((s) => ({
+      ...s,
+      deadlines: s.deadlines.map((d) => {
+        if (d.id !== id || !isTimer(d)) return d
+        return isPaused(d) ? resumeTimer(d) : pauseTimer(d)
       }),
     }))
   }
@@ -232,6 +250,7 @@ export default function Countdown({ state, setState }: Props) {
               const end = deadlineEndMs(d)
               const over = end <= now.getTime()
               const timer = isTimer(d)
+              const paused = isPaused(d)
               return (
                 <li
                   key={d.id}
@@ -269,7 +288,7 @@ export default function Countdown({ state, setState }: Props) {
                       {!timer && since >= 0 && <em>{t('day')} {since + 1} · </em>}
                       {!over
                         ? timer
-                          ? `⏱ ${clockLeft(end - Math.max(now.getTime(), Date.now()))}`
+                          ? `${paused ? '⏸' : '⏱'} ${clockLeft(end - Math.max(now.getTime(), Date.now()))}`
                           : `${smartLeft(d, now.getTime())} ${t('left')}`
                         : !timer && left < 0
                           ? `${-left} ${t('daysPast')}`
@@ -285,13 +304,17 @@ export default function Countdown({ state, setState }: Props) {
                   </button>
                   {timer ? (
                     <div className="fld dl-timer">
-                      <span>{t('ends')}</span>
+                      <span>{paused ? t('timerPaused') : t('ends')}</span>
                       <div className="tm-row">
                         <span
                           className="tm-at"
-                          data-tip={`${fmtDuration(d.durMin ?? 0)} timer — ends ${new Date(end).toLocaleString()}`}
+                          data-tip={
+                            paused
+                              ? `${fmtDuration(d.durMin ?? 0)} timer — paused with ${fmtDuration((d.pausedLeftMs ?? 0) / 60_000)} left`
+                              : `${fmtDuration(d.durMin ?? 0)} timer — ends ${new Date(end).toLocaleString()}`
+                          }
                         >
-                          {fmtClock(end)}
+                          {paused ? fmtDuration((d.pausedLeftMs ?? 0) / 60_000) : fmtClock(end)}
                         </span>
                         <button
                           type="button"
@@ -310,6 +333,16 @@ export default function Countdown({ state, setState }: Props) {
                           onClick={() => nudge(d.id, 15)}
                         >
                           +
+                        </button>
+                        <button
+                          type="button"
+                          className={`tm-step ${paused ? 'on' : ''}`}
+                          title={paused ? t('resumeTimer') : t('pauseTimer')}
+                          aria-label={`${paused ? t('resumeTimer') : t('pauseTimer')}: ${d.title}`}
+                          aria-pressed={paused}
+                          onClick={() => togglePause(d.id)}
+                        >
+                          {paused ? '▶' : '⏸'}
                         </button>
                         <button
                           type="button"
@@ -570,24 +603,30 @@ export function Hero({ deadline, now, flag }: { deadline: Deadline; now: Date; f
 function TimerHero({
   deadline, nowMs, endMs, over, flag,
 }: { deadline: Deadline; nowMs: number; endMs: number; over: boolean; flag?: string }) {
-  const startMs = timerStartMs(deadline)
-  const total = Math.max(endMs - startMs, 60_000)
-  const gone = Math.min(Math.max(nowMs - startMs, 0), total)
+  const paused = isPaused(deadline)
+  // total is the timer's own set length, not endMs-startMs — that pair
+  // would drift while paused, since endMs is a live projection but the
+  // start anchor stays fixed
+  const total = Math.max((deadline.durMin ?? 1) * 60_000, 60_000)
+  const remaining = Math.max(0, endMs - nowMs)
+  const gone = Math.min(Math.max(total - remaining, 0), total)
   const pct = Math.round((gone / total) * 100)
   const spentMin = Math.round(gone / 60_000)
-  const leftMin = Math.round((total - gone) / 60_000)
+  const leftMin = Math.round(remaining / 60_000)
 
   return (
     <div className="hero">
       {flag && <p className="hero-flag">{flag}</p>}
       <p className="hero-kicker">{deadline.title}</p>
-      <div className={`hero-num timer ${over ? 'dim' : ''}`}>
+      <div className={`hero-num timer ${over ? 'dim' : ''} ${paused ? 'paused' : ''}`}>
         {over ? '0:00' : clockLeft(endMs - nowMs)}
-        <span className="hero-unit">{over ? t('timeOver') : t('left')}</span>
+        <span className="hero-unit">{over ? t('timeOver') : paused ? t('timerPaused') : t('left')}</span>
       </div>
       <p className="hero-sub">
-        <b>{fmtDuration(deadline.durMin ?? 0)}</b> timer · {over ? 'ended' : 'ends'} at{' '}
-        <b>{fmtClock(endMs)}</b> · {fmtDuration(spentMin)} spent
+        <b>{fmtDuration(deadline.durMin ?? 0)}</b> timer ·{' '}
+        {paused
+          ? <>{t('timerPaused')} · {fmtDuration(leftMin)} left</>
+          : <>{over ? 'ended' : 'ends'} at <b>{fmtClock(endMs)}</b> · {fmtDuration(spentMin)} spent</>}
       </p>
       <div className="bar" data-tip={`${fmtDuration(spentMin)} spent · ${fmtDuration(leftMin)} remain`}>
         <div className="bar-fill" style={{ width: `${pct}%` }} />
