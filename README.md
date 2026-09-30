@@ -84,6 +84,10 @@ calendar on click. The countdown is **live and smart** — it shows the two unit
 (`8 days 5 hours` → `23 hours 15 minutes` → `58 minutes 12 seconds` → `9 seconds`) and ticks
 every second. **Drag the ⠿ handle to reorder** deadlines (the order syncs to your account),
 and **star one as your Active Priority** to pin it in its own section at the top.
+**Choose your main timer** with the ◉ button on any row, or the **main timer** picker above the
+countdown: a specific deadline or timer, *Auto — top of the list*, or *Auto — ends soonest*.
+Your choice sticks (adding a new countdown doesn't take it over) and it's what the Overview
+and Canvas countdowns show too.
 You get a giant time-left number, a sand progress tube, and **The Wall**:
 real calendar pages where every spent day is blacked out, every remaining day stays white,
 today's box fills with sand as the day passes, and each month shows its own % spent.

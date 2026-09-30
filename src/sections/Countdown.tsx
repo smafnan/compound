@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppState, Deadline, MONTHS, TimePart, clockLeft, daysBetween, deadlineEndMs,
-  fmtClock, fmtDate, fmtDuration, isPaused, isTimer, makeTimer, parseDate, pauseTimer,
+  MAIN_SOONEST, fmtClock, fmtDate, fmtDuration, isPaused, isTimer, mainDeadline, makeTimer, parseDate, pauseTimer,
   remainingParts, resumeTimer, timerAt, timerStartMs, todayStr, uid,
 } from '../lib'
 import { t } from '../i18n'
@@ -69,9 +69,16 @@ export default function Countdown({ state, setState }: Props) {
     return () => clearInterval(t)
   }, [])
 
-  const primary =
-    state.deadlines.find((d) => d.id === state.primaryId) ?? state.deadlines[0] ?? null
+  const primary = mainDeadline(state, now.getTime())
   const priority = state.deadlines.find((d) => d.id === state.priorityId) ?? null
+  // a specific countdown was chosen, as opposed to one of the auto rules
+  const pinnedMain = state.deadlines.some((d) => d.id === state.primaryId)
+
+  /** Make this the main countdown; picking it again hands the choice back
+   *  to the top of the list. */
+  function toggleMain(id: string) {
+    setState((s) => ({ ...s, primaryId: s.primaryId === id ? null : id }))
+  }
 
   function addDeadline(e: React.FormEvent) {
     e.preventDefault()
@@ -89,7 +96,9 @@ export default function Countdown({ state, setState }: Props) {
         ...(endTime ? { time: endTime } : {}),
       }
     }
-    setState((s) => ({ ...s, deadlines: [...s.deadlines, d], primaryId: d.id }))
+    // adding a countdown no longer steals the main slot — whatever you chose
+    // as main stays main until you change it
+    setState((s) => ({ ...s, deadlines: [...s.deadlines, d] }))
     setTitle('')
     setDate('')
     setStart('')
@@ -209,6 +218,21 @@ export default function Countdown({ state, setState }: Props) {
 
   return (
     <section className="section">
+      {state.deadlines.length > 1 && (
+        <label className="main-pick">
+          <span>◉ {t('mainTimer')}</span>
+          <select
+            value={pinnedMain ? state.primaryId as string : state.primaryId === MAIN_SOONEST ? MAIN_SOONEST : ''}
+            onChange={(e) => setState((s) => ({ ...s, primaryId: e.target.value || null }))}
+          >
+            <option value="">{t('mainAutoTop')}</option>
+            <option value={MAIN_SOONEST}>{t('mainAutoSoonest')}</option>
+            {state.deadlines.map((d) => (
+              <option key={d.id} value={d.id}>{isTimer(d) ? '⏱' : '📅'} {d.title}</option>
+            ))}
+          </select>
+        </label>
+      )}
       {priority && (
         <div className="priority-sec">
           <Hero deadline={priority} now={now} flag={`★ ${t('activePriority')}`} />
@@ -295,6 +319,15 @@ export default function Countdown({ state, setState }: Props) {
                           : `⏰ ${t('timeOver')}`}
                     </button>
                   </div>
+                  <button
+                    className={`icon-btn main-pin ${primary?.id === d.id ? 'on' : ''}`}
+                    title={state.primaryId === d.id ? t('mainUnset') : t('mainSet')}
+                    aria-label={`${state.primaryId === d.id ? t('mainUnset') : t('mainSet')}: ${d.title}`}
+                    aria-pressed={state.primaryId === d.id}
+                    onClick={() => toggleMain(d.id)}
+                  >
+                    {primary?.id === d.id ? '◉' : '○'}
+                  </button>
                   <button
                     className={`icon-btn star ${isPrio ? 'on' : ''}`}
                     title={isPrio ? t('clearPriority') : t('markPriority')}

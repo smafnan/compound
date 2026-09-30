@@ -502,6 +502,35 @@ body {
 .icon-btn.star:hover { color: var(--accent); }
 .icon-btn.star.on { color: var(--accent); }
 
+/* main-timer pin + picker */
+.icon-btn.main-pin:hover { color: var(--accent); }
+.icon-btn.main-pin.on { color: var(--accent); }
+.icon-btn.main-pin[aria-pressed='true'] { font-weight: 700; }
+.main-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 4px 0 -6px;
+  font-family: var(--script);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+.main-pick select {
+  max-width: 100%;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 15px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.main-pick select:focus { outline: none; border-color: var(--accent); }
+
 /* active-priority hero */
 .priority-sec { position: relative; }
 .priority-sec .hero { border-color: var(--accent); }
