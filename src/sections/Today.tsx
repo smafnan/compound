@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AppState, SlotMark, hourKey, quarterKey, todayStr } from '../lib'
 import { loadPref, savePref } from '../prefs'
 import { t } from '../i18n'
@@ -126,13 +126,20 @@ function ChallengeBar({ on, setOn, notesOn, setNotesOn, state }: {
   )
 }
 
+/** A block the user asked to write a note for. A fresh object per tap, so
+ *  tapping the same block twice still re-focuses its field. */
+type NotePick = { i: number } | null
+
 /**
- * "Note yourself": one line per judged block saying what you actually did.
+ * "Note yourself": one line per block saying what you did in it — or, for a
+ * block that hasn't started yet, what you mean to do in it.
  * It lives under the grid rather than inside the cells — a 96-cell grid has
  * no room for a text field, and a list is far easier to fill on a phone.
+ * Any block can be opened here, by tapping it in the grid or picking it from
+ * the "note a block" menu.
  */
 function SlotNotes({
-  marks, notes, note, label, prefix, current,
+  marks, notes, note, label, prefix, current, count, picked,
 }: {
   marks: Record<string, SlotMark>
   notes: Record<string, string>
@@ -140,34 +147,98 @@ function SlotNotes({
   label: (i: number) => string
   prefix: 'h' | 'q'
   current: number
+  count: number
+  picked: NotePick
 }) {
-  // everything judged or already annotated, plus the block running now
-  const idx = new Set<number>()
+  // blocks opened this visit; they stay put while you type, even when the
+  // field is momentarily empty
+  const [opened, setOpened] = useState<Set<number>>(() => new Set())
+  const [focusIdx, setFocusIdx] = useState<number | null>(null)
+  const inputs = useRef(new Map<number, HTMLInputElement>())
+
+  function open(i: number) {
+    setOpened((o) => (o.has(i) ? o : new Set(o).add(i)))
+    setFocusIdx(i)
+  }
+  function close(i: number) {
+    note(`${prefix}${i}`, '')
+    setOpened((o) => {
+      const n = new Set(o)
+      n.delete(i)
+      return n
+    })
+  }
+
+  useEffect(() => { if (picked) open(picked.i) }, [picked])
+  useEffect(() => {
+    if (focusIdx === null) return
+    const el = inputs.current.get(focusIdx)
+    el?.focus()
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    setFocusIdx(null)
+  }, [focusIdx])
+
+  // everything judged, annotated or opened, plus the block running now
+  const idx = new Set<number>(opened)
   for (const k of Object.keys(marks)) if (k.startsWith(prefix)) idx.add(Number(k.slice(1)))
   for (const k of Object.keys(notes)) if (k.startsWith(prefix)) idx.add(Number(k.slice(1)))
   idx.add(current)
-  const rows = [...idx].filter((i) => Number.isFinite(i) && i >= 0).sort((a, b) => a - b)
-  if (rows.length === 0) return null
+  const rows = [...idx].filter((i) => Number.isFinite(i) && i >= 0 && i < count).sort((a, b) => a - b)
+  const rest = Array.from({ length: count }, (_, i) => i).filter((i) => !idx.has(i))
 
   return (
     <div className="slot-notes">
-      <div className="slot-notes-head">✎ {t('noteYourself')}</div>
+      <div className="slot-notes-head">
+        <span>✎ {t('noteYourself')}</span>
+        {rest.length > 0 && (
+          <select
+            className="slot-note-add"
+            value=""
+            onChange={(e) => { if (e.target.value !== '') open(Number(e.target.value)) }}
+            aria-label={t('noteAddBlock')}
+          >
+            <option value="">＋ {t('noteAddBlock')}</option>
+            {rest.map((i) => (
+              <option key={i} value={i}>
+                {label(i)}{i > current ? ` · ${t('noteTodo')}` : ''}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <p className="muted small slot-notes-hint">{t('noteHint')}</p>
       {rows.map((i) => {
         const key = `${prefix}${i}`
         const mark = marks[key]
+        // a block that hasn't started is a plan, not a record
+        const todo = i > current
         return (
-          <label className="slot-note" key={key}>
-            <span className={`slot-note-when ${mark ? `is-${mark}` : ''}`}>
-              {mark === 'hit' ? '✓' : mark === 'miss' ? '✗' : '·'} {label(i)}
-            </span>
+          <div className={`slot-note ${todo ? 'is-todo' : ''}`} key={key}>
+            <label className={`slot-note-when ${mark ? `is-${mark}` : ''}`} htmlFor={`note-${key}`}>
+              {mark === 'hit' ? '✓' : mark === 'miss' ? '✗' : todo ? '○' : '·'} {label(i)}
+              {todo && <em className="slot-note-tag">{t('noteTodo')}</em>}
+            </label>
             <input
+              id={`note-${key}`}
+              ref={(el) => { if (el) inputs.current.set(i, el); else inputs.current.delete(i) }}
               type="text"
               value={notes[key] ?? ''}
-              placeholder={t('notePlaceholder')}
+              placeholder={todo ? t('notePlaceholderTodo') : t('notePlaceholder')}
               onChange={(e) => note(key, e.target.value)}
-              aria-label={`What you did at ${label(i)}`}
+              aria-label={todo ? `What you will do at ${label(i)}` : `What you did at ${label(i)}`}
             />
-          </label>
+            {i !== current && !mark && (
+              <button
+                type="button"
+                className="slot-note-x"
+                onClick={() => close(i)}
+                aria-label={`Remove the note for ${label(i)}`}
+                data-tip="remove"
+              >
+                ×
+              </button>
+            )}
+          </div>
         )
       })}
     </div>
@@ -209,6 +280,8 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
   const hoursLeft = 24 - h - 1
   const { marks, notes, cycle, note } = useSlots({ state, setState })
   const live = !!challenge && !!setState
+  const noting = !!notesOn && !!setState
+  const [picked, setPicked] = useState<NotePick>(null)
   const score = tally(marks, 'h')
 
   return (
@@ -230,16 +303,21 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
           const mark = live ? marks[key] : undefined
           // only slots that have actually started can be judged
           const judgeable = live && i <= h
+          // with challenge off, taps are free to open the block's note
+          const notable = noting && !live
+          const hasNote = noting && !!notes[key]?.trim()
           const label = `${String(i).padStart(2, '0')}:00`
           const tip = judgeable
             ? `${label} — ${mark === 'hit' ? 'used well' : mark === 'miss' ? 'wasted' : 'tap to judge'}`
-            : i === h
-              ? `${label} — ${Math.round(hourFill)}% filled · ${Math.round(100 - hourFill)}% left`
-              : i < h
-                ? `${label} — spent`
-                : `${label} — still yours`
+            : notable
+              ? `${label} — ${hasNote ? notes[key] : i > h ? 'tap to plan this block' : 'tap to add a note'}`
+              : i === h
+                ? `${label} — ${Math.round(hourFill)}% filled · ${Math.round(100 - hourFill)}% left`
+                : i < h
+                  ? `${label} — spent`
+                  : `${label} — still yours`
           const common = {
-            className: `cell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''}`,
+            className: `cell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''}`,
             'data-tip': tip,
             style: i === h ? ({ ['--fill' as string]: `${hourFill}%` }) : undefined,
           }
@@ -247,15 +325,20 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
             <button key={i} type="button" {...common} onClick={() => cycle(key)} aria-label={tip}>
               {mark === 'hit' ? '✓' : mark === 'miss' ? '✗' : i}
             </button>
+          ) : notable ? (
+            <button key={i} type="button" {...common} onClick={() => setPicked({ i })} aria-label={tip}>
+              {i}
+            </button>
           ) : (
             <span key={i} {...common}>{i}</span>
           )
         })}
       </div>
       {live && <p className="muted small">{t('challengeLegend')}</p>}
-      {!!notesOn && !!setState && (
+      {noting && (
         <SlotNotes
           marks={marks} notes={notes} note={note} prefix="h" current={h}
+          count={24} picked={picked}
           label={(i) => `${String(i).padStart(2, '0')}:00`}
         />
       )}
@@ -270,6 +353,8 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
   const quarterFill = ((((minutesGone % 15) * 60) + now.getSeconds()) / 900) * 100
   const { marks, notes, cycle, note } = useSlots({ state, setState })
   const live = !!challenge && !!setState
+  const noting = !!notesOn && !!setState
+  const [picked, setPicked] = useState<NotePick>(null)
   const score = tally(marks, 'q')
 
   return (
@@ -292,13 +377,17 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
           const key = quarterKey(i)
           const mark = live ? marks[key] : undefined
           const judgeable = live && i <= quarterIdx
+          const notable = noting && !live
+          const hasNote = noting && !!notes[key]?.trim()
           const tip = judgeable
             ? `${hh}:${mm} — ${mark === 'hit' ? 'used well' : mark === 'miss' ? 'wasted' : 'tap to judge'}`
-            : i === quarterIdx
-              ? `${hh}:${mm} — ${Math.round(quarterFill)}% filled · ${Math.round(100 - quarterFill)}% left`
-              : `${hh}:${mm} — ${i < quarterIdx ? 'spent' : 'still yours'}`
+            : notable
+              ? `${hh}:${mm} — ${hasNote ? notes[key] : i > quarterIdx ? 'tap to plan this block' : 'tap to add a note'}`
+              : i === quarterIdx
+                ? `${hh}:${mm} — ${Math.round(quarterFill)}% filled · ${Math.round(100 - quarterFill)}% left`
+                : `${hh}:${mm} — ${i < quarterIdx ? 'spent' : 'still yours'}`
           const common = {
-            className: `qcell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''}`,
+            className: `qcell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''}`,
             'data-tip': tip,
             style: i === quarterIdx ? ({ ['--fill' as string]: `${quarterFill}%` }) : undefined,
           }
@@ -306,6 +395,8 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
             <button key={i} type="button" {...common} onClick={() => cycle(key)} aria-label={tip}>
               {mark === 'hit' ? '✓' : mark === 'miss' ? '✗' : ''}
             </button>
+          ) : notable ? (
+            <button key={i} type="button" {...common} onClick={() => setPicked({ i })} aria-label={tip} />
           ) : (
             <span key={i} {...common} />
           )
@@ -316,9 +407,10 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
           ? t('challengeLegend')
           : `Each square is 15 minutes. ${quartersLeft} blocks is ${(quartersLeft / 4).toFixed(1)} hours — enough to move something forward.`}
       </p>
-      {!!notesOn && !!setState && (
+      {noting && (
         <SlotNotes
           marks={marks} notes={notes} note={note} prefix="q" current={quarterIdx}
+          count={96} picked={picked}
           label={(i) => `${String(Math.floor(i / 4)).padStart(2, '0')}:${String((i % 4) * 15).padStart(2, '0')}`}
         />
       )}
