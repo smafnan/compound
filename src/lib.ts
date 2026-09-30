@@ -1,4 +1,4 @@
-import { mirrorToNative } from './native'
+import { clearNative, forgetNativeOwner, mirrorOwnerToNative, mirrorToNative } from './native'
 
 // ---------- Types ----------
 
@@ -306,6 +306,71 @@ export function uid(): string {
 // ---------- Persistence ----------
 
 const KEY = 'compound.v1'
+/** id of the account this device's data was last merged with */
+const OWNER_KEY = 'compound.owner'
+
+// ---------- Sync clock ----------
+
+// Merge decisions compare edit stamps from different devices, so a phone
+// whose clock runs a day fast would win every conflict for a day. Each
+// cloud save reports the server's time; stamps are taken on that clock.
+let clockOffsetMs = 0
+
+/** Calibrate against a server timestamp observed between `sentAt` and
+ *  `recvAt` (local ms). Small offsets are just latency — ignored. */
+export function calibrateClock(serverIso: string, sentAt: number, recvAt: number): void {
+  const server = Date.parse(serverIso)
+  if (!Number.isFinite(server)) return
+  const offset = server - (sentAt + recvAt) / 2
+  clockOffsetMs = Math.abs(offset) > 2000 ? offset : 0
+}
+
+/** "Now" for edit stamps — the device clock corrected to the server's. */
+export function syncNowIso(): string {
+  return new Date(Date.now() + clockOffsetMs).toISOString()
+}
+
+// ---------- Account ownership of local data ----------
+
+/** Which account (if any) the data on this device belongs to. */
+export function localOwner(): string | null {
+  try {
+    return localStorage.getItem(OWNER_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function setLocalOwner(userId: string): void {
+  try {
+    localStorage.setItem(OWNER_KEY, userId)
+  } catch {
+    /* unavailable */
+  }
+  mirrorOwnerToNative(userId)
+}
+
+/** The data stays but belongs to no account any more (after the account
+ *  was deleted) — the next account to sign in may adopt it. */
+export function forgetLocalOwner(): void {
+  try {
+    localStorage.removeItem(OWNER_KEY)
+  } catch {
+    /* unavailable */
+  }
+  forgetNativeOwner()
+}
+
+/** Forget this device's copy entirely (used by "log out & clear"). */
+export function clearLocalData(): void {
+  try {
+    localStorage.removeItem(KEY)
+    localStorage.removeItem(OWNER_KEY)
+  } catch {
+    /* unavailable */
+  }
+  clearNative()
+}
 
 /** Demo mode (?demo in the URL): shows generated sample data, never persisted. */
 export const IS_DEMO =
@@ -415,7 +480,7 @@ export function saveState(s: AppState, preStamped = false): AppState {
       // account data beats it) or an adopted merge with its own stamps
       out = s
     } else {
-      const now = new Date().toISOString()
+      const now = syncNowIso()
       const sec: Record<string, string> = { ...prev.sec, ...s.sec }
       const compAt: Record<string, string> = { ...prev.compAt, ...s.compAt }
       const slotAt: Record<string, string> = { ...prev.slotAt, ...s.slotAt }
@@ -484,14 +549,22 @@ function sectionScore(s: AppState, k: SectionKey): number {
  * - focus sessions are unioned by id.
  */
 export function mergeStates(local: AppState, remote: AppState): AppState {
-  const effective = (side: AppState, k: SectionKey) => side.sec?.[k] ?? side.updatedAt
-
   const winner = (k: SectionKey): AppState => {
-    const lt = effective(local, k)
-    const rt = effective(remote, k)
-    if (lt && rt) return Date.parse(rt) > Date.parse(lt) ? remote : local
-    if (lt) return local
-    if (rt) return remote
+    // a section's own stamp is the only evidence someone edited IT; a side
+    // that never stamped a section must not win it just because it edited
+    // something else more recently (that dropped the other device's edit)
+    const ls = local.sec?.[k]
+    const rs = remote.sec?.[k]
+    if (ls && rs) return Date.parse(rs) > Date.parse(ls) ? remote : local
+    if (ls) return local
+    if (rs) return remote
+    // neither side has ever stamped it (legacy data): whole-copy stamp,
+    // then whichever side actually has content
+    const lu = local.updatedAt
+    const ru = remote.updatedAt
+    if (lu && ru) return Date.parse(ru) > Date.parse(lu) ? remote : local
+    if (lu) return local
+    if (ru) return remote
     return sectionScore(remote, k) > sectionScore(local, k) ? remote : local
   }
 

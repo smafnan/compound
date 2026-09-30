@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
-import { AppState, normalizeState } from './lib'
+import {
+  AppState, calibrateClock, loadPersisted, mergeStates, normalizeState, saveState, setLocalOwner,
+} from './lib'
 
 /**
  * Cloud sync via Supabase (free tier is plenty). Configure with env vars:
@@ -89,6 +91,15 @@ if (supabase && typeof document !== 'undefined') {
 
 export type SyncStatus = 'off' | 'signed-out' | 'syncing' | 'synced' | 'error'
 
+/** The signed-in user's id from the local session — no network round trip.
+ *  The server still verifies the JWT on every request; this only decides
+ *  whether to try. */
+async function sessionUserId(): Promise<string | null> {
+  if (!supabase) return null
+  const { data } = await supabase.auth.getSession()
+  return data.session?.user.id ?? null
+}
+
 // ---------- auth ----------
 
 export async function signIn(email: string, password: string): Promise<string | null> {
@@ -120,12 +131,16 @@ export async function signUp(email: string, password: string): Promise<SignUpOut
   return { status: 'ok', needsConfirm: !data.session }
 }
 
+/** Sign out here. Pending changes are flushed to the cloud first, so the
+ *  last few seconds of edits aren't stranded on this device. */
 export async function signOut(): Promise<void> {
+  await flushPush(4000)
   await supabase?.auth.signOut()
 }
 
 /** Sign out on every device where this account is logged in. */
 export async function signOutEverywhere(): Promise<void> {
+  await flushPush(4000)
   await supabase?.auth.signOut({ scope: 'global' })
 }
 
@@ -152,6 +167,14 @@ export interface TotpEnrollment {
 /** Begin TOTP enrollment — returns a QR to scan in an authenticator app. */
 export async function enrollTotp(): Promise<TotpEnrollment | { error: string }> {
   if (!supabase) return { error: 'Accounts are not available in this build.' }
+  // an abandoned earlier attempt leaves an unverified factor behind, which
+  // blocks a fresh enrollment — clear those first
+  const { data: existing } = await supabase.auth.mfa.listFactors()
+  for (const f of existing?.all ?? []) {
+    if (f.factor_type === 'totp' && f.status !== 'verified') {
+      await supabase.auth.mfa.unenroll({ factorId: f.id })
+    }
+  }
   const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
   if (error) return { error: error.message }
   return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret }
@@ -181,6 +204,30 @@ export async function listTotpFactors(): Promise<{ id: string; status: string }[
 export async function unenrollTotp(factorId: string): Promise<string | null> {
   if (!supabase) return 'Accounts are not available in this build.'
   const { error } = await supabase.auth.mfa.unenroll({ factorId })
+  return error ? error.message : null
+}
+
+/**
+ * Does this session still owe a second factor? True when the account has a
+ * verified authenticator but the session was opened with only a password,
+ * magic link or OAuth (aal1). Until it's answered the database refuses the
+ * account's rows, and the app treats the user as not yet signed in.
+ */
+export async function needsSecondFactor(): Promise<boolean> {
+  if (!supabase) return false
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+  if (error || !data) return false
+  return data.nextLevel === 'aal2' && data.currentLevel !== 'aal2'
+}
+
+/** Answer the login-time 2FA challenge with a code from the authenticator. */
+export async function verifyLoginCode(code: string): Promise<string | null> {
+  if (!supabase) return 'Accounts are not available in this build.'
+  const { data, error: listErr } = await supabase.auth.mfa.listFactors()
+  if (listErr) return listErr.message
+  const factor = data?.totp.find((f) => f.status === 'verified')
+  if (!factor) return 'No authenticator is set up for this account.'
+  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code })
   return error ? error.message : null
 }
 
@@ -230,13 +277,12 @@ export function describeThisDevice(): { label: string; platform: string } {
 
 /** Register / refresh this device's presence for the current user. */
 export async function touchDevice(): Promise<void> {
-  if (!supabase) return
-  const { data } = await supabase.auth.getUser()
-  if (!data.user) return
+  const userId = await sessionUserId()
+  if (!supabase || !userId) return
   const { label, platform } = describeThisDevice()
   await supabase.from('devices').upsert(
     {
-      user_id: data.user.id,
+      user_id: userId,
       device_key: deviceKey(),
       label,
       platform,
@@ -290,10 +336,27 @@ export async function updateEmail(email: string): Promise<string | null> {
   return error ? error.message : null
 }
 
-/** Change the account password. */
-export async function updatePassword(password: string): Promise<string | null> {
+/** Change the account password. With "secure password change" on (see
+ *  docs/security.md) a session that isn't fresh must prove it's really the
+ *  owner: the result then asks for a code, which `sendReauthCode` emails. */
+export async function updatePassword(
+  password: string,
+  nonce?: string,
+): Promise<{ error: string | null; needsReauth?: boolean }> {
+  if (!supabase) return { error: 'Accounts are not available in this build.' }
+  const { error } = await supabase.auth.updateUser(nonce ? { password, nonce } : { password })
+  if (!error) return { error: null }
+  const code = (error as { code?: string }).code
+  if (code === 'reauthentication_needed' || /reauthenticat/i.test(error.message)) {
+    return { error: null, needsReauth: true }
+  }
+  return { error: error.message }
+}
+
+/** Email a one-time code that authorises a sensitive change. */
+export async function sendReauthCode(): Promise<string | null> {
   if (!supabase) return 'Accounts are not available in this build.'
-  const { error } = await supabase.auth.updateUser({ password })
+  const { error } = await supabase.auth.reauthenticate()
   return error ? error.message : null
 }
 
@@ -306,40 +369,312 @@ export async function deleteAccount(): Promise<string | null> {
   return null
 }
 
-/** Subscribe to auth changes; fires immediately with the current user. */
-export function onAuth(cb: (user: User | null) => void): () => void {
+export interface AuthInfo {
+  user: User | null
+  /** signed in, but the 2FA code hasn't been entered yet */
+  needsMfa: boolean
+}
+
+/**
+ * Subscribe to auth changes; fires first with the stored session
+ * (INITIAL_SESSION), then on every sign-in, sign-out, refresh and MFA step.
+ * Callers should key their work on `user.id` + `needsMfa`, since token
+ * refreshes fire this too.
+ */
+export function onAuth(cb: (info: AuthInfo) => void): () => void {
   if (!supabase) return () => {}
-  void supabase.auth.getUser().then(({ data }) => cb(data.user ?? null))
+  let seq = 0
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    cb(session?.user ?? null)
+    const mine = ++seq
+    const user = session?.user ?? null
+    if (!user) {
+      resetSync()
+      cb({ user: null, needsMfa: false })
+      return
+    }
+    // supabase calls must not be awaited inside this callback (it holds the
+    // auth lock), so the assurance check runs just after it returns
+    setTimeout(() => {
+      void needsSecondFactor().then((needsMfa) => {
+        if (mine === seq) cb({ user, needsMfa })
+      })
+    }, 0)
   })
   return () => data.subscription.unsubscribe()
 }
 
 // ---------- state sync ----------
+//
+// One row per user holds the whole app state. Three rules keep devices
+// from clobbering each other:
+//
+//  1. Every write is compare-and-swap on the row's `version` (save_state()
+//     in the database). A device may only write on top of the version it
+//     last merged; if another device got there first, the write is refused
+//     and this device pulls, merges and tries again.
+//  2. A cloud copy is merged AND persisted locally before its version is
+//     accepted, so nothing can be written over content this device hasn't
+//     folded in yet.
+//  3. What gets written is always the latest persisted local copy, not a
+//     snapshot from when the edit was queued.
+//
+// Against a database that predates the migration (no `version` column or
+// no save_state()), it falls back to the old plain upsert.
 
-export async function pullState(): Promise<{ state: AppState; updatedAt: string } | null> {
-  if (!supabase) return null
-  const { data, error } = await supabase
-    .from('app_state')
-    .select('data, updated_at')
-    .maybeSingle()
-  if (error || !data) return null
-  return {
-    state: normalizeState(data.data as Partial<AppState>),
-    updatedAt: data.updated_at as string,
+export interface RemoteState {
+  state: AppState
+  updatedAt: string
+  /** null against a pre-migration database */
+  version: number | null
+}
+
+export type PullResult =
+  | { kind: 'row'; remote: RemoteState }
+  | { kind: 'empty' }
+  | { kind: 'error'; message: string }
+
+interface SyncHooks {
+  onStatus?: (s: SyncStatus) => void
+  /** a merged copy was persisted — show it */
+  onAdopt?: (s: AppState) => void
+}
+
+let hooks: SyncHooks = {}
+/** the server predates the migration — use the plain upsert */
+let legacy = false
+/** the row version this device's copy is known to include; null = unknown */
+let baseVersion: number | null = null
+/** there are local changes the cloud hasn't got */
+let dirty = false
+/** used only if nothing has been persisted locally (storage unavailable) */
+let fallbackState: AppState | null = null
+let timer: ReturnType<typeof setTimeout> | undefined
+let draining: Promise<void> | null = null
+let retryDelay = 0
+
+export function configureSync(h: SyncHooks): void {
+  hooks = h
+}
+
+function resetSync(): void {
+  clearTimeout(timer)
+  baseVersion = null
+  dirty = false
+  fallbackState = null
+  retryDelay = 0
+}
+
+function isMissingSchema(err: { code?: string; message?: string }): boolean {
+  return (
+    err.code === '42703' || // undefined column
+    err.code === 'PGRST202' || // function not found
+    err.code === 'PGRST204' || // column not in schema cache
+    /could not find the function|column .* does not exist/i.test(err.message ?? '')
+  )
+}
+
+/** Read this account's row. Distinguishes "no row yet" from "couldn't
+ *  read" — treating a failed read as a new account used to upload a fresh
+ *  device's starter data over a full cloud copy. */
+export async function pullState(): Promise<PullResult> {
+  if (!supabase) return { kind: 'error', message: 'Cloud sync is not configured.' }
+  const cols = legacy ? 'data, updated_at' : 'data, updated_at, version'
+  const { data, error } = await supabase.from('app_state').select(cols).maybeSingle()
+  if (error) {
+    if (!legacy && isMissingSchema(error)) {
+      legacy = true
+      return pullState()
+    }
+    return { kind: 'error', message: error.message }
   }
+  if (!data) return { kind: 'empty' }
+  const row = data as unknown as { data: Partial<AppState>; updated_at: string; version?: number }
+  return {
+    kind: 'row',
+    remote: {
+      state: normalizeState(row.data),
+      updatedAt: row.updated_at,
+      version: typeof row.version === 'number' ? row.version : null,
+    },
+  }
+}
+
+/**
+ * Fold a cloud copy into this device's copy: merge, persist, show, and only
+ * then record its version as seen. Returns true when the cloud is missing
+ * something this device has (the caller should push).
+ */
+export function absorbRemote(remote: RemoteState): boolean {
+  const incoming = { ...remote.state, updatedAt: remote.state.updatedAt ?? remote.updatedAt }
+  const local = loadPersisted()
+  const merged = local ? mergeStates(local, incoming) : incoming
+  const mergedJson = JSON.stringify(merged)
+  if (!local || mergedJson !== JSON.stringify(local)) {
+    saveState(merged, true)
+    hooks.onAdopt?.(merged)
+  }
+  if (remote.version !== null && (baseVersion === null || remote.version > baseVersion)) {
+    baseVersion = remote.version
+  }
+  const behind = mergedJson !== JSON.stringify(incoming)
+  if (!behind && !dirty && !draining) hooks.onStatus?.('synced')
+  return behind
+}
+
+/** Queue a save of this device's copy (debounced). */
+export function pushState(state?: AppState): void {
+  if (!supabase) return
+  dirty = true
+  if (state) fallbackState = state
+  hooks.onStatus?.('syncing')
+  clearTimeout(timer)
+  timer = setTimeout(() => void drain(), 1200)
+}
+
+/** Save now instead of after the debounce. Resolves true when nothing is
+ *  left unsaved; gives up waiting after `timeoutMs` (the save carries on). */
+export async function flushPush(timeoutMs?: number): Promise<boolean> {
+  if (!supabase) return true
+  clearTimeout(timer)
+  const run = drain()
+  if (timeoutMs) await Promise.race([run, new Promise((r) => setTimeout(r, timeoutMs))])
+  else await run
+  return isFullySynced()
+}
+
+/** Everything this device has is in the cloud. */
+export function isFullySynced(): boolean {
+  return !dirty && !draining
+}
+
+function drain(): Promise<void> {
+  if (!draining) {
+    draining = (async () => {
+      try {
+        while (dirty) {
+          dirty = false
+          if (!(await writeOnce())) {
+            dirty = true
+            retryDelay = Math.min(Math.max(retryDelay * 2, 5000), 60_000)
+            clearTimeout(timer)
+            timer = setTimeout(() => void drain(), retryDelay)
+            break
+          }
+        }
+      } finally {
+        draining = null
+      }
+    })()
+  }
+  return draining
+}
+
+async function legacyUpsert(userId: string, state: AppState): Promise<boolean> {
+  const { error } = await supabase!.from('app_state').upsert({
+    user_id: userId,
+    data: state,
+    // the CONTENT stamp, not "now" — so a device that merely pushed an
+    // unchanged copy never looks like the latest editor
+    updated_at: state.updatedAt ?? new Date().toISOString(),
+  })
+  if (error) {
+    hooks.onStatus?.('error')
+    return false
+  }
+  setLocalOwner(userId)
+  retryDelay = 0
+  if (!dirty) hooks.onStatus?.('synced')
+  return true
+}
+
+/** One save, including any pull-merge-retry rounds. false = try later. */
+async function writeOnce(): Promise<boolean> {
+  if (!supabase) return true
+  const userId = await sessionUserId()
+  if (!userId) {
+    hooks.onStatus?.('signed-out')
+    return true
+  }
+  let state = loadPersisted() ?? fallbackState
+  if (!state) return true
+  if (legacy) return legacyUpsert(userId, state)
+
+  // never seen the cloud copy this session: read it before writing over it
+  if (baseVersion === null) {
+    const r = await pullState()
+    if (r.kind === 'error') {
+      hooks.onStatus?.('error')
+      return false
+    }
+    if (legacy) return legacyUpsert(userId, state)
+    if (r.kind === 'empty') baseVersion = 0
+    else absorbRemote(r.remote)
+    state = loadPersisted() ?? state
+  }
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const sentAt = Date.now()
+    const { data, error } = await supabase.rpc('save_state', {
+      p_data: state,
+      p_base_version: baseVersion ?? 0,
+      p_updated_at: state.updatedAt ?? null,
+    })
+    if (error) {
+      if (isMissingSchema(error)) {
+        legacy = true
+        return legacyUpsert(userId, state)
+      }
+      hooks.onStatus?.('error')
+      return false
+    }
+    const row = (Array.isArray(data) ? data[0] : data) as
+      | { ok: boolean; version: number; server_now: string }
+      | undefined
+    if (!row) {
+      hooks.onStatus?.('error')
+      return false
+    }
+    calibrateClock(row.server_now, sentAt, Date.now())
+    if (row.ok) {
+      baseVersion = row.version
+      retryDelay = 0
+      setLocalOwner(userId)
+      if (!dirty) hooks.onStatus?.('synced')
+      return true
+    }
+    // another device saved first: take its copy in, then write on top of it
+    const r = await pullState()
+    if (r.kind === 'error') {
+      hooks.onStatus?.('error')
+      return false
+    }
+    if (r.kind === 'empty') baseVersion = 0
+    else absorbRemote(r.remote)
+    state = loadPersisted() ?? state
+  }
+  hooks.onStatus?.('error')
+  return false
+}
+
+// the app may be killed soon after it's hidden — don't sit on unsaved edits
+if (supabase && typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && dirty) void flushPush()
+  })
+  window.addEventListener('pagehide', () => {
+    if (dirty) void flushPush()
+  })
 }
 
 /**
  * Live cross-device sync: listen for changes to this user's row so an
  * edit made on any other device shows up here within a second.
- * (Requires the table to be in the realtime publication; the app also
+ * (The migration adds the table to the realtime publication; the app also
  * re-pulls on focus and on a timer as a fallback.)
  */
 export function subscribeToState(
   userId: string,
-  onRemote: (state: AppState, updatedAt: string) => void,
+  onRemote: (remote: RemoteState) => void,
 ): () => void {
   if (!supabase) return () => {}
   const ch = supabase
@@ -348,9 +683,20 @@ export function subscribeToState(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'app_state', filter: `user_id=eq.${userId}` },
       (payload) => {
-        const row = payload.new as { data?: Partial<AppState>; updated_at?: string } | null
+        const row = payload.new as
+          | { data?: Partial<AppState>; updated_at?: string; version?: number }
+          | null
         if (row?.data && row.updated_at) {
-          onRemote(normalizeState(row.data), row.updated_at)
+          onRemote({
+            state: normalizeState(row.data),
+            updatedAt: row.updated_at,
+            version: typeof row.version === 'number' ? row.version : null,
+          })
+        } else if (row && Object.keys(row).length) {
+          // a large row can arrive without its payload — fetch it instead
+          void pullState().then((r) => {
+            if (r.kind === 'row') onRemote(r.remote)
+          })
         }
       },
     )
@@ -358,28 +704,4 @@ export function subscribeToState(
   return () => {
     void supabase.removeChannel(ch)
   }
-}
-
-let pushTimer: ReturnType<typeof setTimeout> | undefined
-
-/** Debounced upsert of the whole state into the user's row. */
-export function pushState(state: AppState, onStatus?: (s: SyncStatus) => void): void {
-  if (!supabase) return
-  clearTimeout(pushTimer)
-  onStatus?.('syncing')
-  pushTimer = setTimeout(async () => {
-    const { data } = await supabase!.auth.getUser()
-    if (!data.user) {
-      onStatus?.('signed-out')
-      return
-    }
-    const { error } = await supabase!.from('app_state').upsert({
-      user_id: data.user.id,
-      data: state,
-      // the CONTENT stamp, not "now" — so a device that merely pushed
-      // an unchanged copy never looks like the latest editor
-      updated_at: state.updatedAt ?? new Date().toISOString(),
-    })
-    onStatus?.(error ? 'error' : 'synced')
-  }, 1200)
 }

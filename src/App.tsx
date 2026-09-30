@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { AppState, IS_DEMO, loadPersisted, loadState, mergeStates, saveState } from './lib'
+import { AppState, IS_DEMO, clearLocalData, loadState, localOwner, saveState, setLocalOwner } from './lib'
 import { useDeadlineAlarms } from './alarms'
-import { SyncStatus, cloudEnabled, onAuth, pullState, pushState, subscribeToState, touchDevice } from './cloud'
+import {
+  RemoteState, SyncStatus, absorbRemote, cloudEnabled, configureSync, onAuth, pullState, pushState,
+  subscribeToState, touchDevice,
+} from './cloud'
 import { loadPref, resolveFontFamily, savePref } from './prefs'
 import FontPicker from './FontPicker'
 import { LANGS, LangId, applyLang, langDir, t } from './i18n'
@@ -82,6 +85,9 @@ export default function App() {
     savePref('lang', lang)
   }, [lang])
   const [user, setUser] = useState<User | null>(null)
+  // signed in, but the account's 2FA code is still owed — nothing syncs
+  // until it's entered
+  const [needsMfa, setNeedsMfa] = useState(false)
   const [sync, setSync] = useState<SyncStatus>(cloudEnabled ? 'signed-out' : 'off')
   const [showAccount, setShowAccount] = useState(false)
   const [verified, setVerified] = useState(false)
@@ -103,55 +109,72 @@ export default function App() {
     const id = setTimeout(() => setVerified(false), 7000)
     return () => clearTimeout(id)
   }, [])
-  const stateRef = useRef(state)
-  stateRef.current = state
   // set while adopting a merged copy, so the save effect writes it
   // verbatim (stamps intact) instead of re-stamping and re-pushing
   const adoptingRef = useRef(false)
 
-  /** Combine the cloud copy with what this device has — never overwrite.
+  // the sync engine persists merged copies itself; this shows them without
+  // re-stamping or re-pushing
+  useEffect(() => {
+    configureSync({
+      onStatus: setSync,
+      onAdopt: (merged) => {
+        adoptingRef.current = true
+        setState(merged)
+      },
+    })
+  }, [])
+
+  /** Combine a cloud copy with what this device has — never overwrite.
    *  Ticks, tasks, titles and progress from BOTH sides survive. */
-  function reconcile(remoteState: AppState, remoteAt?: string) {
-    const local = loadPersisted() ?? stateRef.current
-    const remote = { ...remoteState, updatedAt: remoteState.updatedAt ?? remoteAt }
-    const merged = mergeStates(local, remote)
-    const mergedJson = JSON.stringify(merged)
-    if (mergedJson !== JSON.stringify(local)) {
-      adoptingRef.current = true
-      setState(merged)
-    }
-    if (mergedJson !== JSON.stringify(remote)) {
-      pushState(merged, setSync) // cloud was missing something we have — let its own
-      // status callback carry 'syncing' through to 'synced'/'error' when the debounced
-      // write actually lands, instead of claiming "backed up" a beat early
-    } else {
-      setSync('synced')
-    }
+  function reconcile(remote: RemoteState) {
+    if (absorbRemote(remote)) pushState() // the cloud is missing something we have
   }
 
   useEffect(() => {
     const adopted = adoptingRef.current
     adoptingRef.current = false
     const stamped = saveState(state, adopted)
-    if (!adopted && user && !IS_DEMO) pushState(stamped, setSync)
+    if (!adopted && user && !IS_DEMO) pushState(stamped)
   }, [state]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // login → merge the cloud copy with this device's copy
+  // login → merge the cloud copy with this device's copy. Auth events also
+  // fire on every token refresh, so only a new user (or a finished 2FA
+  // step) starts this again.
+  const authKeyRef = useRef('')
   useEffect(() => {
     if (!cloudEnabled || IS_DEMO) return
-    return onAuth((u) => {
-      setUser(u)
-      if (!u) {
-        setSync('signed-out')
+    return onAuth(({ user: u, needsMfa: mfa }) => {
+      const key = u ? `${u.id}:${mfa}` : ''
+      if (key === authKeyRef.current) {
+        if (u) setUser((prev) => (prev?.id === u.id ? prev : u))
         return
       }
+      authKeyRef.current = key
+      setNeedsMfa(!!u && mfa)
+      if (!u || mfa) {
+        setUser(null)
+        setSync('signed-out')
+        if (mfa) setShowAccount(true) // ask for the code straight away
+        return
+      }
+
+      // Data on this device that belongs to a DIFFERENT account must never
+      // be merged into this one (shared computer, switched accounts).
+      const owner = localOwner()
+      if (owner && owner !== u.id) {
+        clearLocalData()
+        const fresh = saveState(loadState())
+        adoptingRef.current = true
+        setState(fresh)
+      }
+      setLocalOwner(u.id)
+      setUser(u)
       setSync('syncing')
-      void pullState().then((remote) => {
-        if (remote) {
-          reconcile(remote.state, remote.updatedAt)
-        } else {
-          pushState(saveState(stateRef.current), setSync) // brand-new account
-        }
+      void pullState().then((r) => {
+        if (r.kind === 'row') reconcile(r.remote)
+        else if (r.kind === 'empty') pushState() // brand-new account
+        else setSync('error') // couldn't read — never treat that as "empty"
       })
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -162,7 +185,7 @@ export default function App() {
     if (!user || IS_DEMO) return
     const pull = () => {
       void pullState().then((r) => {
-        if (r) reconcile(r.state, r.updatedAt)
+        if (r.kind === 'row') reconcile(r.remote)
       })
     }
     const onVis = () => {
@@ -325,6 +348,7 @@ export default function App() {
       {showAccount && (
         <Account
           user={user}
+          needsMfa={needsMfa}
           status={sync}
           state={state}
           setState={setState}
