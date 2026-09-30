@@ -135,6 +135,11 @@ await db.query(`insert into public.devices (user_id, device_key, label, platform
 ok('upsert on (user_id, device_key) works', true)
 await throws('oversized label rejected', () => db.query(`insert into public.devices (user_id, device_key, label) values ($1, 'z', $2)`, [B, 'x'.repeat(500)]), /devices_field_lengths/)
 await throws('cannot register a device for someone else', () => db.query(`insert into public.devices (user_id, device_key) values ($1, 'evil')`, [A]))
+await throws('signed-in users cannot call the prune trigger function', () => db.query(`select public.devices_prune()`), /permission denied/)
+await throws('...nor the stamp trigger function', () => db.query(`select public.app_state_stamp()`), /permission denied/)
+await as(null)
+await throws('anon cannot call the prune trigger function', () => db.query(`select public.devices_prune()`), /permission denied/)
+await as(B)
 
 console.log('delete_user')
 await as(B)

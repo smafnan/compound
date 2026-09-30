@@ -76,7 +76,10 @@ These are Auth settings, not SQL. Set them once per project.
 
 **Advisors**
 - [ ] Run **Security Advisor** and **Performance Advisor** after each migration. Both should be
-      clean for `app_state` and `devices`.
+      clean for `app_state` and `devices`. One entry is expected and intentional:
+      *"Signed-In Users Can Execute SECURITY DEFINER Function: `public.delete_user()`"* (lint
+      0029). That function is the in-app account deletion. It can only delete the caller and
+      requires aal2 when 2FA is on.
 
 ## Client hardening already in place
 
