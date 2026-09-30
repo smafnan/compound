@@ -21,6 +21,33 @@ export interface SlotProps {
   challenge?: boolean
   /** note mode on — the per-slot "what did you do" list is shown */
   notesOn?: boolean
+  /** office mode on — the blocks inside these hours stand out */
+  office?: OfficeHours | null
+}
+
+/** Office hours in minutes from midnight. end < start is an overnight shift. */
+export interface OfficeHours { start: number; end: number }
+
+const toMin = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number)
+  return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN
+}
+
+/** The office day as plain [from, to) ranges, split at midnight if needed. */
+function officeRanges({ start, end }: OfficeHours): [number, number][] {
+  if (start === end) return []
+  return start < end ? [[start, end]] : [[start, 1440], [0, end]]
+}
+
+/** Does the block [from, from + len) overlap the office day at all? */
+export function inOffice(office: OfficeHours | null | undefined, from: number, len: number) {
+  if (!office) return false
+  return officeRanges(office).some(([a, b]) => from < b && from + len > a)
+}
+
+/** Office minutes still ahead of `nowMin` today. */
+function officeMinutesLeft(office: OfficeHours, nowMin: number) {
+  return officeRanges(office).reduce((sum, [a, b]) => sum + Math.max(0, b - Math.max(a, nowMin)), 0)
 }
 
 /** none → hit → miss → none, so one control cycles the whole verdict. */
@@ -80,6 +107,16 @@ export default function Today({ state, setState }: SlotProps) {
   const [notesOn, setNotesOn] = useState(() => loadPref('notes', 'off') === 'on')
   useEffect(() => { savePref('challenge', challenge ? 'on' : 'off') }, [challenge])
   useEffect(() => { savePref('notes', notesOn ? 'on' : 'off') }, [notesOn])
+  // office hours are a per-device routine setting, like the modes above
+  const [officeOn, setOfficeOn] = useState(() => loadPref('office', 'off') === 'on')
+  const [officeStart, setOfficeStart] = useState(() => loadPref('officeStart', '09:00'))
+  const [officeEnd, setOfficeEnd] = useState(() => loadPref('officeEnd', '18:00'))
+  useEffect(() => { savePref('office', officeOn ? 'on' : 'off') }, [officeOn])
+  useEffect(() => { savePref('officeStart', officeStart) }, [officeStart])
+  useEffect(() => { savePref('officeEnd', officeEnd) }, [officeEnd])
+  const start = toMin(officeStart)
+  const end = toMin(officeEnd)
+  const office = officeOn && Number.isFinite(start) && Number.isFinite(end) ? { start, end } : null
   return (
     <section className="section">
       <ClockHero now={now} />
@@ -88,9 +125,55 @@ export default function Today({ state, setState }: SlotProps) {
         notesOn={notesOn} setNotesOn={setNotesOn}
         state={state}
       />
-      <HoursPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} />
-      <QuartersPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} />
+      <OfficeBar
+        now={now} on={officeOn} setOn={setOfficeOn} office={office}
+        start={officeStart} setStart={setOfficeStart}
+        end={officeEnd} setEnd={setOfficeEnd}
+      />
+      <HoursPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} office={office} />
+      <QuartersPanel now={now} state={state} setState={setState} challenge={challenge} notesOn={notesOn} office={office} />
     </section>
+  )
+}
+
+/** Office mode: pick the routine's hours, see how much of it is left. */
+function OfficeBar({ now, on, setOn, office, start, setStart, end, setEnd }: {
+  now: Date
+  on: boolean; setOn: (v: boolean) => void
+  office: OfficeHours | null
+  start: string; setStart: (v: string) => void
+  end: string; setEnd: (v: string) => void
+}) {
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const left = office ? officeMinutesLeft(office, nowMin) : 0
+  const total = office ? officeMinutesLeft(office, 0) : 0
+  const status = !office || total === 0
+    ? null
+    : left === 0
+      ? t('officeDone')
+      : left === total
+        ? `${(total / 60).toFixed(1)} h ${t('officeAhead')}`
+        : `${(left / 60).toFixed(1)} h ${t('officeLeft')}`
+
+  return (
+    <div className={`office-bar ${on ? 'on' : ''}`}>
+      <button className={`chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => setOn(!on)}>
+        ▣ {t('officeMode')}
+      </button>
+      {on && (
+        <>
+          <label className="office-time">
+            {t('officeFrom')}
+            <input type="time" step={900} value={start} onChange={(e) => e.target.value && setStart(e.target.value)} />
+          </label>
+          <label className="office-time">
+            {t('officeTo')}
+            <input type="time" step={900} value={end} onChange={(e) => e.target.value && setEnd(e.target.value)} />
+          </label>
+          {status && <span className="office-status">{status}</span>}
+        </>
+      )}
+    </div>
   )
 }
 
@@ -274,7 +357,7 @@ export function ClockHero({ now }: { now: Date }) {
   )
 }
 
-export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: Date } & SlotProps) {
+export function HoursPanel({ now, state, setState, challenge, notesOn, office }: { now: Date } & SlotProps) {
   const h = now.getHours()
   const hourFill = ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100
   const hoursLeft = 24 - h - 1
@@ -285,7 +368,7 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
   const score = tally(marks, 'h')
 
   return (
-    <div className={`panel ${live ? 'challenging' : ''}`}>
+    <div className={`panel ${live ? 'challenging' : ''} ${office ? 'office-on' : ''}`}>
       <div className="panel-head">
         <h2>{t('hours')}</h2>
         <div className="panel-stat">
@@ -306,7 +389,8 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
           // with challenge off, taps are free to open the block's note
           const notable = noting && !live
           const hasNote = noting && !!notes[key]?.trim()
-          const label = `${String(i).padStart(2, '0')}:00`
+          const work = inOffice(office, i * 60, 60)
+          const label = `${String(i).padStart(2, '0')}:00${work ? ` · ${t('officeTag')}` : ''}`
           const tip = judgeable
             ? `${label} — ${mark === 'hit' ? 'used well' : mark === 'miss' ? 'wasted' : 'tap to judge'}`
             : notable
@@ -317,7 +401,7 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
                   ? `${label} — spent`
                   : `${label} — still yours`
           const common = {
-            className: `cell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''}`,
+            className: `cell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''} ${work ? 'office' : ''}`,
             'data-tip': tip,
             style: i === h ? ({ ['--fill' as string]: `${hourFill}%` }) : undefined,
           }
@@ -346,7 +430,7 @@ export function HoursPanel({ now, state, setState, challenge, notesOn }: { now: 
   )
 }
 
-export function QuartersPanel({ now, state, setState, challenge, notesOn }: { now: Date } & SlotProps) {
+export function QuartersPanel({ now, state, setState, challenge, notesOn, office }: { now: Date } & SlotProps) {
   const minutesGone = now.getHours() * 60 + now.getMinutes()
   const quarterIdx = Math.floor(minutesGone / 15) // 0..95, the one running now
   const quartersLeft = 96 - quarterIdx - 1
@@ -358,7 +442,7 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
   const score = tally(marks, 'q')
 
   return (
-    <div className={`panel ${live ? 'challenging' : ''}`}>
+    <div className={`panel ${live ? 'challenging' : ''} ${office ? 'office-on' : ''}`}>
       <div className="panel-head">
         <h2>{t('quarterHours')}</h2>
         <div className="panel-stat">
@@ -379,15 +463,17 @@ export function QuartersPanel({ now, state, setState, challenge, notesOn }: { no
           const judgeable = live && i <= quarterIdx
           const notable = noting && !live
           const hasNote = noting && !!notes[key]?.trim()
+          const work = inOffice(office, i * 15, 15)
+          const at = `${hh}:${mm}${work ? ` · ${t('officeTag')}` : ''}`
           const tip = judgeable
-            ? `${hh}:${mm} — ${mark === 'hit' ? 'used well' : mark === 'miss' ? 'wasted' : 'tap to judge'}`
+            ? `${at} — ${mark === 'hit' ? 'used well' : mark === 'miss' ? 'wasted' : 'tap to judge'}`
             : notable
-              ? `${hh}:${mm} — ${hasNote ? notes[key] : i > quarterIdx ? 'tap to plan this block' : 'tap to add a note'}`
+              ? `${at} — ${hasNote ? notes[key] : i > quarterIdx ? 'tap to plan this block' : 'tap to add a note'}`
               : i === quarterIdx
-                ? `${hh}:${mm} — ${Math.round(quarterFill)}% filled · ${Math.round(100 - quarterFill)}% left`
-                : `${hh}:${mm} — ${i < quarterIdx ? 'spent' : 'still yours'}`
+                ? `${at} — ${Math.round(quarterFill)}% filled · ${Math.round(100 - quarterFill)}% left`
+                : `${at} — ${i < quarterIdx ? 'spent' : 'still yours'}`
           const common = {
-            className: `qcell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''}`,
+            className: `qcell ${cls} ${mark ? `mark-${mark}` : ''} ${judgeable ? 'judgeable' : ''} ${notable ? 'notable' : ''} ${hasNote ? 'has-note' : ''} ${work ? 'office' : ''}`,
             'data-tip': tip,
             style: i === quarterIdx ? ({ ['--fill' as string]: `${quarterFill}%` }) : undefined,
           }

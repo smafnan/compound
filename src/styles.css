@@ -2485,6 +2485,63 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   .style-btn { min-height: 42px; padding: 9px 20px; font-size: 16px; }
 }
 
+/* ---------- Office mode ---------- */
+
+.office-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 -6px;
+}
+.office-bar .chip { font-size: 15px; padding: 8px 16px; }
+.office-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--script);
+  font-size: 15px;
+  color: var(--ink-dim);
+}
+.office-time input {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 14px;
+  padding: 5px 8px;
+}
+.office-time input:focus { outline: none; border-color: var(--accent); }
+.office-status {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+}
+
+/* with office mode on, the working blocks step forward and the rest of the
+   day steps back — so the routine reads at a glance */
+.panel.office-on .cell:not(.office),
+.panel.office-on .qcell:not(.office) {
+  opacity: 0.38;
+}
+.panel.office-on .cell:not(.office):hover,
+.panel.office-on .qcell:not(.office):hover { opacity: 0.8; }
+.cell.office.left, .qcell.office.left {
+  background: color-mix(in srgb, var(--accent) 24%, var(--left-bg));
+  border: 2px solid var(--accent);
+}
+.cell.office.spent, .qcell.office.spent {
+  background: color-mix(in srgb, var(--accent) 14%, var(--spent-bg));
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--spent-border));
+}
+/* a thick accent underline on every office block, whatever its state or
+   verdict, so it stays visible under ✓/✗ colours too */
+.cell.office, .qcell.office {
+  box-shadow: inset 0 -4px 0 var(--accent);
+}
+
 /* ---------- Note yourself ---------- */
 
 .slot-notes {

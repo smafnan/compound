@@ -123,6 +123,13 @@ Two independent switches turn the grids into a record of how you actually spent 
 Neither switch drags the other on, and both verdicts and notes sync across your devices on
 the same per-day merge rules as your checklist ticks.
 
+### ▣ Office mode
+
+Set your working hours (say **09:00 → 18:00**, in 15-minute steps) and switch on **office
+mode**. The hour and quarter-hour blocks inside that window are highlighted, the rest of the
+day fades back, and the bar shows how much of the office day is still ahead. Overnight shifts
+(e.g. 22:00 → 06:00) work too. The hours are remembered on each device, like the theme.
+
 ## ▦ Checklist — the habit matrix
 
 <div align="center"><img src="docs/checklist.jpg" width="760" alt="Checklist — days across the top, tasks down the side, sticky month %" /></div>
