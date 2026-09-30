@@ -239,14 +239,16 @@ fields go full width, and nothing ever scrolls sideways.
   or **Continue with GitHub**
 - **Live cross-device sync** — realtime updates plus refresh-on-focus and a 30-second
   fallback. Sync **merges instead of overwriting**: each section and each checklist day
-  carries its own edit-time, so switching devices can never reset or lose progress — a tick
-  made anywhere survives everywhere
-- **Account page** — edit name, phone, email (confirmation flow) and password
-- **Security center** — TOTP **two-factor** (scan a QR in any authenticator app), a
-  **devices & sessions list** (platform, last active, forget a device), and **log out
-  everywhere**
+  carries its own edit-time, and every save is **version-checked** so two devices editing
+  at once can't overwrite each other — a tick made anywhere survives everywhere
+- **Account page** — edit name, phone, email (confirmation flow) and password (re-verified
+  by an emailed code when the session isn't fresh)
+- **Security center** — TOTP **two-factor**, enforced at login *and* by the database, a
+  **devices & sessions list** (platform, last active, forget a device), **log out
+  everywhere**, and **log out & clear this device** for shared computers
 - **Account deletion** built in; every table is locked with row-level security so only you
-  can read your data
+  can read your data. Architecture, deploy steps and the Supabase settings checklist:
+  [docs/security.md](docs/security.md)
 
 <div align="center"><img src="docs/account-security.png" width="760" alt="Account security modal" /></div>
 
@@ -267,6 +269,7 @@ cd compound
 npm install
 npm run dev          # http://localhost:5173
 npm run build        # static site in dist/ — deployable anywhere (this repo → Netlify)
+npm test             # database (Postgres/PGlite) + multi-device sync tests
 ```
 
 Demo mode with generated data: append `?demo`. Deep-link tabs with `?tab=checklist`,
@@ -307,7 +310,9 @@ including the bitrate table and how the `scrim` value is derived, in
 
 ### ✉️ Supabase email links (self-hosting)
 
-If you point the app at your own Supabase project, set **Auth → URL Configuration**:
+If you point the app at your own Supabase project, run every file in `supabase/migrations/`
+(in name order) and work through the checklist in [docs/security.md](docs/security.md).
+In particular, set **Auth → URL Configuration**:
 *Site URL* = your deployed origin, and add it to *Redirect URLs* (plus
 `http://localhost:5173` for dev). Otherwise verification / magic-link emails redirect to
 Supabase's default and land on a blank page instead of back in the app.

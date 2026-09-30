@@ -98,7 +98,9 @@ function initUpdater(getWindow) {
   ipcMain.handle('updater:check', () => check())
   ipcMain.handle('updater:download', async () => {
     if (state.manual) {
-      await shell.openExternal(state.url || RELEASES_PAGE)
+      // the url comes from the network — only ever hand https to the OS
+      const target = /^https:\/\//i.test(state.url || '') ? state.url : RELEASES_PAGE
+      await shell.openExternal(target)
       return
     }
     publish({ state: 'downloading', version: state.version, percent: 0 })

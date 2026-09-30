@@ -44,9 +44,11 @@ function TwoFactor() {
   }
 
   async function turnOff(id: string) {
-    setBusy(true)
-    await unenrollTotp(id)
+    if (!window.confirm('Turn off two-factor? Your password alone will then be enough to log in.')) return
+    setBusy(true); setErr(null)
+    const e = await unenrollTotp(id)
     setBusy(false)
+    if (e) setErr(e)
     refresh()
   }
 

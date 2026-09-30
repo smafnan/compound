@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { AppState } from './lib'
+import { AppState, clearLocalData, forgetLocalOwner } from './lib'
 import {
-  SyncStatus, cloudEnabled, deleteAccount, sendMagicLink, sendPasswordReset,
-  signIn, signInWithProvider, signOut, signOutEverywhere, signUp,
-  updateEmail, updatePassword,
+  SyncStatus, cloudEnabled, deleteAccount, flushPush, needsSecondFactor, sendMagicLink,
+  sendPasswordReset, sendReauthCode, signIn, signInWithProvider, signOut, signOutEverywhere,
+  signUp, updateEmail, updatePassword, verifyLoginCode,
 } from './cloud'
 import Security from './Security'
 import { t } from './i18n'
 
+/** Kept in step with the Auth setting in docs/security.md. */
+const MIN_PASSWORD = 8
+
 interface Props {
   user: User | null
+  /** signed in with a password/link, but the 2FA code is still owed */
+  needsMfa: boolean
   status: SyncStatus
   state: AppState
   setState: React.Dispatch<React.SetStateAction<AppState>>
@@ -29,9 +34,64 @@ export default function Account(props: Props) {
   return (
     <div className="modal-backdrop" onClick={props.onClose}>
       <div className="panel modal" onClick={(e) => e.stopPropagation()}>
-        {props.user ? <AccountInfo {...props} /> : <AuthForm {...props} />}
+        {props.needsMfa ? <MfaStep {...props} /> : props.user ? <AccountInfo {...props} /> : <AuthForm {...props} />}
       </div>
     </div>
+  )
+}
+
+/* ---------------- second factor at login ---------------- */
+
+function MfaStep({ onClose }: Props) {
+  const [code, setCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (busy || code.length !== 6) return
+    setBusy(true)
+    setError(null)
+    const err = await verifyLoginCode(code)
+    setBusy(false)
+    if (err) {
+      setError(friendly(err))
+      setCode('')
+    } else {
+      onClose()
+    }
+  }
+
+  return (
+    <>
+      <ModalHead title="Two-factor check" onClose={onClose} />
+      <p>Enter the 6-digit code from your authenticator app to finish logging in.</p>
+      <form className="account-form" onSubmit={submit}>
+        <input
+          className="totp-code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          autoFocus
+          maxLength={6}
+          placeholder="000000"
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+          aria-label="Authenticator code"
+        />
+        <button type="submit" className="btn-accent auth-submit" disabled={busy || code.length !== 6}>
+          {busy ? '…' : 'Verify'}
+        </button>
+      </form>
+      {error && <p className="form-error">{error}</p>}
+      <div className="auth-alt">
+        <button className="chip-btn" disabled={busy} onClick={() => void signOut()}>
+          Cancel and log out
+        </button>
+      </div>
+      <p className="muted small">
+        Your data stays locked until this step is done — that's what makes two-factor worth having.
+      </p>
+    </>
   )
 }
 
@@ -57,8 +117,14 @@ function AuthForm({ onClose, setState }: Props) {
     if (mode === 'in') {
       const err = await signIn(email, password)
       if (err) setError(friendly(err))
-      else onClose()
+      // with 2FA on, stay open: the modal switches to the code step
+      else if (!(await needsSecondFactor())) onClose()
     } else {
+      if (password.length < MIN_PASSWORD) {
+        setError(`Password needs at least ${MIN_PASSWORD} characters.`)
+        setBusy(false)
+        return
+      }
       const res = await signUp(email, password)
       if (res.status === 'exists') {
         setExists(true)
@@ -126,8 +192,8 @@ function AuthForm({ onClose, setState }: Props) {
         <input
           type="password"
           required
-          minLength={6}
-          placeholder={mode === 'up' ? 'Choose a password (6+ characters)' : 'Password'}
+          minLength={mode === 'up' ? MIN_PASSWORD : undefined}
+          placeholder={mode === 'up' ? `Choose a password (${MIN_PASSWORD}+ characters)` : 'Password'}
           autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -209,6 +275,9 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
   const [view, setView] = useState<'profile' | 'security'>('profile')
   const [email, setEmail] = useState(user?.email ?? '')
   const [pw1, setPw1] = useState('')
+  // set once the server asks for proof before a password change
+  const [reauth, setReauth] = useState(false)
+  const [nonce, setNonce] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
@@ -225,15 +294,53 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
   }
 
   async function savePassword() {
-    if (pw1.length < 6) {
-      setMsg({ ok: false, text: 'Password needs at least 6 characters.' })
+    if (pw1.length < MIN_PASSWORD) {
+      setMsg({ ok: false, text: `Password needs at least ${MIN_PASSWORD} characters.` })
       return
     }
     setBusy(true)
-    const err = await updatePassword(pw1)
+    const res = await updatePassword(pw1, reauth ? nonce.trim() : undefined)
+    if (res.needsReauth && !reauth) {
+      // the session isn't fresh: prove it's you with a code sent by email
+      const err = await sendReauthCode()
+      setBusy(false)
+      if (err) {
+        setMsg({ ok: false, text: friendly(err) })
+      } else {
+        setReauth(true)
+        setMsg({ ok: true, text: `For your security we emailed a code to ${user?.email} — enter it to confirm.` })
+      }
+      return
+    }
     setBusy(false)
+    if (res.error || res.needsReauth) {
+      setMsg({ ok: false, text: res.error ? friendly(res.error) : 'That code didn’t work — check the latest email.' })
+      return
+    }
     setPw1('')
-    setMsg(err ? { ok: false, text: friendly(err) } : { ok: true, text: 'Password updated ✓' })
+    setNonce('')
+    setReauth(false)
+    setMsg({ ok: true, text: 'Password updated ✓' })
+  }
+
+  /** Log out; optionally wipe this device's copy (shared computers). */
+  async function logOut(clear: boolean) {
+    setBusy(true)
+    const saved = await flushPush(5000)
+    if (clear) {
+      if (!saved && !window.confirm(
+        'Some recent changes haven’t reached the cloud yet. Clearing this device now would lose them. Clear anyway?',
+      )) {
+        setBusy(false)
+        return
+      }
+      await signOut()
+      clearLocalData()
+      location.reload() // start from a clean slate
+      return
+    }
+    await signOut()
+    setBusy(false)
   }
 
   return (
@@ -305,6 +412,19 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
           </div>
         </label>
 
+        {reauth && (
+          <label className="acc-row">
+            <span>Email code</span>
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="Code from the email"
+              value={nonce}
+              onChange={(e) => setNonce(e.target.value.trim())}
+            />
+          </label>
+        )}
+
         <label className="acc-row">
           <span>{t('memberSince')}</span>
           <input type="text" value={state.profile.joined} readOnly />
@@ -314,8 +434,16 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
       {msg && <p className={msg.ok ? 'muted small' : 'form-error'}>{msg.text}</p>}
 
       <div className="modal-actions">
-        <button className="btn-ghost" disabled={busy} onClick={() => void signOut()}>
+        <button className="btn-ghost" disabled={busy} onClick={() => void logOut(false)}>
           {t('logOut')}
+        </button>
+        <button
+          className="btn-ghost"
+          disabled={busy}
+          title="Log out and remove this account's data from this device — use it on a shared computer"
+          onClick={() => void logOut(true)}
+        >
+          Log out &amp; clear this device
         </button>
         <button
           className="btn-ghost"
@@ -334,6 +462,7 @@ function AccountInfo({ user, status, state, setState, onClose }: Props) {
             const err = await deleteAccount()
             setBusy(false)
             if (err) setMsg({ ok: false, text: friendly(err) })
+            else forgetLocalOwner() // the copy here stays, now belonging to no account
           }}
         >
           {t('deleteAccount')}
@@ -364,7 +493,18 @@ function friendly(err: string): string {
   if (e.includes('invalid login')) return 'Wrong email or password.'
   if (e.includes('not confirmed')) return 'Please confirm your email first — check your inbox.'
   if (e.includes('already registered')) return 'That email already has an account — try logging in.'
-  if (e.includes('at least 6')) return 'Password needs at least 6 characters.'
-  if (e.includes('rate limit')) return 'Too many tries — wait a minute and try again.'
+  if (/at least \d+|weak.?password|password should/.test(e)) {
+    return `Password is too weak — use at least ${MIN_PASSWORD} characters with a mix of letters and numbers.`
+  }
+  if (e.includes('pwned') || e.includes('leaked') || e.includes('breach')) {
+    return 'That password has appeared in a data breach — please choose a different one.'
+  }
+  if (e.includes('invalid totp') || e.includes('invalid code') || e.includes('expired')) {
+    return 'That code didn’t work — codes change every 30 seconds, try the current one.'
+  }
+  if (e.includes('two-factor verification required') || e.includes('aal2')) {
+    return 'Please log out and back in with your two-factor code, then try again.'
+  }
+  if (e.includes('rate limit') || e.includes('too many')) return 'Too many tries — wait a minute and try again.'
   return err
 }
