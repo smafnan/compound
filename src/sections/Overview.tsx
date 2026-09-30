@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { AppState, avgScore, parseDate } from '../lib'
+import { AppState, avgScore, mainDeadline, parseDate } from '../lib'
 import { Hero, MonthGrid } from './Countdown'
 import { ClockHero, HoursPanel, QuartersPanel, useNow } from './Today'
 import { ChartPanel, GrowthCards } from './Growth'
@@ -9,8 +9,7 @@ import { ChartPanel, GrowthCards } from './Growth'
 export default function Overview({ state }: { state: AppState }) {
   const now = useNow()
 
-  const primary =
-    state.deadlines.find((d) => d.id === state.primaryId) ?? state.deadlines[0] ?? null
+  const primary = mainDeadline(state, now.getTime())
 
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)

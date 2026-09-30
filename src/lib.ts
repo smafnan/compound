@@ -69,6 +69,8 @@ export interface Profile {
 
 export interface AppState {
   deadlines: Deadline[]
+  /** which countdown is the main one: a deadline id, `MAIN_SOONEST` for
+   *  "whichever ends next", or null for "the top of the list" */
   primaryId: string | null
   /** the one deadline marked as the active priority (shown pinned on top) */
   priorityId: string | null
@@ -186,6 +188,25 @@ export function deadlineEndMs(d: Deadline): number {
     return day + (h * 60 + m) * 60_000
   }
   return day + DAY_MS
+}
+
+/** `primaryId` value meaning "the main countdown is whichever ends next".
+ *  Stored in the same field so it syncs with no schema change. */
+export const MAIN_SOONEST = '@soonest'
+
+/** The countdown shown as the main one. A picked deadline wins; otherwise
+ *  the soonest still-running one (in soonest mode) or the top of the list. */
+export function mainDeadline(s: AppState, nowMs = Date.now()): Deadline | null {
+  if (s.primaryId === MAIN_SOONEST) {
+    let best: Deadline | null = null
+    let bestEnd = Infinity
+    for (const d of s.deadlines) {
+      const end = deadlineEndMs(d)
+      if (end > nowMs && end < bestEnd) { best = d; bestEnd = end }
+    }
+    return best ?? s.deadlines[0] ?? null
+  }
+  return s.deadlines.find((d) => d.id === s.primaryId) ?? s.deadlines[0] ?? null
 }
 
 // ---------- Duration timers ----------

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AppState, CanvasItem, FocusSession, WidgetKind, parseDate, uid } from '../lib'
+import { AppState, CanvasItem, FocusSession, WidgetKind, mainDeadline, parseDate, uid } from '../lib'
 import { Hero, MonthGrid } from './Countdown'
 import { ClockHero, HoursPanel, QuartersPanel, useNow } from './Today'
 import { ChartPanel, GrowthCards } from './Growth'
@@ -358,8 +358,7 @@ interface WidgetProps {
 }
 
 function Widget({ item, state, now, onCfg, onFocusDone }: WidgetProps) {
-  const primary =
-    state.deadlines.find((d) => d.id === state.primaryId) ?? state.deadlines[0] ?? null
+  const primary = mainDeadline(state, now.getTime())
 
   switch (item.kind) {
     case 'clock':
