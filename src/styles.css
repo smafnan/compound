@@ -2496,13 +2496,78 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   gap: 8px;
 }
 .slot-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
   font-family: var(--script);
   font-weight: 700;
   font-size: 15px;
   color: var(--ink-dim);
   letter-spacing: 0.04em;
 }
+.slot-notes-hint { margin: -4px 0 0; }
+.slot-note-add {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: var(--wob-sm);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: 14px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.slot-note-add:focus { outline: none; border-color: var(--accent); }
 .slot-note { display: flex; align-items: center; gap: 10px; }
+.slot-note-tag {
+  margin-inline-start: 6px;
+  font-style: normal;
+  font-size: 11px;
+  padding: 1px 6px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 99px;
+  color: var(--accent);
+}
+.slot-note.is-todo input { border-style: dashed; }
+.slot-note-x {
+  flex: 0 0 auto;
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+.slot-note-x:hover { color: var(--bad); }
+
+/* in note mode (challenge off) every block is a button that opens its note */
+.cell.notable, .qcell.notable {
+  appearance: none;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s;
+}
+.hgrid .cell.notable { font-size: 13px; font-family: var(--hand); }
+.cell.notable:hover, .qcell.notable:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: var(--accent);
+}
+.cell.notable:active, .qcell.notable:active { transform: scale(0.94); }
+/* a block with a note carries a small pen-dot in its corner */
+.cell.has-note::before, .qcell.has-note::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
 .slot-note-when {
   flex: 0 0 auto;
   min-width: 74px;
@@ -2530,7 +2595,10 @@ html[data-glass='on']:not([data-bg='none']) :is(.muted, .hero-sub, .bar-meta, .p
   /* stack so the field gets the full width on a phone */
   .slot-note { flex-wrap: wrap; gap: 4px; }
   .slot-note-when { min-width: 0; }
-  .slot-note input { flex: 1 1 100%; min-height: 40px; }
+  .slot-note input { flex: 1 1 0; min-height: 40px; }
+  .slot-note-when { flex-basis: 100%; }
+  .slot-note-add { min-height: 38px; }
+  .panel .qgrid:has(.qcell.notable) { grid-template-columns: repeat(8, 1fr); }
 
   /* the mobile tab bar is detached from the top bar, so here it does need
      its own pane */

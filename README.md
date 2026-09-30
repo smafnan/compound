@@ -117,6 +117,8 @@ Two independent switches turn the grids into a record of how you actually spent 
   blocks that have already *started* can be judged, so the record stays honest.
 - **Note yourself** — adds a line under each grid for **what you actually did** in that block.
   A cross with *"doomscrolling, again"* beside it is worth more than the cross alone.
+  Any block can take a note — tap it in the grid or pick it from **＋ note a block…** — and a
+  block that hasn't started yet is marked **to do**, so you can plan it ahead.
 
 Neither switch drags the other on, and both verdicts and notes sync across your devices on
 the same per-day merge rules as your checklist ticks.
