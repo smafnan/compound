@@ -30,7 +30,9 @@ await db.exec(`
   create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
   create function auth.uid() returns uuid language sql stable as $$ select nullif(auth.jwt() ->> 'sub', '')::uuid $$;
   grant usage on schema auth to anon, authenticated;
-  grant select on auth.mfa_factors to authenticated;
+  -- like real Supabase: signed-in users can NOT read auth.mfa_factors
+  -- (granting it here once hid a policy that 403'd every request)
+  revoke all on auth.mfa_factors from authenticated, anon;
   grant usage on schema public to anon, authenticated;
   alter default privileges in schema public grant all on tables to anon, authenticated;
 `)
@@ -124,6 +126,11 @@ r = await save({ n: 11 }, Number(seen[0].version))
 ok('aal2 save succeeds', r.ok === true, JSON.stringify(r))
 await as(B, 'aal1')
 ok('users without 2FA are unaffected', (await db.query(`select * from public.app_state`)).rows.length === 1)
+ok('the 2FA helper only answers for the caller (B has none)',
+  (await db.query(`select private.caller_has_verified_factor() v`)).rows[0].v === false)
+await throws('signed-in users still cannot read auth.mfa_factors directly', () => db.query(`select * from auth.mfa_factors`), /permission denied/)
+await as(null)
+await throws('anon cannot call the 2FA helper', () => db.query(`select private.caller_has_verified_factor()`), /permission denied/)
 
 console.log('devices')
 await as(B)
