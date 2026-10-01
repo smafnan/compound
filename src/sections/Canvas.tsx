@@ -78,7 +78,9 @@ export default function Canvas({ state, setState }: Props) {
   }
 
   function logFocus(session: FocusSession) {
-    setState((s) => ({ ...s, focus: [session, ...s.focus] }))
+    // ids are deterministic per finished block, so the same block finishing
+    // on two signed-in devices is logged once
+    setState((s) => (s.focus.some((f) => f.id === session.id) ? s : { ...s, focus: [session, ...s.focus] }))
   }
 
   function bringToFront(id: string) {
@@ -366,6 +368,8 @@ function Widget({ item, state, now, onCfg, onFocusDone }: WidgetProps) {
     case 'pomodoro':
       return (
         <Pomodoro
+          id={item.id}
+          cfg={item.cfg ?? {}}
           task={item.cfg?.task ?? ''}
           focusMin={clampMin(item.cfg?.focusMin, 25)}
           breakMin={clampMin(item.cfg?.breakMin, 5)}
@@ -404,75 +408,80 @@ function clampMin(raw: string | undefined, dflt: number): number {
 }
 
 /**
- * Focus timer with a named task and adjustable focus/break lengths
- * (persisted in the widget's config, so they survive restarts and sync
- * across devices). A finished focus block chimes, logs to your history
- * and rolls straight into the break; the break chimes and re-arms focus.
+ * Focus timer with a named task and adjustable focus/break lengths.
+ * Everything — including whether it's running — lives in the widget's
+ * config, so it survives restarts and shows the same countdown on every
+ * signed-in device. A running timer stores the moment it ends (`pEnd`), not
+ * a ticking number, so devices agree without talking to each other.
+ * A finished focus block chimes, logs to your history and rolls straight
+ * into the break; the break chimes and re-arms focus.
  */
-function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
+function Pomodoro({ id, cfg, task, focusMin, breakMin, onCfg, onDone }: {
+  id: string
+  cfg: Record<string, string>
   task: string
   focusMin: number
   breakMin: number
   onCfg: (patch: Record<string, string>) => void
   onDone: (s: FocusSession) => void
 }) {
-  const [phase, setPhase] = useState<'focus' | 'break'>('focus')
-  const [left, setLeft] = useState(focusMin * 60)
-  const [running, setRunning] = useState(false)
-  const phaseRef = useRef(phase)
-  phaseRef.current = phase
+  const phase: 'focus' | 'break' = cfg.pPhase === 'break' ? 'break' : 'focus'
+  const endAt = Number(cfg.pEnd) || 0 // epoch ms while running, else 0
+  const running = endAt > 0
   const total = (phase === 'focus' ? focusMin : breakMin) * 60
+  const pausedLeft = Number(cfg.pLeft)
 
+  // re-render every second while running; the time itself comes from endAt
+  const [nowMs, setNowMs] = useState(() => Date.now())
   useEffect(() => {
     if (!running) return
-    const t = setInterval(() => {
-      setLeft((l) => (l <= 1 ? 0 : l - 1))
-    }, 1000)
+    setNowMs(Date.now())
+    const t = setInterval(() => setNowMs(Date.now()), 1000)
     return () => clearInterval(t)
   }, [running])
 
-  // phase transitions — log + chime exactly once when the sand runs out
-  const doneRef = useRef(false)
+  const left = running
+    ? Math.max(0, Math.ceil((endAt - nowMs) / 1000))
+    : pausedLeft > 0 ? Math.min(pausedLeft, total) : total
+
+  // Phase transitions. Each one is computed from the block's own end time,
+  // so every device that sees it run out writes the same result and logs
+  // the same session id — the block counts once, wherever you are.
   useEffect(() => {
-    if (left > 0) {
-      doneRef.current = false
-      return
-    }
-    if (doneRef.current) return
-    doneRef.current = true
-    if (phaseRef.current === 'focus') {
-      playChime()
+    if (!running || endAt > Date.now()) return
+    const fresh = Date.now() - endAt < 10_000 // don't chime for a block that ended while closed
+    if (phase === 'focus') {
+      if (fresh) playChime()
       onDone({
-        id: uid(),
+        id: `pomo-${id}-${endAt}`,
         task: task.trim() || 'Untitled focus',
         minutes: focusMin,
-        endedAt: new Date().toISOString(),
+        endedAt: new Date(endAt).toISOString(),
       })
       // roll straight into the break
-      setPhase('break')
-      setLeft(breakMin * 60)
+      onCfg({ pPhase: 'break', pEnd: String(endAt + breakMin * 60_000), pLeft: '' })
     } else {
-      playBeep()
-      setPhase('focus')
-      setLeft(focusMin * 60)
-      setRunning(false) // focus starts on your command, not by surprise
+      if (fresh) playBeep()
+      // focus starts on your command, not by surprise
+      onCfg({ pPhase: 'focus', pEnd: '', pLeft: '' })
     }
-  }, [left]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [running, endAt, nowMs]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggleRun() {
+    if (running) onCfg({ pEnd: '', pLeft: String(left) })
+    else onCfg({ pEnd: String(Date.now() + left * 1000), pLeft: '' })
+  }
 
   function adjust(key: 'focusMin' | 'breakMin', delta: number) {
     const cur = key === 'focusMin' ? focusMin : breakMin
     const next = Math.min(180, Math.max(1, cur + delta))
-    onCfg({ [key]: String(next) })
     // re-arm an idle timer in the phase being adjusted
-    if (!running && ((key === 'focusMin' && phase === 'focus') || (key === 'breakMin' && phase === 'break'))) {
-      setLeft(next * 60)
-    }
+    const rearm = !running && ((key === 'focusMin' && phase === 'focus') || (key === 'breakMin' && phase === 'break'))
+    onCfg(rearm ? { [key]: String(next), pLeft: '' } : { [key]: String(next) })
   }
 
   function restart() {
-    setPhase('focus')
-    setLeft(focusMin * 60)
-    setRunning(false)
+    onCfg({ pPhase: 'focus', pEnd: '', pLeft: '' })
   }
 
   /**
@@ -483,9 +492,11 @@ function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
    * finished, and the history is only worth reading if that stays true.
    */
   function toPhase(next: 'focus' | 'break') {
-    setPhase(next)
-    setLeft((next === 'focus' ? focusMin : breakMin) * 60)
-    setRunning(next === 'break')
+    onCfg({
+      pPhase: next,
+      pLeft: '',
+      pEnd: next === 'break' ? String(Date.now() + breakMin * 60_000) : '',
+    })
   }
 
   const mm = String(Math.floor(left / 60)).padStart(2, '0')
@@ -506,7 +517,7 @@ function Pomodoro({ task, focusMin, breakMin, onCfg, onDone }: {
         <div className="bar-fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="pomo-controls">
-        <button className="btn-accent" onClick={() => setRunning(!running)}>
+        <button className="btn-accent" onClick={toggleRun}>
           {running ? 'pause' : 'start'}
         </button>
         <button

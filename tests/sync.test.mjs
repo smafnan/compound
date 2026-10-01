@@ -14,7 +14,7 @@ const out = await build({
   stdin: {
     contents: `
       export { absorbRemote, configureSync, flushPush, isFullySynced, pullState, pushState } from './src/cloud'
-      export { loadPersisted, normalizeState, saveState, syncNowIso } from './src/lib'
+      export { loadPersisted, loadState, normalizeState, saveState, setting, syncNowIso, withSetting } from './src/lib'
     `,
     resolveDir: path.join(here, '..'),
     loader: 'ts',
@@ -37,8 +37,9 @@ const code = out.outputFiles[0].text
 
 const server = { row: null, writes: 0, conflicts: 0, legacy: false, failReads: false, skewMs: 0 }
 
-function device() {
-  const store = new Map()
+/** A device with its own storage; `stored` pre-fills it (old preferences). */
+function device(stored = {}) {
+  const store = new Map(Object.entries(stored))
   const localStorage = {
     getItem: (k) => (store.has(k) ? store.get(k) : null),
     setItem: (k, v) => store.set(k, String(v)),
@@ -150,6 +151,56 @@ reset(); server.skewMs = 24 * 3600_000
   A.saveState(blank(A)); A.pushState(); await A.flushPush()
   const drift = Date.parse(A.syncNowIso()) - Date.now()
   ok('edit stamps follow the server clock after one save', Math.abs(drift - server.skewMs) < 5000, `drift=${drift}`)
+}
+
+// ------------------------------------------------------------------
+console.log('settings follow the account')
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+{
+  reset()
+  const A = device(), B = device()
+  A.saveState(blank(A)); A.pushState(); await A.flushPush()
+  B.saveState(blank(B)); await login(B)
+  // at the same time: A picks a theme, B sets office hours
+  edit(A, (s) => A.withSetting(s, 'theme', 'night'))
+  edit(B, (s) => B.withSetting(B.withSetting(s, 'office', 'on'), 'officeStart', '08:30'))
+  A.pushState(); B.pushState()
+  await Promise.all([A.flushPush(), B.flushPush()])
+  await login(A); await login(B)
+  await Promise.all([A.flushPush(), B.flushPush()])
+  for (const [name, dev] of [['A', A], ['B', B]]) {
+    const s = dev.loadPersisted()
+    ok(`device ${name} has both changes (theme + office hours)`,
+      dev.setting(s, 'theme') === 'night' && dev.setting(s, 'office') === 'on' && dev.setting(s, 'officeStart') === '08:30',
+      JSON.stringify(s.settings))
+  }
+
+  // the same setting changed on both: the later edit wins everywhere
+  edit(A, (s) => A.withSetting(s, 'lang', 'fr'))
+  await sleep(5)
+  edit(B, (s) => B.withSetting(s, 'lang', 'de'))
+  A.pushState(); B.pushState()
+  await Promise.all([A.flushPush(), B.flushPush()])
+  await login(A); await login(B)
+  ok('same setting on both: the newer edit wins on both devices',
+    A.setting(A.loadPersisted(), 'lang') === 'de' && B.setting(B.loadPersisted(), 'lang') === 'de')
+}
+{
+  reset()
+  // a PC that chose a look before settings synced, and a fresh second PC
+  const Old = device({ 'compound.theme': 'neo', 'compound.office': 'on', 'compound.officeEnd': '17:00' })
+  Old.saveState(Old.loadState()); Old.pushState(); await Old.flushPush()
+  const New = device()
+  New.saveState(New.loadState()); await login(New)
+  const s = New.loadPersisted()
+  ok('choices saved per device before this update carry over to a new PC',
+    New.setting(s, 'theme') === 'neo' && New.setting(s, 'office') === 'on' && New.setting(s, 'officeEnd') === '17:00',
+    JSON.stringify(s.settings))
+  // …but any real change made since beats a carried-over value
+  edit(New, (x) => New.withSetting(x, 'theme', 'paper'))
+  New.pushState(); await New.flushPush()
+  await login(Old)
+  ok('a real change beats a carried-over value', Old.setting(Old.loadPersisted(), 'theme') === 'paper')
 }
 
 console.log(`\n${pass} passed, ${fail} failed`)

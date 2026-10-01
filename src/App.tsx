@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { AppState, IS_DEMO, clearLocalData, loadState, localOwner, saveState, setLocalOwner } from './lib'
+import {
+  AppState, IS_DEMO, SettingKey, clearLocalData, loadState, localOwner, saveState, setLocalOwner, setting,
+  withSetting,
+} from './lib'
 import { useDeadlineAlarms } from './alarms'
 import {
   RemoteState, SyncStatus, absorbRemote, cloudEnabled, configureSync, onAuth, pullState, pushState,
   subscribeToState, touchDevice,
 } from './cloud'
-import { loadPref, resolveFontFamily, savePref } from './prefs'
+import { resolveFontFamily } from './prefs'
 import FontPicker from './FontPicker'
 import { LANGS, LangId, applyLang, langDir, t } from './i18n'
 import Backdrop, { BACKDROPS, BgKind } from './Backdrop'
@@ -45,35 +48,44 @@ function initialTab(): Tab {
   return TABS.some((x) => x.id === t) ? (t as Tab) : 'countdown'
 }
 
-function initialTheme(): Theme {
-  const q = new URLSearchParams(location.search).get('theme') // shareable looks
-  if (q && THEMES.some((x) => x.id === q)) return q as Theme
-  const t = localStorage.getItem('compound.theme')
-  return THEMES.some((x) => x.id === t) ? (t as Theme) : 'paper'
-}
+const isTheme = (v: string | null): v is Theme => THEMES.some((x) => x.id === v)
+const isBg = (v: string | null): v is BgKind => !!v && BACKDROPS.some((x) => x.id === v)
 
-function initialBg(): BgKind {
-  const known = (v: string | null) => !!v && BACKDROPS.some((x) => x.id === v)
-  const q = new URLSearchParams(location.search).get('bg')
-  if (known(q)) return q as BgKind
-  // a saved video scene whose file was since removed falls back to plain,
-  // rather than leaving the app translucent over nothing
-  const saved = loadPref('bg', 'none')
-  return known(saved) ? (saved as BgKind) : 'none'
+/** Shareable looks (?theme=night&bg=vid-rain) become this account's look. */
+function withUrlLooks(s: AppState): AppState {
+  const q = new URLSearchParams(location.search)
+  const theme = q.get('theme')
+  const bg = q.get('bg')
+  let out = s
+  if (isTheme(theme)) out = withSetting(out, 'theme', theme)
+  if (isBg(bg)) out = withSetting(out, 'bg', bg)
+  return out
 }
 
 export default function App() {
-  const [state, setState] = useState<AppState>(loadState)
+  const [state, setState] = useState<AppState>(() => withUrlLooks(loadState()))
   const [tab, setTab] = useState<Tab>(initialTab)
-  const [theme, setTheme] = useState<Theme>(initialTheme)
-  const [font, setFont] = useState(() => loadPref('font', 'rounded'))
-  const [bg, setBg] = useState<BgKind>(initialBg)
-  const [glass, setGlass] = useState(() => loadPref('glass', 'on') === 'on')
-  const [glassLevel, setGlassLevel] = useState(() => Number(loadPref('glassLevel', '38')) || 38)
-  const [lang, setLang] = useState<LangId>(() => {
-    const l = loadPref('lang', 'en') as LangId
-    return LANGS.some((x) => x.id === l) ? l : 'en'
-  })
+
+  // Look, language and the like are synced settings: they live in the
+  // account's state, so changing one on any device changes it everywhere.
+  const set = (key: SettingKey, value: string) => setState((s) => withSetting(s, key, value))
+  const rawTheme = setting(state, 'theme')
+  const theme: Theme = isTheme(rawTheme) ? rawTheme : 'paper'
+  const setTheme = (v: Theme) => set('theme', v)
+  const font = setting(state, 'font')
+  const setFont = (v: string) => set('font', v)
+  // a saved video scene whose file was since removed falls back to plain,
+  // rather than leaving the app translucent over nothing
+  const rawBg = setting(state, 'bg')
+  const bg: BgKind = isBg(rawBg) ? rawBg : 'none'
+  const setBg = (v: BgKind) => set('bg', v)
+  const glass = setting(state, 'glass') === 'on'
+  const setGlass = (v: boolean) => set('glass', v ? 'on' : 'off')
+  const glassLevel = Number(setting(state, 'glassLevel')) || 38
+  const setGlassLevel = (v: number) => set('glassLevel', String(v))
+  const rawLang = setting(state, 'lang') as LangId
+  const lang: LangId = LANGS.some((x) => x.id === rawLang) ? rawLang : 'en'
+  const setLang = (v: LangId) => set('lang', v)
   const [fullscreen, setFullscreen] = useState(false)
 
   // make t() speak the right language for everything rendered below
@@ -82,7 +94,6 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang
     document.documentElement.dir = langDir(lang)
-    savePref('lang', lang)
   }, [lang])
   const [user, setUser] = useState<User | null>(null)
   // signed in, but the account's 2FA code is still owed — nothing syncs
@@ -208,19 +219,16 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    localStorage.setItem('compound.theme', theme)
   }, [theme])
 
   // frosted panels let the scene through; only meaningful over a video
   useEffect(() => {
     document.documentElement.dataset.glass = glass ? 'on' : 'off'
-    savePref('glass', glass ? 'on' : 'off')
   }, [glass])
 
   // one number drives every glass surface (see --glass in styles.css)
   useEffect(() => {
     document.documentElement.style.setProperty('--glass', String(glassLevel))
-    savePref('glassLevel', String(glassLevel))
   }, [glassLevel])
 
   useEffect(() => {
@@ -237,12 +245,10 @@ export default function App() {
       root.setProperty('--script', family)
       root.setProperty('--hand', family)
     }
-    savePref('font', font)
   }, [font])
 
   useEffect(() => {
     document.documentElement.dataset.bg = bg
-    savePref('bg', bg)
   }, [bg])
 
   useEffect(() => {

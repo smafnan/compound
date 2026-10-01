@@ -132,7 +132,8 @@ the same per-day merge rules as your checklist ticks.
 Set your working hours (say **09:00 → 18:00**, in 15-minute steps) and switch on **office
 mode**. The hour and quarter-hour blocks inside that window are highlighted, the rest of the
 day fades back, and the bar shows how much of the office day is still ahead. Overnight shifts
-(e.g. 22:00 → 06:00) work too. The hours are remembered on each device, like the theme.
+(e.g. 22:00 → 06:00) work too. The hours sync to your account, so every device you sign in
+on uses the same office day.
 
 ## ▦ Checklist — the habit matrix
 
@@ -241,6 +242,9 @@ fields go full width, and nothing ever scrolls sideways.
   fallback. Sync **merges instead of overwriting**: each section and each checklist day
   carries its own edit-time, and every save is **version-checked** so two devices editing
   at once can't overwrite each other — a tick made anywhere survives everywhere
+- **Everything follows you** — deadlines and timers, checklist, notes, Canvas layout, a
+  running focus timer, *and* your settings (theme, font, scene, glass, language, alarm,
+  Today modes, office hours). Sign in on a new PC and it looks exactly like the last one
 - **Account page** — edit name, phone, email (confirmation flow) and password (re-verified
   by an emailed code when the session isn't fresh)
 - **Security center** — TOTP **two-factor**, enforced at login *and* by the database, a

@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { AppState, deadlineEndMs } from './lib'
-import { loadPref, savePref } from './prefs'
+import { AppState, deadlineEndMs, setting } from './lib'
 import { playChime } from './sound'
 
-export const alarmEnabled = (): boolean => loadPref('alarm', 'on') === 'on'
+/** The alarm switch is a synced setting — on or off on every device. */
+export const alarmEnabled = (s: AppState): boolean => setting(s, 'alarm') === 'on'
 
-export function setAlarmEnabled(on: boolean): void {
-  savePref('alarm', on ? 'on' : 'off')
-  // ask for notification permission when the user opts in (user gesture)
-  if (on && 'Notification' in window && Notification.permission === 'default') {
+/** Ask for notification permission when the user opts in (needs the
+ *  click's user gesture, so call it from the toggle itself). */
+export function requestAlarmPermission(): void {
+  if ('Notification' in window && Notification.permission === 'default') {
     void Notification.requestPermission()
   }
 }
@@ -34,7 +34,7 @@ export function useDeadlineAlarms(state: AppState): string | null {
         const was = prev.get(d.id)
         prev.set(d.id, rem)
         if (was === undefined || was <= 0 || rem > 0) continue
-        if (!alarmEnabled()) continue
+        if (!alarmEnabled(stateRef.current)) continue
         playChime()
         setAlertFor(d.title)
         setTimeout(() => setAlertFor(null), 8000)

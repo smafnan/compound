@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { AppState, SlotMark, hourKey, quarterKey, todayStr } from '../lib'
-import { loadPref, savePref } from '../prefs'
+import {
+  AppState, SETTING_DEFAULTS, SettingKey, SlotMark, hourKey, quarterKey, setting, todayStr, withSetting,
+} from '../lib'
 import { t } from '../i18n'
 
 export function useNow(intervalMs = 1000): Date {
@@ -98,22 +99,25 @@ export function tally(marks: Record<string, SlotMark>, prefix: 'h' | 'q') {
 
 export default function Today({ state, setState }: SlotProps) {
   const now = useNow()
+  // The modes and office hours are synced settings, so the Today view looks
+  // the same on every device you sign in on.
+  const get = (k: SettingKey) => (state ? setting(state, k) : SETTING_DEFAULTS[k])
+  const set = (k: SettingKey, v: string) => setState?.((s) => withSetting(s, k, v))
   // the mode sticks between visits, so the verdicts you left keep their
   // context instead of reappearing as unexplained coloured cells
-  const [challenge, setChallenge] = useState(() => loadPref('challenge', 'off') === 'on')
+  const challenge = get('challenge') === 'on'
+  const setChallenge = (v: boolean) => set('challenge', v ? 'on' : 'off')
   // deliberately independent of challenge mode: judging your time and
   // recording what you did are separate habits, so neither drags the
   // other on
-  const [notesOn, setNotesOn] = useState(() => loadPref('notes', 'off') === 'on')
-  useEffect(() => { savePref('challenge', challenge ? 'on' : 'off') }, [challenge])
-  useEffect(() => { savePref('notes', notesOn ? 'on' : 'off') }, [notesOn])
-  // office hours are a per-device routine setting, like the modes above
-  const [officeOn, setOfficeOn] = useState(() => loadPref('office', 'off') === 'on')
-  const [officeStart, setOfficeStart] = useState(() => loadPref('officeStart', '09:00'))
-  const [officeEnd, setOfficeEnd] = useState(() => loadPref('officeEnd', '18:00'))
-  useEffect(() => { savePref('office', officeOn ? 'on' : 'off') }, [officeOn])
-  useEffect(() => { savePref('officeStart', officeStart) }, [officeStart])
-  useEffect(() => { savePref('officeEnd', officeEnd) }, [officeEnd])
+  const notesOn = get('notes') === 'on'
+  const setNotesOn = (v: boolean) => set('notes', v ? 'on' : 'off')
+  const officeOn = get('office') === 'on'
+  const setOfficeOn = (v: boolean) => set('office', v ? 'on' : 'off')
+  const officeStart = get('officeStart')
+  const setOfficeStart = (v: string) => set('officeStart', v)
+  const officeEnd = get('officeEnd')
+  const setOfficeEnd = (v: string) => set('officeEnd', v)
   const start = toMin(officeStart)
   const end = toMin(officeEnd)
   const office = officeOn && Number.isFinite(start) && Number.isFinite(end) ? { start, end } : null
