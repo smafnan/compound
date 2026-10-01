@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
+import { createClient, type Session, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import {
@@ -212,12 +212,30 @@ export async function unenrollTotp(factorId: string): Promise<string | null> {
  * verified authenticator but the session was opened with only a password,
  * magic link or OAuth (aal1). Until it's answered the database refuses the
  * account's rows, and the app treats the user as not yet signed in.
+ *
+ * Read straight off the session — no client call. Asking the client
+ * (getAuthenticatorAssuranceLevel → getSession) from inside an auth event
+ * refreshes any token within 90 s of expiry, which fires another event:
+ * with a fast device clock or a short JWT lifetime that loop sent ~650
+ * refreshes a second until Supabase rate-limited it and dropped the login.
  */
+function owesSecondFactor(session: Session): boolean {
+  const verified = (session.user.factors ?? []).some((f) => f.status === 'verified')
+  if (!verified) return false
+  try {
+    const payload = session.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return (JSON.parse(atob(payload)) as { aal?: string }).aal !== 'aal2'
+  } catch {
+    return true // unreadable token: fail closed, the code step will sort it out
+  }
+}
+
+/** Same check for code outside auth events (e.g. right after a password
+ *  login). Reads the stored session once; never loops. */
 export async function needsSecondFactor(): Promise<boolean> {
   if (!supabase) return false
-  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (error || !data) return false
-  return data.nextLevel === 'aal2' && data.currentLevel !== 'aal2'
+  const { data } = await supabase.auth.getSession()
+  return data.session ? owesSecondFactor(data.session) : false
 }
 
 /** Answer the login-time 2FA challenge with a code from the authenticator. */
@@ -383,22 +401,17 @@ export interface AuthInfo {
  */
 export function onAuth(cb: (info: AuthInfo) => void): () => void {
   if (!supabase) return () => {}
-  let seq = 0
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    const mine = ++seq
-    const user = session?.user ?? null
-    if (!user) {
+    if (!session?.user) {
       resetSync()
-      cb({ user: null, needsMfa: false })
+      setTimeout(() => cb({ user: null, needsMfa: false }), 0)
       return
     }
-    // supabase calls must not be awaited inside this callback (it holds the
-    // auth lock), so the assurance check runs just after it returns
-    setTimeout(() => {
-      void needsSecondFactor().then((needsMfa) => {
-        if (mine === seq) cb({ user, needsMfa })
-      })
-    }, 0)
+    // worked out right here from the event's own session, so nothing calls
+    // back into the client from inside its callback (see owesSecondFactor);
+    // the caller's own work (pulling data…) runs just after it returns
+    const info = { user: session.user, needsMfa: owesSecondFactor(session) }
+    setTimeout(() => cb(info), 0)
   })
   return () => data.subscription.unsubscribe()
 }
