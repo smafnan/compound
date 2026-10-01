@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppState, Deadline, MONTHS, TimePart, clockLeft, daysBetween, deadlineEndMs,
   MAIN_SOONEST, fmtClock, fmtDate, fmtDuration, isPaused, isTimer, mainDeadline, makeTimer, parseDate, pauseTimer,
-  remainingParts, resumeTimer, timerAt, timerStartMs, todayStr, uid,
+  remainingParts, resumeTimer, timerAt, timerStartMs, todayStr, uid, withSetting,
 } from '../lib'
 import { t } from '../i18n'
-import { alarmEnabled, setAlarmEnabled } from '../alarms'
+import { alarmEnabled, requestAlarmPermission } from '../alarms'
 
 const UNIT_ONE = { day: 'unitDay', hour: 'unitHour', minute: 'unitMinute', second: 'unitSecond' } as const
 const UNIT_MANY = { day: 'unitDays', hour: 'unitHours', minute: 'unitMinutes', second: 'unitSeconds' } as const
@@ -58,7 +58,7 @@ export default function Countdown({ state, setState }: Props) {
   const [endTime, setEndTime] = useState('')
   const [hrs, setHrs] = useState('')
   const [mins, setMins] = useState('')
-  const [alarm, setAlarm] = useState(alarmEnabled)
+  const alarm = alarmEnabled(state)
   const [now, setNow] = useState(() => new Date())
 
   const totalMin = Number(hrs || 0) * 60 + Number(mins || 0)
@@ -258,8 +258,8 @@ export default function Countdown({ state, setState }: Props) {
             aria-pressed={alarm}
             onClick={() => {
               const v = !alarm
-              setAlarm(v)
-              setAlarmEnabled(v)
+              setState((s) => withSetting(s, 'alarm', v ? 'on' : 'off'))
+              if (v) requestAlarmPermission()
             }}
           >
             {alarm ? '🔔' : '🔕'}

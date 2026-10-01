@@ -94,6 +94,65 @@ export interface AppState {
   sec?: Record<string, string>
   /** per-date last-edit stamps for checklist completions */
   compAt?: Record<string, string>
+  /** preferences that follow the account to every device (look, language,
+   *  alarm, Today modes, office hours). Missing key = SETTING_DEFAULTS. */
+  settings: Record<string, string>
+  /** per-setting last-edit stamps — two devices changing different
+   *  settings at once both keep their change */
+  settingsAt?: Record<string, string>
+}
+
+// ---------- Synced settings ----------
+
+export const SETTING_DEFAULTS = {
+  theme: 'paper',
+  font: 'rounded',
+  bg: 'none',
+  glass: 'on',
+  glassLevel: '38',
+  lang: 'en',
+  alarm: 'on',
+  challenge: 'off',
+  notes: 'off',
+  office: 'off',
+  officeStart: '09:00',
+  officeEnd: '18:00',
+} as const
+
+export type SettingKey = keyof typeof SETTING_DEFAULTS
+
+export function setting(s: AppState, key: SettingKey): string {
+  return s.settings[key] ?? SETTING_DEFAULTS[key]
+}
+
+export function withSetting(s: AppState, key: SettingKey, value: string): AppState {
+  return s.settings[key] === value ? s : { ...s, settings: { ...s.settings, [key]: value } }
+}
+
+/** Stamp for settings carried over from before they synced: older than any
+ *  real edit, but it still beats a device that never chose anything. */
+const LEGACY_STAMP = new Date(0).toISOString()
+
+/** These used to be saved per device. Fold any non-default choice into the
+ *  synced settings once, so updating the app doesn't reset anyone's look. */
+function adoptLegacyPrefs(s: AppState): AppState {
+  const settings = { ...s.settings }
+  const settingsAt = { ...s.settingsAt }
+  let changed = false
+  for (const key of Object.keys(SETTING_DEFAULTS) as SettingKey[]) {
+    if (settings[key] !== undefined) continue
+    let v: string | null = null
+    try {
+      v = localStorage.getItem(key === 'theme' ? 'compound.theme' : `compound.${key}`)
+    } catch {
+      /* unavailable */
+    }
+    if (v === null || v === SETTING_DEFAULTS[key]) continue
+    settings[key] = v
+    settingsAt[key] = LEGACY_STAMP
+    changed = true
+  }
+  return changed ? { ...s, settings, settingsAt } : s
 }
 
 /** Fill in any missing fields (older saves, cloud payloads). */
@@ -118,6 +177,8 @@ export function normalizeState(parsed: Partial<AppState> | null | undefined): Ap
     updatedAt: parsed?.updatedAt,
     sec: parsed?.sec ?? {},
     compAt: parsed?.compAt ?? {},
+    settings: parsed?.settings ?? {},
+    settingsAt: parsed?.settingsAt ?? {},
   }
 }
 
@@ -425,9 +486,9 @@ export function loadState(): AppState {
         { id: uid(), name: 'Deep work 2 hrs', createdAt: t },
         { id: uid(), name: 'Read 20 pages', createdAt: t },
       ]
-      return empty
+      return adoptLegacyPrefs(empty)
     }
-    return normalizeState(JSON.parse(raw) as Partial<AppState>)
+    return adoptLegacyPrefs(normalizeState(JSON.parse(raw) as Partial<AppState>))
   } catch {
     return empty
   }
@@ -509,7 +570,14 @@ export function saveState(s: AppState, preStamped = false): AppState {
         }
       }
       if (!eq(s.focus, prev.focus)) changed = true
-      out = { ...s, sec, compAt, slotAt, updatedAt: changed ? now : prev.updatedAt }
+      const settingsAt: Record<string, string> = { ...prev.settingsAt, ...s.settingsAt }
+      for (const k of new Set([...Object.keys(s.settings), ...Object.keys(prev.settings)])) {
+        if (s.settings[k] !== prev.settings[k]) {
+          settingsAt[k] = now
+          changed = true
+        }
+      }
+      out = { ...s, sec, compAt, slotAt, settingsAt, updatedAt: changed ? now : prev.updatedAt }
     }
     const json = JSON.stringify(out)
     localStorage.setItem(KEY, json)
@@ -621,6 +689,23 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
   for (const f of [...remote.focus, ...local.focus]) focusMap.set(f.id, f)
   const focus = [...focusMap.values()].sort((a, b) => b.endedAt.localeCompare(a.endedAt))
 
+  // settings: each one on its own — newest edit wins; a side that never
+  // chose a setting doesn't override one that did
+  const settings: Record<string, string> = {}
+  const settingsAt: Record<string, string> = {}
+  for (const k of new Set([
+    ...Object.keys(local.settings), ...Object.keys(remote.settings),
+    ...Object.keys(local.settingsAt ?? {}), ...Object.keys(remote.settingsAt ?? {}),
+  ])) {
+    const la = local.settingsAt?.[k]
+    const ra = remote.settingsAt?.[k]
+    const fromRemote = la && ra ? Date.parse(ra) > Date.parse(la) : !la && !!ra
+    const v = fromRemote ? remote.settings[k] : local.settings[k] ?? (la ? undefined : remote.settings[k])
+    if (v !== undefined) settings[k] = v
+    const at = maxIso(la, ra)
+    if (at) settingsAt[k] = at
+  }
+
   const sec: Record<string, string> = {}
   for (const k of SECTIONS) {
     const at = maxIso(local.sec?.[k], remote.sec?.[k])
@@ -641,6 +726,8 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     slotAt,
     sec,
     compAt,
+    settings,
+    settingsAt,
     updatedAt: maxIso(local.updatedAt, remote.updatedAt),
   }
 }
